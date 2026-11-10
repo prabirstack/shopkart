@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { CreditCard, Info, Lock, ShoppingCart } from "lucide-react"
@@ -13,6 +13,7 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { Skeleton } from "@/components/ui/skeleton"
 import { MockRazorpayCheckout, type GatewaySuccess } from "@/features/payments/mock-razorpay-dialog"
 import { useCart } from "@/features/cart/store"
+import { trackAddPaymentInfo, trackBeginCheckout } from "@/features/analytics/events"
 import { CouponBox } from "@/features/cart/coupon-box"
 import { useCartSummary } from "@/features/cart/use-cart-summary"
 import { formatMoney } from "@/lib/money"
@@ -39,6 +40,11 @@ export default function CheckoutPage() {
   const [error, setError] = useState("")
   const [pending, setPending] = useState<{ orderId: string; amountPaise: number; orderToken: string } | null>(null)
 
+  const began = useRef(false)
+  useEffect(() => {
+    if (hydrated && items.length > 0 && !began.current) { began.current = true; trackBeginCheckout(items, quote.totalPaise, coupon?.code ?? null) }
+  }, [hydrated, items, quote.totalPaise, coupon])
+
   const startPayment = async (values: CheckoutValues) => {
     setError(""); setPhase("creating")
     try {
@@ -46,7 +52,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({ items: items.map((l) => ({ id: l.product.id, quantity: l.quantity })), coupon: coupon?.code ?? null, customer: values }) })
       const data = await res.json()
       if (!res.ok) { setError(data?.error?.message ?? "We couldn't start your payment."); setPhase("idle"); return }
-      setPending(data); setPhase("paying")
+      trackAddPaymentInfo(items, quote.totalPaise, "razorpay"); setPending(data); setPhase("paying")
     } catch { setError("Couldn't reach the server. Check your connection and try again."); setPhase("idle") }
   }
 

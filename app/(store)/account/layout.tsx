@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { AccountNav } from "@/components/account/account-nav"
 import { demoUser } from "@/features/account/demo"
 
-export const metadata: Metadata = { title: "My account | ShopKart", robots: { index: false } }
+export const metadata: Metadata = { title: "My account", robots: { index: false } }
 
 export default function AccountLayout({ children }: { children: ReactNode }) {
   return (

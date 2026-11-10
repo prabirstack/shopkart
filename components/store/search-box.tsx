@@ -3,6 +3,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useId, useMemo, useRef, useState } from "react"
 import { Clock, Search, Tag, TrendingUp } from "lucide-react"
+import { trackSearch } from "@/features/analytics/events"
 import { suggest } from "@/features/catalog/search"
 import { formatMoney } from "@/lib/money"
 
@@ -39,7 +40,7 @@ export function SearchBox() {
   }, [value, recents])
 
   const go = (o: Option) => {
-    if (o.kind === "recent" || o.kind === "query") saveRecent(o.kind === "query" ? value.trim() : o.label)
+    if (o.kind === "recent" || o.kind === "query") { const term = o.kind === "query" ? value.trim() : o.label; saveRecent(term); trackSearch(term) }
     setOpen(false)
     router.push(o.href)
   }
@@ -51,7 +52,7 @@ export function SearchBox() {
         onSubmit={(e) => {
           const q = value.trim()
           if (active >= 0 && options[active]) { e.preventDefault(); go(options[active]); return }
-          if (q) saveRecent(q)
+          if (q) { saveRecent(q); trackSearch(q) }
         }}
         className="flex min-w-0 overflow-hidden rounded-lg border bg-background focus-within:ring-[3px] focus-within:ring-ring/40">
         <label htmlFor="site-search" className="sr-only">Search products</label>

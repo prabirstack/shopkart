@@ -34,7 +34,7 @@ export function SiteFooter() {
         <div className="store-container flex flex-wrap items-center justify-between gap-2 py-4 text-xs text-background/70">
           <p>© 2026 ShopKart. All rights reserved.</p>
           <ul className="flex flex-wrap gap-4">
-            {["Terms & Conditions", "Privacy Policy", "Cookie Policy"].map((l) => <li key={l}><Link href="/" className="hover:underline">{l}</Link></li>)}
+            {[["Terms & Conditions", "/"], ["Privacy Policy", "/"], ["Cookie Policy", "/cookies"]].map(([l, href]) => <li key={l}><Link href={href} className="hover:underline">{l}</Link></li>)}
           </ul>
         </div>
       </div>

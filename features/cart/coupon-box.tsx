@@ -3,6 +3,7 @@ import { useState } from "react"
 import { Check, Tag, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { couponProblem, findCoupon } from "@/features/coupons/demo"
+import { trackSelectPromotion } from "@/features/analytics/events"
 import { useCart } from "./store"
 
 export function CouponBox({ subtotalPaise, appliedCode, appliedOk }: { subtotalPaise: number; appliedCode: string | null; appliedOk: boolean }) {
@@ -22,7 +23,7 @@ export function CouponBox({ subtotalPaise, appliedCode, appliedOk }: { subtotalP
       e.preventDefault()
       const problem = couponProblem(findCoupon(code), subtotalPaise)
       if (problem) { setError(problem); return }
-      setError(""); setCoupon(code.trim().toUpperCase()); setCode("")
+      setError(""); setCoupon(code.trim().toUpperCase()); trackSelectPromotion(code.trim().toUpperCase()); setCode("")
     }} className="grid gap-1.5">
       <label htmlFor="coupon" className="flex items-center gap-1.5 text-sm font-medium"><Tag className="size-4" aria-hidden="true" /> Have a coupon?</label>
       <div className="flex gap-2">

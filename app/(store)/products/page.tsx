@@ -13,9 +13,10 @@ import { categories } from "@/features/catalog/demo"
 import { didYouMean } from "@/features/catalog/search"
 import { PAGE_SIZE, SORTS, parseShopParams, runShopQuery, shopHref, type ShopParams } from "@/features/catalog/query"
 import { formatMoney } from "@/lib/money"
+import { absoluteUrl } from "@/lib/site"
 import { FREE_DELIVERY_ABOVE_PAISE } from "@/lib/store-config"
 
-export const metadata: Metadata = { title: "Shop all products | ShopKart" }
+export const metadata: Metadata = { title: "Shop all products", description: "Browse electronics, fashion, home and kitchen products. Filter by brand, price and rating." }
 
 const rupees = (p: number) => formatMoney(p, undefined, undefined, { hideZeroDecimals: true })
 
@@ -43,8 +44,13 @@ async function ShopResults({ searchParams }: { searchParams: PageProps<"/product
   const first = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
   const last = Math.min(page * PAGE_SIZE, total)
 
+  // Indexable: the plain shop and single-category pages. Everything else is a thin or duplicate view.
+  const indexable = !params.q && params.brands.length === 0 && params.minPaise === null && params.maxPaise === null && !params.inStock && !params.rating && !params.discount && params.sort === "relevance" && params.page === 1
+  const canonical = absoluteUrl(params.category ? `/products?category=${params.category}` : "/products")
   return (
     <>
+      <link rel="canonical" href={canonical} />
+      {!indexable && <meta name="robots" content="noindex, follow" />}
       <StoreBreadcrumbs trail={categoryName ? [{ label: "Shop", href: "/products" }, { label: categoryName }] : [{ label: "Shop" }]} />
       <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside aria-label="Filters" className="hidden lg:block">

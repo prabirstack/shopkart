@@ -3,7 +3,7 @@ import Link from "next/link"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { collections } from "@/features/catalog/demo"
 
-export const metadata: Metadata = { title: "Collections | ShopKart" }
+export const metadata: Metadata = { title: "Collections", description: "Handpicked collections: work from home, fitness at home, smart kitchen and travel essentials.", alternates: { canonical: "/collections" } }
 
 export default function CollectionsPage() {
   return (

@@ -1,10 +1,13 @@
 "use client"
 import { useState, useSyncExternalStore } from "react"
+import { trackShare } from "@/features/analytics/events"
+import { productById } from "@/features/catalog/demo"
 import { Check, Link2, Mail, MessageCircle, Send, Share2 } from "lucide-react"
 
 const noop = () => () => {}
 
-export function ShareButtons({ title }: { title: string }) {
+export function ShareButtons({ title, productId }: { title: string; productId?: string }) {
+  const share = (method: string) => { const p = productId ? productById(productId) : undefined; if (p) trackShare(method, p) }
   // Real page address, read on the client only so server and client markup match.
   const url = useSyncExternalStore(noop, () => window.location.href, () => "")
   const [copied, setCopied] = useState(false)
@@ -21,12 +24,12 @@ export function ShareButtons({ title }: { title: string }) {
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm font-medium">Share</span>
       {links.map(({ label, href, icon: Icon, cls }) => (
-        <a key={label} href={url ? href : undefined} aria-disabled={!url} target="_blank" rel="noopener noreferrer" className={btn}>
+        <a key={label} href={url ? href : undefined} aria-disabled={!url} target="_blank" rel="noopener noreferrer" className={btn} onClick={() => share(label.toLowerCase())}>
           <Icon className={`size-4 ${cls}`} aria-hidden="true" /> {label}<span className="sr-only"> (opens in a new tab)</span>
         </a>
       ))}
       <button type="button" className={btn} onClick={async () => {
-        try { await navigator.clipboard.writeText(url); setCopied(true); window.setTimeout(() => setCopied(false), 2000) } catch { /* clipboard blocked */ }
+        try { await navigator.clipboard.writeText(url); share("copy_link"); setCopied(true); window.setTimeout(() => setCopied(false), 2000) } catch { /* clipboard blocked */ }
       }}>
         {copied ? <Check className="size-4 text-emerald-600" aria-hidden="true" /> : <Link2 className="size-4" aria-hidden="true" />}
         {copied ? "Copied" : "Copy link"}

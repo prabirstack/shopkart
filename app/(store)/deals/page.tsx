@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/store/product-card"
 import { catalog, discountPercent } from "@/features/catalog/demo"
 import { DEALS_END_AT } from "@/features/promotions/demo"
 
-export const metadata: Metadata = { title: "Today's deals | ShopKart" }
+export const metadata: Metadata = { title: "Today's deals", description: "Today's biggest discounts on electronics, fashion and home essentials. Limited-time offers with free delivery above ₹699.", alternates: { canonical: "/deals" } }
 
 export default function DealsPage() {
   const deals = catalog.filter((p) => discountPercent(p) > 0).sort((a, b) => discountPercent(b) - discountPercent(a))

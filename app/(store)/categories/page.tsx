@@ -3,7 +3,7 @@ import Link from "next/link"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { catalog, categories } from "@/features/catalog/demo"
 
-export const metadata: Metadata = { title: "All categories | ShopKart" }
+export const metadata: Metadata = { title: "All categories", description: "Explore every ShopKart category: electronics, fashion, home, kitchen, beauty, sports and more.", alternates: { canonical: "/categories" } }
 
 export default function CategoriesPage() {
   return (

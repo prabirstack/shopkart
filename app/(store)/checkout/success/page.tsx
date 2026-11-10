@@ -4,6 +4,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import { CheckCircle2, Mail, PackageCheck, Truck } from "lucide-react"
+import { PurchaseEvent } from "@/features/analytics/purchase-event"
 import { buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SummaryRows } from "@/components/store/order-summary"
@@ -12,7 +13,7 @@ import { orderNumber, readOrder, type PaidOrder } from "@/features/orders/token"
 import { formatMoney } from "@/lib/money"
 import { RETURN_WINDOW_DAYS } from "@/lib/store-config"
 
-export const metadata: Metadata = { title: "Thank you for your order | ShopKart", robots: { index: false } }
+export const metadata: Metadata = { title: "Thank you for your order", robots: { index: false } }
 
 async function Confirmation() {
   const token = (await cookies()).get("shopkart_last_order")?.value
@@ -26,6 +27,7 @@ async function Confirmation() {
   ]
   return (
     <>
+      <PurchaseEvent orderId={order.orderId} totalPaise={totals.totalPaise} gstPaise={totals.gstIncludedPaise} shippingPaise={totals.shippingPaise} coupon={order.couponCode} lines={order.lines.map((l) => ({ id: l.id, quantity: l.quantity }))} />
       <div className="grid justify-items-center gap-3 rounded-2xl bg-emerald-50 px-6 py-10 text-center">
         <CheckCircle2 className="size-16 text-emerald-600" aria-hidden="true" />
         <h1 className="store-title">Thank you, {c.fullName.split(" ")[0]}!</h1>

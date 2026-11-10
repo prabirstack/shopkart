@@ -2,6 +2,8 @@
 import { useState } from "react"
 import { Check, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { trackAddToCart } from "@/features/analytics/events"
+import { productById } from "@/features/catalog/demo"
 import { useCart } from "./store"
 
 export function AddToCartButton({ productId, quantity = 1, disabled, label = "Add to cart", iconOnly = false, className }: {
@@ -12,7 +14,7 @@ export function AddToCartButton({ productId, quantity = 1, disabled, label = "Ad
   return (
     <>
       <Button type="button" disabled={disabled} className={className} onClick={() => {
-        add(productId, quantity); setDone(true); window.setTimeout(() => setDone(false), 1800)
+        add(productId, quantity); const p = productById(productId); if (p) trackAddToCart(p, quantity); setDone(true); window.setTimeout(() => setDone(false), 1800)
       }}>
         {done ? <Check aria-hidden="true" /> : <ShoppingCart aria-hidden="true" />}
         <span className={iconOnly ? "sr-only" : undefined}>{disabled ? "Out of stock" : done ? "Added" : label}</span>

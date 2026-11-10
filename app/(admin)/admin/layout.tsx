@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
-export const metadata: Metadata = { title: "ShopKart Admin" }
+export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } }
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (

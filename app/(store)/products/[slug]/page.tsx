@@ -1,5 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { JsonLd } from "@/components/json-ld"
+import { ViewItemEvent } from "@/features/analytics/view-events"
+import { breadcrumbLd, productLd } from "@/features/seo/structured-data"
 import { Check, RotateCcw, ShieldCheck, Truck } from "lucide-react"
 import { Price } from "@/components/price"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
@@ -20,7 +23,15 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
   const product = productBySlug((await params).slug)
-  return { title: product ? `${product.title} | ShopKart` : "Product not found" }
+  if (!product) return { title: "Product not found" }
+  const description = `${product.description} Buy ${product.brand} ${product.title} at ${formatMoney(product.pricePaise, undefined, undefined, { hideZeroDecimals: true })} with free delivery above ${formatMoney(FREE_DELIVERY_ABOVE_PAISE, undefined, undefined, { hideZeroDecimals: true })}.`
+  return {
+    title: product.title,
+    description: description.length > 158 ? `${description.slice(0, 155)}...` : description,
+    alternates: { canonical: `/products/${product.slug}` },
+    openGraph: { type: "website", title: product.title, description: product.description, url: `/products/${product.slug}`, images: [{ url: `/og/product/${product.slug}`, width: 1200, height: 630, alt: product.title }] },
+    twitter: { card: "summary_large_image", title: product.title, description: product.description, images: [`/og/product/${product.slug}`] },
+  }
 }
 
 function ProductDetail({ product }: { product: NonNullable<ReturnType<typeof productBySlug>> }) {
@@ -33,6 +44,8 @@ function ProductDetail({ product }: { product: NonNullable<ReturnType<typeof pro
 
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-8 py-6">
+      <JsonLd data={[productLd(product), breadcrumbLd([{ name: "Home", path: "/" }, { name: "Shop", path: "/products" }, { name: category.name, path: `/products?category=${category.slug}` }, { name: product.title, path: `/products/${product.slug}` }])]} />
+      <ViewItemEvent productId={product.id} />
       <StoreBreadcrumbs trail={[{ label: "Shop", href: "/products" }, { label: category.name, href: `/products?category=${category.slug}` }, { label: product.title }]} />
       <div className="grid gap-8 lg:grid-cols-2">
         <ProductGallery productId={product.id} badge={off > 0 ? `-${off}%` : undefined} />
@@ -62,7 +75,7 @@ function ProductDetail({ product }: { product: NonNullable<ReturnType<typeof pro
           </ul>
         </div>
       </div>
-      <ShareButtons title={product.title} />
+      <ShareButtons title={product.title} productId={product.id} />
       <nav aria-label="Product sections" className="sticky top-0 z-20 -mx-4 flex gap-6 overflow-x-auto border-b bg-background/95 px-4 text-sm font-medium backdrop-blur">
         {[["#overview", "Overview"], ["#specs", "Specifications"], ["#reviews", "Reviews"]].map(([href, label]) => (
           <a key={href} href={href} className="whitespace-nowrap border-b-2 border-transparent py-3 hover:border-primary hover:text-primary">{label}</a>

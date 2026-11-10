@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import { useEffect, useRef } from "react"
 import { Heart, Minus, Plus, ShoppingCart, Trash2, Truck } from "lucide-react"
 import { SummaryRows } from "@/components/store/order-summary"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
@@ -7,6 +8,7 @@ import { Price } from "@/components/price"
 import { buttonVariants } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
+import { trackRemoveFromCart, trackViewCart } from "@/features/analytics/events"
 import { CouponBox } from "@/features/cart/coupon-box"
 import { MAX_QUANTITY, useCart } from "@/features/cart/store"
 import { useCartSummary } from "@/features/cart/use-cart-summary"
@@ -19,6 +21,10 @@ export default function CartPage() {
   const setQuantity = useCart((s) => s.setQuantity)
   const remove = useCart((s) => s.remove)
   const toggleWish = useWishlist((s) => s.toggle)
+  const viewed = useRef(false)
+  useEffect(() => {
+    if (hydrated && items.length > 0 && !viewed.current) { viewed.current = true; trackViewCart(items, quote.subtotalPaise) }
+  }, [hydrated, items, quote.subtotalPaise])
   const toFree = Math.max(0, FREE_DELIVERY_ABOVE_PAISE - (quote.subtotalPaise - quote.discountPaise))
 
   return (
@@ -62,7 +68,7 @@ export default function CartPage() {
                           <span aria-live="polite" className="price w-7 text-center text-sm font-medium">{quantity}</span>
                           <button type="button" aria-label="Increase quantity" disabled={atMax} onClick={() => setQuantity(product.id, quantity + 1)} className="grid size-8 place-items-center disabled:opacity-40"><Plus className="size-3.5" aria-hidden="true" /></button>
                         </div>
-                        <button type="button" onClick={() => remove(product.id)} className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" aria-hidden="true" /> Remove</button>
+                        <button type="button" onClick={() => { trackRemoveFromCart(product, quantity); remove(product.id) }} className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" aria-hidden="true" /> Remove</button>
                         <button type="button" onClick={() => { toggleWish(product.id); remove(product.id) }} className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary"><Heart className="size-3.5" aria-hidden="true" /> Save for later</button>
                       </div>
                       {atMax && <p className="text-xs text-muted-foreground">Maximum quantity reached.</p>}
