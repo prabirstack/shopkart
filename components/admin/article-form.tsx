@@ -61,7 +61,7 @@ function Editor({ article, onDone }: { article?: Article; onDone: () => void }) 
     setSaved(true); window.setTimeout(onDone, 700)
   }
   const chips = (ids: string[], key: "productIds" | "compareIds", max: number, label: string, pool: string[]) => (
-    <div className="grid gap-2">
+    <div className="grid min-w-0 gap-2">
       <div className="flex flex-wrap gap-2">{ids.map((pid) => <span key={pid} className="inline-flex items-center gap-1 rounded-full bg-muted py-1 pl-3 pr-1 text-xs font-medium">{productById(pid)?.title}<button type="button" aria-label={`Remove ${productById(pid)?.title}`} onClick={() => set(key, ids.filter((x) => x !== pid))} className="grid size-5 place-items-center rounded-full hover:bg-background"><X className="size-3" aria-hidden="true" /></button></span>)}</div>
       <select aria-label={label} value="" onChange={(e) => { if (e.target.value && ids.length < max) set(key, [...ids, e.target.value]) }} disabled={ids.length >= max} className={input}><option value="">{ids.length >= max ? `Up to ${max} products` : "Add a product…"}</option>{pool.filter((x) => !ids.includes(x)).map((pid) => <option key={pid} value={pid}>{productById(pid)?.title}</option>)}</select>
     </div>
@@ -87,7 +87,7 @@ function Editor({ article, onDone }: { article?: Article; onDone: () => void }) 
           </div>
           <section aria-labelledby="body-h" className="grid gap-2"><h2 id="body-h" className="text-sm font-semibold">Article body</h2><RichEditor value={doc} onChange={(d) => { setDoc(d); setErrs((e) => ({ ...e, body: "" })); setSaved(false) }} invalid={!!errs.body} />{errs.body && <p role="alert" className="text-xs text-destructive">{errs.body}</p>}</section>
         </div>
-        <aside className="grid min-w-0 content-start gap-5">
+        <aside className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-5 [&>section]:grid-cols-[minmax(0,1fr)]">
           <section aria-labelledby="meta-h" className="grid gap-4 rounded-2xl border bg-card p-5 shadow-xs"><h2 id="meta-h" className="font-semibold">Details</h2>
             <Field id="category" label="Type"><select id="category" value={f.category} onChange={(e) => set("category", e.target.value as ArticleCategory)} className={input}>{ARTICLE_CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></Field>
             <Field id="slug" label="URL" error={errs.slug} hint={`/news/${f.slug || "your-article"}`}><input id="slug" value={f.slug} onChange={(e) => set("slug", e.target.value)} aria-invalid={errs.slug ? true : undefined} className={`${input} font-mono`} /></Field>

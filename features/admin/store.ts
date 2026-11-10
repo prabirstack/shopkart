@@ -1,5 +1,6 @@
 "use client"
 import { useArticleStore } from "@/features/articles/store"
+import { useReviewStore } from "@/features/reviews/store"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { initialBanners, initialCoupons, initialMovements, initialOrders, initialProducts, initialReturns, initialSettings } from "./seed"
@@ -57,7 +58,7 @@ export const useAdmin = create<AdminState>()(
       deleteBanner: (id) => set((s) => ({ banners: s.banners.filter((b) => b.id !== id) })),
       setReturnStatus: (id, status) => set((s) => ({ returns: s.returns.map((r) => (r.id === id ? { ...r, status } : r)) })),
       saveSettings: (settings) => set({ settings }),
-      resetDemo: () => { useArticleStore.getState().reset(); set(seed()) },
+      resetDemo: () => { useArticleStore.getState().reset(); useReviewStore.getState().reset(); set(seed()) },
     }),
     { name: "shopkart-admin-demo", storage: createJSONStorage(() => localStorage), skipHydration: true, version: 2, migrate: (state) => { const { articles: _legacy, ...rest } = state as Record<string, unknown>; void _legacy; return rest as never } },
   ),

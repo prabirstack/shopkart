@@ -3,6 +3,8 @@
 // these as real customer feedback in production.
 export type Review = {
   id: string; name: string; rating: number; title: string; body: string; date: string; verified: boolean
+  /** "shopper" for reviews written on this site; sample reviews have no source. */
+  source?: "shopper"
 }
 
 const people = ["Aarav M.", "Diya N.", "Kabir S.", "Isha R.", "Rohan I.", "Meera J.", "Ananya P.", "Vikram T."]

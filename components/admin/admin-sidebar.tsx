@@ -9,6 +9,7 @@ import {
 import { adminNav } from "@/features/admin/nav"
 import { useAdminReady } from "@/features/admin/hooks"
 import { useAdmin } from "@/features/admin/store"
+import { useReviewStore } from "@/features/reviews/store"
 
 export function AdminSidebar() {
   const pathname = usePathname()
@@ -16,10 +17,12 @@ export function AdminSidebar() {
   const orders = useAdmin((s) => s.orders)
   const products = useAdmin((s) => s.products)
   const returns = useAdmin((s) => s.returns)
+  const userReviews = useReviewStore((s) => s.reviews)
   const counts = {
     orders: ready ? orders.filter((o) => o.status === "pending" || o.status === "paid").length : 0,
     stock: ready ? products.filter((p) => p.status !== "archived" && p.stock - p.reserved <= p.reorderAt).length : 0,
     returns: ready ? returns.filter((r) => r.status === "requested").length : 0,
+    reviews: ready ? userReviews.filter((r) => r.status === "pending").length : 0,
   }
   const isActive = (href: string) => (href === "/admin" ? pathname === href : pathname.startsWith(href))
   return (

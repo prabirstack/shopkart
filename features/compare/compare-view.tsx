@@ -69,7 +69,7 @@ export function CompareView() {
 
   if (!hydrated) return <Skeleton className="h-96 rounded-2xl" />
   if (products.length < 2) return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-8">
       <div className="grid justify-items-center gap-3 rounded-2xl border bg-card px-6 py-14 text-center">
         <span className="grid size-14 place-items-center rounded-full bg-primary/10 text-primary"><GitCompareArrows className="size-7" aria-hidden="true" /></span>
         <h2 className="text-xl font-bold">{products.length === 0 ? "Nothing to compare yet" : "Add one more product"}</h2>

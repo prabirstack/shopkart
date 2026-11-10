@@ -1,20 +1,23 @@
 "use client"
 import Link from "next/link"
-import { AlertTriangle, Bell, LogOut, Search, Settings, ShoppingBag, User } from "lucide-react"
+import { AlertTriangle, Bell, LogOut, MessageSquare, Search, Settings, ShoppingBag, User } from "lucide-react"
 import { AdminBreadcrumbs } from "./admin-breadcrumbs"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAdminReady } from "@/features/admin/hooks"
 import { useAdmin } from "@/features/admin/store"
+import { useReviewStore } from "@/features/reviews/store"
 
 export function AdminTopbar() {
   const ready = useAdminReady()
   const orders = useAdmin((s) => s.orders)
   const products = useAdmin((s) => s.products)
   const pending = ready ? orders.filter((o) => o.status === "pending").length : 0
+  const userReviews = useReviewStore((s) => s.reviews)
+  const pendingReviews = ready ? userReviews.filter((r) => r.status === "pending").length : 0
   const low = ready ? products.filter((p) => p.status !== "archived" && p.stock - p.reserved <= p.reorderAt) : []
-  const alerts = pending + low.length
+  const alerts = pending + low.length + pendingReviews
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-card/90 px-4 backdrop-blur">
       <SidebarTrigger aria-label="Toggle sidebar" />
@@ -35,6 +38,7 @@ export function AdminTopbar() {
           <DropdownMenuSeparator />
           {alerts === 0 && <p className="px-2 py-6 text-center text-sm text-muted-foreground">You&apos;re all caught up.</p>}
           {pending > 0 && <DropdownMenuItem asChild><Link href="/admin/orders?status=pending"><ShoppingBag aria-hidden="true" /> {pending} {pending === 1 ? "order is" : "orders are"} waiting for payment</Link></DropdownMenuItem>}
+          {pendingReviews > 0 && <DropdownMenuItem asChild><Link href="/admin/reviews"><MessageSquare aria-hidden="true" /> {pendingReviews} {pendingReviews === 1 ? "review is" : "reviews are"} awaiting approval</Link></DropdownMenuItem>}
           {low.slice(0, 4).map((p) => <DropdownMenuItem key={p.id} asChild><Link href="/admin/inventory"><AlertTriangle className="text-amber-600" aria-hidden="true" /> <span className="truncate">{p.title}: {Math.max(p.stock - p.reserved, 0)} left</span></Link></DropdownMenuItem>)}
         </DropdownMenuContent>
       </DropdownMenu>

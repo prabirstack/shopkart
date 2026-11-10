@@ -1,12 +1,16 @@
 "use client"
 import { useEffect, useState } from "react"
-import { BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react"
+import { BadgeCheck, ChevronLeft, ChevronRight, ThumbsUp } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel"
 import type { Review } from "@/features/reviews/demo"
+import { useReviewStore } from "@/features/reviews/store"
 import { Stars } from "./stars"
 
 /** Customer reviews as swipeable cards with arrows and dots. */
 export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
+  const voted = useReviewStore((s) => s.voted)
+  const helpful = useReviewStore((s) => s.helpful)
+  const vote = useReviewStore((s) => s.vote)
   const [api, setApi] = useState<CarouselApi>()
   const [selected, setSelected] = useState(0)
   const [snaps, setSnaps] = useState(0)
@@ -40,6 +44,10 @@ export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
                 </div>
                 <div className="flex items-center gap-2"><Stars value={r.rating} /><h3 className="text-sm font-semibold">{r.title}</h3></div>
                 <p className="flex-1 text-sm leading-relaxed text-muted-foreground">{r.body}</p>
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  {r.source === "shopper" ? <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Shopper review</span> : <span />}
+                  <button type="button" onClick={() => vote(r.id)} aria-pressed={voted.includes(r.id)} disabled={voted.includes(r.id)} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted disabled:cursor-default disabled:bg-primary/5 disabled:text-primary"><ThumbsUp className="size-3.5" aria-hidden="true" /> Helpful{(helpful[r.id] ?? 0) > 0 && ` (${helpful[r.id]})`}</button>
+                </div>
               </article>
             </CarouselItem>
           ))}
