@@ -5,7 +5,7 @@ import { WishlistCount } from "@/features/wishlist/wishlist-count"
 import { MegaNav } from "./mega-nav"
 import { MobileNavigation } from "./mobile-navigation"
 import { SearchBox } from "./search-box"
-import { StickyHeader } from "./sticky-header"
+import { AutoHideHeader } from "./auto-hide-header"
 import { UtilityBar } from "./utility-bar"
 
 const actions = [
@@ -17,7 +17,7 @@ const actions = [
 
 export function SiteHeader() {
   return (
-    <StickyHeader>
+    <AutoHideHeader>
     <header className="bg-card shadow-sm">
       <UtilityBar />
       <div className="border-b">
@@ -46,6 +46,6 @@ export function SiteHeader() {
       </div>
       <nav aria-label="Store navigation" className="hidden border-b lg:block"><MegaNav /></nav>
     </header>
-    </StickyHeader>
+    </AutoHideHeader>
   )
 }
