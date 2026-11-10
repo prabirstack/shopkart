@@ -19,6 +19,7 @@ import { PincodeCheck } from "@/features/catalog/pincode-check"
 import { ProductGallery } from "@/features/catalog/product-gallery"
 import { faqsFor, highlightsFor, specGroups, warrantyFor } from "@/features/catalog/specs"
 import { breadcrumbLd, productLd } from "@/features/seo/structured-data"
+import { CompareToggle } from "@/features/compare/compare-toggle"
 import { WishlistButton } from "@/features/wishlist/wishlist-button"
 import { formatMoney } from "@/lib/money"
 import { FREE_DELIVERY_ABOVE_PAISE, RETURN_WINDOW_DAYS } from "@/lib/store-config"
@@ -104,7 +105,7 @@ function ProductDetail({ product }: { product: Product }) {
             </div>
             <p className={`flex items-center gap-2 text-sm font-medium ${stockNote.cls}`}><span aria-hidden="true" className="size-2 rounded-full bg-current" />{stockNote.text}</p>
             <PurchasePanel productId={product.id} stock={product.stock} />
-            <WishlistButton productId={product.id} title={product.title} variant="full" />
+            <div className="grid gap-2 sm:grid-cols-2"><WishlistButton productId={product.id} title={product.title} variant="full" /><CompareToggle productId={product.id} variant="button" /></div>
           </section>
           <PincodeCheck />
           <ProductPromoBanner />

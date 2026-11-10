@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Eye, Star } from "lucide-react"
 import { Price } from "@/components/price"
+import { CompareToggle } from "@/features/compare/compare-toggle"
 import { WishlistButton } from "@/features/wishlist/wishlist-button"
 import { AddToCartButton } from "@/features/cart/add-to-cart-button"
 import { discountPercent, type Product } from "@/features/catalog/demo"
@@ -25,7 +26,7 @@ export function ProductCard({ product }: { product: Product }) {
           {badge}
         </span>
       )}
-      <div className="absolute right-3 top-3 z-10 transition-transform duration-300 group-hover/card:scale-110"><WishlistButton productId={product.id} title={product.title} /></div>
+      <div className="absolute right-3 top-3 z-10 grid gap-1.5 transition-transform duration-300"><WishlistButton productId={product.id} title={product.title} /><CompareToggle productId={product.id} /></div>
       <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col gap-2 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
         <div className={`relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80 ${product.stock === 0 ? "opacity-50" : ""}`}>
           <div className={`absolute inset-0 transition-all duration-500 ease-out group-hover/card:scale-110 ${second ? "group-hover/card:opacity-0" : ""}`}>

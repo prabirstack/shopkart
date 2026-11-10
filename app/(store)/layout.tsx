@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { Analytics } from "@/features/analytics/analytics"
 import { ConsentBanner } from "@/features/analytics/consent-banner"
+import { CompareBar } from "@/features/compare/compare-bar"
 import { CartHydrator } from "@/features/cart/cart-hydrator"
 import { BackToTop } from "@/components/store/back-to-top"
 import { SiteFooter } from "@/components/store/site-footer"
@@ -13,6 +14,7 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
       <SiteHeader />
       {children}
       <SiteFooter />
+      <CompareBar />
       <BackToTop />
       <Analytics />
       <ConsentBanner />
