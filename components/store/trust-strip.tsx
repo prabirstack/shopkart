@@ -4,8 +4,8 @@ import { FREE_DELIVERY_ABOVE_PAISE, RETURN_WINDOW_DAYS } from "@/lib/store-confi
 
 function TrustItem({ icon: Icon, label, note }: { icon: LucideIcon; label: string; note: string }) {
   return (
-    <li className="flex items-center gap-3 px-3 py-3">
-      <Icon className="size-8 shrink-0 text-primary" strokeWidth={1.5} aria-hidden="true" />
+    <li className="group/trust flex items-center gap-3 px-3 py-3 transition-colors hover:bg-card/70">
+      <Icon className="size-8 shrink-0 text-primary transition-transform duration-300 group-hover/trust:scale-110" strokeWidth={1.5} aria-hidden="true" />
       <div className="min-w-0">
         <p className="text-sm font-semibold">{label}</p>
         <p className="text-xs text-muted-foreground">{note}</p>

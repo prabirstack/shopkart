@@ -31,7 +31,7 @@ export function TestimonialsSection() {
         <CarouselContent className="-ml-4">
           {testimonials.map((t, i) => (
             <CarouselItem key={t.id} className="basis-full pl-4 md:basis-1/2 lg:basis-1/3" aria-label={`Testimonial ${i + 1} of ${testimonials.length}`}>
-              <figure className="relative flex h-full flex-col gap-4 rounded-2xl border bg-card p-6 shadow-xs">
+              <figure className="relative flex h-full flex-col gap-4 rounded-2xl border bg-card p-6 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
                 <Quote className="size-8 text-primary/25" aria-hidden="true" />
                 <blockquote className="flex-1 text-sm leading-relaxed">{t.quote}</blockquote>
                 <figcaption className="flex items-center justify-between gap-3 border-t pt-4">

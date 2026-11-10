@@ -3,6 +3,7 @@ import Link from "next/link"
 import { useEffect, useRef } from "react"
 import { FileText, Heart, Lock, Minus, Plus, RotateCcw, ShoppingCart, Trash2, Truck } from "lucide-react"
 import { CheckoutSteps } from "@/components/store/checkout-steps"
+import { ProductArt } from "@/components/store/product-art"
 import { SummaryRows } from "@/components/store/order-summary"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { Price } from "@/components/price"
@@ -61,9 +62,8 @@ export default function CartPage() {
                 const atMax = quantity >= Math.min(MAX_QUANTITY, product.stock)
                 return (
                   <li key={product.id} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 rounded-2xl border bg-card p-4 shadow-xs sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
-                    <Link href={`/products/${product.slug}`} className="grid aspect-square place-items-center rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80">
-                      <Icon className="size-1/2 text-neutral-700" strokeWidth={1.25} aria-hidden="true" />
-                      <span className="sr-only">{product.title}</span>
+                    <Link href={`/products/${product.slug}`} className="relative grid aspect-square place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80">
+                      <ProductArt slug={product.slug} title={product.title} icon={Icon} sizes="96px" imageClassName="object-contain p-2" iconClassName="size-1/2 text-neutral-700" />
                     </Link>
                     <div className="grid min-w-0 content-start gap-1">
                       <p className="text-xs text-muted-foreground">{product.brand}</p>

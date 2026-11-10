@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image"
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { LucideIcon } from "lucide-react"
 import { ChevronLeft, ChevronRight, Minus, Plus, RotateCcw, X } from "lucide-react"
@@ -10,8 +11,8 @@ const MAX = 4
  * Full-screen viewer: zoom with buttons, keys (+ - 0) or the mouse wheel, drag to pan,
  * arrow keys to change image, Esc to close. Uses the native <dialog> for focus trapping.
  */
-export function ImageLightbox({ icon: Icon, title, views, start, onClose }: {
-  icon: LucideIcon; title: string; views: string[]; start: number; onClose: (lastIndex: number) => void
+export function ImageLightbox({ icon: Icon, title, views, photos = [], start, onClose }: {
+  icon: LucideIcon; title: string; views: string[]; photos?: string[]; start: number; onClose: (lastIndex: number) => void
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null)
@@ -63,7 +64,7 @@ export function ImageLightbox({ icon: Icon, title, views, start, onClose }: {
           style={{ cursor: zoom > MIN ? (dragging ? "grabbing" : "grab") : "zoom-in", touchAction: "none" }}
           onDoubleClick={() => (zoom > MIN ? reset() : zoomBy(1))}>
           <div className="absolute inset-0 grid place-items-center" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transition: dragging ? "none" : "transform 150ms ease-out" }}>
-            <div className="grid aspect-square h-[min(80dvh,80vw)] place-items-center rounded-2xl bg-neutral-100"><Icon className="size-1/3 text-neutral-700" strokeWidth={1} aria-hidden="true" /></div>
+            <div className="relative grid aspect-square h-[min(80dvh,80vw)] place-items-center rounded-2xl bg-neutral-100">{photos[index] ? <Image src={photos[index]} alt={`${title}, ${views[index]} view`} fill sizes="80vw" className="pointer-events-none select-none object-contain p-6" draggable={false} /> : <Icon className="size-1/3 text-neutral-700" strokeWidth={1} aria-hidden="true" />}</div>
           </div>
           <button type="button" aria-label="Previous image" className={`${btn} absolute left-3 top-1/2 -translate-y-1/2`} onClick={() => change(-1)}><ChevronLeft className="size-5" aria-hidden="true" /></button>
           <button type="button" aria-label="Next image" className={`${btn} absolute right-3 top-1/2 -translate-y-1/2`} onClick={() => change(1)}><ChevronRight className="size-5" aria-hidden="true" /></button>
@@ -71,8 +72,8 @@ export function ImageLightbox({ icon: Icon, title, views, start, onClose }: {
         <ul className="flex justify-center gap-2 p-3">
           {views.map((v, i) => (
             <li key={v}><button type="button" aria-label={`Show ${v.toLowerCase()} view`} aria-pressed={i === index} onClick={() => { setIndex(i); reset() }}
-              className={`grid size-14 place-items-center rounded-lg bg-neutral-100 focus-visible:ring-[3px] focus-visible:ring-white/60 ${i === index ? "ring-2 ring-primary" : "opacity-70 hover:opacity-100"}`}>
-              <Icon className="size-6 text-neutral-600" strokeWidth={1.25} aria-hidden="true" /></button></li>
+              className={`relative grid size-14 place-items-center overflow-hidden rounded-lg bg-neutral-100 focus-visible:ring-[3px] focus-visible:ring-white/60 ${i === index ? "ring-2 ring-primary" : "opacity-70 hover:opacity-100"}`}>
+              {photos[i] ? <Image src={photos[i]} alt="" fill sizes="56px" className="object-contain p-1" /> : <Icon className="size-6 text-neutral-600" strokeWidth={1.25} aria-hidden="true" />}</button></li>
           ))}
         </ul>
         <p className="pb-3 text-center text-xs text-white/50">Scroll or press + / − to zoom · drag to move · ← → to change image · Esc to close</p>

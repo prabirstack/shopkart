@@ -16,7 +16,7 @@ const items = [
 export function AccountNav() {
   const pathname = usePathname()
   return (
-    <nav aria-label="Account" className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:gap-1 lg:overflow-visible lg:px-3 lg:pb-3 lg:pt-4">
+    <nav aria-label="Account" className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:gap-1 lg:overflow-visible lg:px-3 lg:pb-3 lg:pt-5">
       {items.map(({ href, label, icon: Icon }) => {
         const active = href === "/account" ? pathname === href : pathname.startsWith(href)
         return (

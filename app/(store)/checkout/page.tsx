@@ -8,6 +8,7 @@ import { CreditCard, Info, Lock, ShoppingCart } from "lucide-react"
 import { Price } from "@/components/price"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { CheckoutSteps } from "@/components/store/checkout-steps"
+import { ProductArt } from "@/components/store/product-art"
 import { SummaryRows } from "@/components/store/order-summary"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -128,7 +129,7 @@ export default function CheckoutPage() {
                 const Icon = product.icon
                 return (
                   <li key={product.id} className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 text-sm">
-                    <span className="grid size-12 place-items-center rounded-lg bg-neutral-100"><Icon className="size-6 text-neutral-700" strokeWidth={1.25} aria-hidden="true" /></span>
+                    <span className="relative grid size-12 place-items-center overflow-hidden rounded-lg bg-neutral-100"><ProductArt slug={product.slug} title="" icon={Icon} sizes="48px" imageClassName="object-contain p-1" iconClassName="size-6 text-neutral-700" /></span>
                     <span className="min-w-0"><span className="line-clamp-1 font-medium">{product.title}</span><span className="text-xs text-muted-foreground">Qty {quantity}</span></span>
                     <Price cents={product.pricePaise * quantity} priceClassName="text-sm" />
                   </li>

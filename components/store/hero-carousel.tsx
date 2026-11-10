@@ -1,9 +1,11 @@
 "use client"
+import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight, Headphones, Armchair, Pause, Play, Shirt, type LucideIcon } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel"
 import type { HeroSlide } from "@/features/promotions/demo"
+import { campaignImage } from "@/features/catalog/images"
 import { usePrefersReducedMotion } from "./use-reduced-motion"
 
 // Decorative artwork per slide. Text stays in HTML so it scales and is accessible.
@@ -62,7 +64,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   </div>
                   <div className="pointer-events-none absolute inset-y-0 right-0 grid w-3/5 place-items-center opacity-30 md:static md:w-auto md:opacity-100" aria-hidden="true">
                     <div className="absolute size-72 rounded-full bg-red-500/30 blur-3xl" />
-                    <Icon className="relative size-40 text-white/90 md:size-56" strokeWidth={0.9} />
+                    {campaignImage(slide.id) ? <Image src={campaignImage(slide.id)!} alt="" fill priority={i === 0} sizes="(max-width: 768px) 60vw, 40vw" className="object-contain p-4" /> : <Icon className="relative size-40 text-white/90 md:size-56" strokeWidth={0.9} />}
                   </div>
                 </div>
               </CarouselItem>

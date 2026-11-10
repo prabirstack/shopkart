@@ -13,7 +13,7 @@ function Promo({ id, className = "" }: { id: string; className?: string }) {
   const card = promoCards.find((c) => c.id === id)!
   const { box, icon: Icon, text } = styles[id]
   return (
-    <Link href={card.href} className={`relative flex overflow-hidden rounded-2xl p-5 focus-visible:ring-[3px] focus-visible:ring-ring/50 ${box} ${text} ${className}`}>
+    <Link href={card.href} className={`group/promo relative flex overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus-visible:ring-[3px] focus-visible:ring-ring/50 ${box} ${text} ${className}`}>
       <div className="relative z-10 flex flex-col items-start justify-center gap-1">
         <h3 className="text-xl font-bold leading-tight sm:text-2xl">{card.title}</h3>
         <p className="text-sm">{card.lead} <span className="text-lg font-extrabold text-primary sm:text-xl">{card.highlight}</span></p>
@@ -23,7 +23,7 @@ function Promo({ id, className = "" }: { id: string; className?: string }) {
           </span>
         )}
       </div>
-      <Icon className="absolute -bottom-2 right-2 size-28 opacity-25" strokeWidth={1} aria-hidden="true" />
+      <Icon className="absolute -bottom-2 right-2 size-28 opacity-25 transition-transform duration-500 group-hover/promo:-rotate-6 group-hover/promo:scale-110" strokeWidth={1} aria-hidden="true" />
     </Link>
   )
 }

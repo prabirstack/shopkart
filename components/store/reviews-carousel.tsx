@@ -27,7 +27,7 @@ export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
         <CarouselContent className="-ml-4">
           {reviews.map((r, i) => (
             <CarouselItem key={r.id} className="basis-full pl-4 xl:basis-1/2" aria-label={`Review ${i + 1} of ${reviews.length}`}>
-              <article className="flex h-full flex-col gap-3 rounded-2xl border bg-card p-5 shadow-xs">
+              <article className="flex h-full flex-col gap-3 rounded-2xl border bg-card p-5 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <span aria-hidden="true" className="grid size-10 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">{r.name[0]}</span>
