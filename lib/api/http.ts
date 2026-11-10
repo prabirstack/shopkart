@@ -34,7 +34,7 @@ export type Ctx<P = Record<string, string>> = {
   url: URL
   requestId: string
   session: Session | null
-  ip: string
+  ip: string | null
   /** Validated JSON body. Throws a 422 with field errors when it does not match. */
   json: <T>(schema: ZodType<T>) => Promise<T>
   /** Validated query string. */
@@ -56,16 +56,23 @@ type Options = {
   rawBody?: boolean
 }
 
+const parsedHops = Number(process.env.TRUSTED_PROXY_HOPS ?? 1)
+if (!Number.isInteger(parsedHops) || parsedHops < 0) throw new Error("TRUSTED_PROXY_HOPS must be a non-negative integer (0 = no proxy in front).")
+const TRUSTED_HOPS = parsedHops
+
 /**
- * The client address as seen by OUR proxy. Anyone can send their own X-Forwarded-For, so the left-most
- * entry is attacker-controlled. Each trusted proxy appends the address it received the request from, so we
- * count TRUSTED_PROXY_HOPS entries from the right (1 = a single load balancer in front of the app).
- * Set it to 0 when the app is exposed directly, in which case the header is ignored entirely.
+ * The client address as seen by OUR proxy, or null when there isn't a trustworthy one.
+ * Anyone can send their own X-Forwarded-For, so the left-most entry is attacker-controlled. Each trusted
+ * proxy appends the address it received the request from, so we count TRUSTED_PROXY_HOPS entries from the
+ * right (1 = a single load balancer in front of the app). Route handlers can't see the socket address, so
+ * with 0 hops, or no header, there is no safe per-client key. Returning null skips the per-IP bucket rather
+ * than putting every client into one shared bucket, which would let a single caller lock everybody out.
+ * Signed-in callers are still limited per account.
  */
-export function clientIp(req: Request, hops = Number(process.env.TRUSTED_PROXY_HOPS ?? 1)): string {
-  if (hops <= 0) return "direct"
+export function clientIp(req: Request, hops = TRUSTED_HOPS): string | null {
+  if (hops <= 0) return null
   const chain = (req.headers.get("x-forwarded-for") ?? "").split(",").map((s) => s.trim()).filter(Boolean)
-  return chain[chain.length - hops] ?? req.headers.get("x-real-ip")?.trim() ?? "unknown"
+  return chain[chain.length - hops] ?? req.headers.get("x-real-ip")?.trim() ?? null
 }
 
 export function ok<T>(data: T, init: { status?: number; headers?: HeadersInit } = {}) {
@@ -109,8 +116,10 @@ export function route<P = Record<string, string>>(handler: (ctx: Ctx<P>) => Prom
       const mutating = !["GET", "HEAD", "OPTIONS"].includes(req.method)
       if (mutating && !opts.noOriginCheck) assertSameOrigin(req)
 
-      const rl = await rateLimit(`${req.method}:${url.pathname.replace(/[0-9a-f-]{8,}/gi, ":id")}:${ip}`, opts.limit ?? { max: 120, windowSec: 60 })
-      if (!rl.allowed) throw new ApiError(429, "RATE_LIMITED", "Too many requests. Please slow down.", { retryAfter: rl.retryAfter })
+      if (ip) {
+        const rl = await rateLimit(`${req.method}:${url.pathname.replace(/[0-9a-f-]{8,}/gi, ":id")}:${ip}`, opts.limit ?? { max: 120, windowSec: 60 })
+        if (!rl.allowed) throw new ApiError(429, "RATE_LIMITED", "Too many requests. Please slow down.", { retryAfter: rl.retryAfter })
+      }
 
       if (mutating && !opts.rawBody) {
         const len = Number(req.headers.get("content-length") ?? 0)

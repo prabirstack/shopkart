@@ -57,4 +57,6 @@ Roles: `customer`, `owner`, `catalog_editor`, `warehouse`, `support`, `finance`.
 * Rate limiting is in process memory (accurate for one instance). For several instances, back `lib/api/rate-limit.ts` with Redis.
 * Rate limits are keyed on the client IP **and** the signed-in account. Set `TRUSTED_PROXY_HOPS` to the number of reverse proxies in
   front of the app (default 1): the client address is counted from the right of `X-Forwarded-For`, because the left side is client-controlled.
+  With `0` (or no header) there is no trustworthy per-client address, so the per-IP limit is skipped and only per-account limits apply:
+  production should always run behind a proxy with `TRUSTED_PROXY_HOPS` >= 1.
 * Webhooks: an event counts as a duplicate only once it has been fully processed; a half-processed one is retried.
