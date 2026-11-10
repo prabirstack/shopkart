@@ -4,7 +4,7 @@ import { cacheLife, cacheTag } from "next/cache"
 
 import * as q from "@/lib/db/queries"
 import type { SearchParams } from "@/lib/db/queries"
-import { CACHE_TAGS } from "@/lib/cache"
+import { CACHE_TAGS, productTag } from "@/lib/cache"
 import { toProduct } from "./map"
 import type { Product, StoreCategory } from "./types"
 import type { ShopParams } from "./query"
@@ -15,6 +15,8 @@ import type { ShopParams } from "./query"
 // Arguments must be plain values: they become part of the cache key.
 
 const tag = () => { cacheLife("minutes"); cacheTag(CACHE_TAGS.catalog) }
+/** Also tag the entry with each product it contains (see invalidateProducts in lib/cache.ts). */
+const tagged = <T extends { id: string }>(items: T[]): T[] => { if (items.length) cacheTag(...items.map((p) => productTag(p.id))); return items }
 
 const toSearch = (p: ShopParams): SearchParams => ({
   q: p.q || undefined, category: p.category || undefined, brands: p.brands.length ? p.brands : undefined, minPaise: p.minPaise, maxPaise: p.maxPaise,
@@ -26,7 +28,7 @@ export async function getShopResults(params: ShopParams, pageSize: number): Prom
   "use cache"
   tag()
   const r = await q.searchProducts({ ...toSearch(params), pageSize })
-  return { items: r.items.map(toProduct), total: r.total, pages: r.pages, page: r.page }
+  return { items: tagged(r.items.map(toProduct)), total: r.total, pages: r.pages, page: r.page }
 }
 
 /** How many products each category and brand would show, given the other filters. */
@@ -40,45 +42,45 @@ export async function getProduct(slug: string): Promise<Product | null> {
   "use cache"
   tag()
   const p = await q.getProductBySlug(slug)
-  return p ? toProduct(p) : null
+  return p ? tagged([toProduct(p)])[0] : null
 }
 
 /** For the product page: the full DTO is not needed, but images and SEO fields are. */
 export async function getProductsByIds(ids: string[]): Promise<Product[]> {
   "use cache"
   tag()
-  return (await q.getProductsByIds(ids)).map(toProduct)
+  return tagged((await q.getProductsByIds(ids)).map(toProduct))
 }
 
 export async function getRelated(productId: string, limit = 5): Promise<Product[]> {
   "use cache"
   tag()
-  return (await q.relatedProducts(productId, limit)).map(toProduct)
+  return tagged((await q.relatedProducts(productId, limit)).map(toProduct))
 }
 
 export async function getNewArrivals(limit = 6): Promise<Product[]> {
   "use cache"
   tag()
-  return (await q.newArrivals(limit)).map(toProduct)
+  return tagged((await q.newArrivals(limit)).map(toProduct))
 }
 
 export async function getDeals(limit = 5): Promise<Product[]> {
   "use cache"
   tag()
-  return (await q.dealProducts(limit)).map(toProduct)
+  return tagged((await q.dealProducts(limit)).map(toProduct))
 }
 
 export async function getBestsellers(limit = 6): Promise<Product[]> {
   "use cache"
   tag()
-  return (await q.bestsellers(limit)).map(toProduct)
+  return tagged((await q.bestsellers(limit)).map(toProduct))
 }
 
 /** Most reviewed first: the closest thing to "top selling" before real sales ranking exists. */
 export async function getTopSelling(limit = 5): Promise<Product[]> {
   "use cache"
   tag()
-  return (await q.searchProducts({ sort: "popular", pageSize: limit })).items.map(toProduct)
+  return tagged((await q.searchProducts({ sort: "popular", pageSize: limit })).items.map(toProduct))
 }
 
 export async function getCategories(): Promise<StoreCategory[]> {

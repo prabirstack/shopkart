@@ -1,5 +1,6 @@
 import { ApiError, ok, route } from "@/lib/api/http"
 import { verifyPaymentBody } from "@/lib/api/schemas"
+import { invalidateProducts } from "@/lib/cache"
 import { markOrderPaid, pendingAmount } from "@/lib/db/queries"
 import { verifyPaymentSignature } from "@/features/payments/signature"
 
@@ -14,5 +15,6 @@ export const POST = route(async ({ json, user }) => {
   // The amount comes from our own payment row, never from the client.
   const { amountPaise } = await pendingAmount(b.razorpay_order_id)
   const { order, alreadyPaid } = await markOrderPaid({ providerOrderId: b.razorpay_order_id, providerPaymentId: b.razorpay_payment_id, amountPaise, onlyForUserId: me.userId })
+  if (!alreadyPaid) invalidateProducts(order.items.map((i) => i.productId)) // stock moved from reserved to sold
   return ok({ order, alreadyPaid })
-}, { limit: { max: 10, windowSec: 60 }, invalidates: ["catalog"] })
+}, { limit: { max: 10, windowSec: 60 } })

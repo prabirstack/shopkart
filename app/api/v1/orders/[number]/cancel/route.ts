@@ -1,4 +1,5 @@
 import { ok, route } from "@/lib/api/http"
+import { invalidateProducts } from "@/lib/cache"
 import { cancelOrder } from "@/lib/db/queries"
 
 /**
@@ -8,5 +9,7 @@ import { cancelOrder } from "@/lib/db/queries"
  */
 export const POST = route<{ number: string }>(async ({ params, user }) => {
   const me = user()
-  return ok(await cancelOrder({ number: params.number, actorId: me.userId, actorLabel: "Customer", onlyForUserId: me.userId, onlyStatuses: ["pending"], statusMessage: "A paid order can only be cancelled by our support team." }))
-}, { limit: { max: 10, windowSec: 60 }, invalidates: ["catalog"] })
+  const order = await cancelOrder({ number: params.number, actorId: me.userId, actorLabel: "Customer", onlyForUserId: me.userId, onlyStatuses: ["pending"], statusMessage: "A paid order can only be cancelled by our support team." })
+  invalidateProducts(order.items.map((i) => i.productId)) // the reservation was released: refresh just these products
+  return ok(order)
+}, { limit: { max: 10, windowSec: 60 } })

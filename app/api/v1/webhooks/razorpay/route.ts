@@ -1,4 +1,5 @@
 import { ApiError, ok, route } from "@/lib/api/http"
+import { invalidateProducts } from "@/lib/cache"
 import { markOrderPaid, markPaymentFailed, markWebhookProcessed, recordWebhook } from "@/lib/db/queries"
 import { verifyWebhookSignature } from "@/lib/api/payments"
 
@@ -23,10 +24,11 @@ export const POST = route(async ({ req }) => {
 
   const pay = evt.payload?.payment?.entity
   if (evt.event === "payment.captured" && pay?.id && pay.order_id && typeof pay.amount === "number") {
-    await markOrderPaid({ providerOrderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, method: pay.method })
+    const paid = await markOrderPaid({ providerOrderId: pay.order_id, providerPaymentId: pay.id, amountPaise: pay.amount, method: pay.method })
+    if (!paid.alreadyPaid) invalidateProducts(paid.order.items.map((i) => i.productId))
   } else if (evt.event === "payment.failed" && pay?.order_id) {
     await markPaymentFailed({ providerOrderId: pay.order_id, reason: pay.error_description ?? "Payment failed" })
   }
   await markWebhookProcessed("razorpay", eventId)
   return ok({ received: true })
-}, { noOriginCheck: true, rawBody: true, limit: { max: 300, windowSec: 60 }, invalidates: ["catalog"] })
+}, { noOriginCheck: true, rawBody: true, limit: { max: 300, windowSec: 60 } })
