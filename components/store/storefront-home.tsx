@@ -10,6 +10,7 @@ import { ProductRow } from "./product-row"
 import { PromotionGrid } from "./promotion-grid"
 import { SectionHeader } from "./section-header"
 import { ShopByCategory } from "./shop-by-category"
+import { TestimonialsSection } from "./testimonials-section"
 import { TrustStrip } from "./trust-strip"
 import { Crown } from "lucide-react"
 import { dealProducts, recentlyViewed, topSelling } from "@/features/catalog/demo"
@@ -46,6 +47,7 @@ export function StorefrontHome() {
         <SectionHeader id="recent-heading" title="Recently Viewed" />
         <ProductRow products={recentlyViewed} label="Recently viewed products" />
       </section>
+      <TestimonialsSection />
       <NewsletterForm variant="band" />
     </main>
   )

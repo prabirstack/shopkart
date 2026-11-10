@@ -1,6 +1,8 @@
 import Link from "next/link"
-import { Heart, ShoppingCart, Star } from "lucide-react"
+import { Star } from "lucide-react"
 import { Price } from "@/components/price"
+import { WishlistButton } from "@/features/wishlist/wishlist-button"
+import { AddToCartButton } from "@/features/cart/add-to-cart-button"
 import { discountPercent, type Product } from "@/features/catalog/demo"
 
 export function ProductCard({ product }: { product: Product }) {
@@ -18,17 +20,13 @@ export function ProductCard({ product }: { product: Product }) {
           {product.badge}
         </span>
       )}
-      {off > 0 && (
-        <button type="button" aria-label={`Save ${product.title} to wishlist`}
-          className="absolute right-3 top-3 z-10 grid size-8 place-items-center rounded-full text-muted-foreground hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50">
-          <Heart className="size-5" aria-hidden="true" />
-        </button>
-      )}
+      <div className="absolute right-3 top-3 z-10"><WishlistButton productId={product.id} title={product.title} /></div>
       <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col gap-2 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
-        <div className={`grid aspect-square place-items-center rounded-lg ${product.tint}`}>
+        <div className={`grid aspect-square place-items-center rounded-lg ${product.tint} ${product.stock === 0 ? "opacity-50" : ""}`}>
           <Icon className="size-1/3 text-neutral-700" strokeWidth={1.25} aria-hidden="true" />
         </div>
-        <h3 className="product-title line-clamp-2 min-h-[2.8em]">{product.title}</h3>
+        <p className="text-xs font-medium text-muted-foreground">{product.brand}</p>
+        <h3 className="product-title -mt-1 line-clamp-2 min-h-[2.8em]">{product.title}</h3>
         {product.rating && (
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <Star className="size-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
@@ -36,15 +34,14 @@ export function ProductCard({ product }: { product: Product }) {
             <span>({product.reviews})</span>
           </p>
         )}
+        {product.stock === 0 ? <p className="text-xs font-semibold text-destructive">Out of stock</p>
+          : product.stock <= 10 ? <p className="text-xs font-medium text-amber-700">Only {product.stock} left</p> : null}
       </Link>
       <div className="mt-2 flex items-end justify-between gap-2">
         <Price cents={product.pricePaise} compareAtCents={product.comparePaise}
           showDiscountLabel={false} priceClassName="text-primary"
           className="[&_del]:text-xs" />
-        <button type="button" aria-label={`Add ${product.title} to cart`}
-          className="grid size-8 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-[3px] focus-visible:ring-ring/50">
-          <ShoppingCart className="size-4" aria-hidden="true" />
-        </button>
+        <AddToCartButton productId={product.id} disabled={product.stock === 0} label={`Add ${product.title} to cart`} iconOnly className="size-8 shrink-0 p-0" />
       </div>
     </article>
   )

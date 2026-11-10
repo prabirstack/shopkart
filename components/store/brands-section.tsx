@@ -9,7 +9,7 @@ export function BrandsSection() {
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {brands.map((brand) => (
           <li key={brand}>
-            <Link href={`/brands/${brand.toLowerCase()}`} className="grid h-14 place-items-center rounded-xl border bg-card text-sm font-bold tracking-wide hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50">
+            <Link href={`/products?brand=${encodeURIComponent(brand)}`} className="grid h-14 place-items-center rounded-xl border bg-card text-sm font-bold tracking-wide hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50">
               {brand}
             </Link>
           </li>

@@ -1,15 +1,17 @@
 import Link from "next/link"
 import { ChevronDown, Flame, Heart, LayoutGrid, Package, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
+import { CartCount } from "@/features/cart/cart-count"
+import { WishlistCount } from "@/features/wishlist/wishlist-count"
 import { MobileNavigation } from "./mobile-navigation"
 import { UtilityBar } from "./utility-bar"
 
 const navLinks = ["New Arrivals", "Bestsellers", "Top Selling", "Brands", "Gift Cards", "Sell on ShopKart"]
 
 const actions = [
-  { label: "Orders", href: "/orders", icon: Package, wide: true },
-  { label: "Wishlist", href: "/wishlist", icon: Heart, wide: true },
-  { label: "Cart", href: "/cart", icon: ShoppingCart, count: 0 },
-  { label: "Sign In", href: "/login", icon: User },
+  { label: "Orders", href: "/account/orders", icon: Package, wide: true },
+  { label: "Wishlist", href: "/account/wishlist", icon: Heart, wide: true, wish: true },
+  { label: "Cart", href: "/cart", icon: ShoppingCart, cart: true },
+  { label: "Account", href: "/account", icon: User },
 ]
 
 export function SiteHeader() {
@@ -37,17 +39,13 @@ export function SiteHeader() {
             </button>
           </form>
           <ul className="col-start-3 row-start-1 flex items-center gap-1 lg:gap-5">
-            {actions.map(({ label, href, icon: Icon, count, wide }) => (
+            {actions.map(({ label, href, icon: Icon, cart, wish, wide }) => (
               <li key={label} className={wide ? "hidden sm:block" : undefined}>
                 <Link href={href} className="relative flex flex-col items-center gap-0.5 px-2 text-xs font-medium">
                   <Icon className="size-6" aria-hidden="true" />
                   <span className="hidden sm:inline">{label}</span>
-                  {count !== undefined && (
-                    <span aria-label={`${count} items in cart`}
-                      className="absolute -top-1 right-0 grid size-4 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                      {count > 99 ? "99+" : count}
-                    </span>
-                  )}
+                  {cart && <CartCount />}
+                  {wish && <WishlistCount />}
                 </Link>
               </li>
             ))}
