@@ -77,3 +77,12 @@ export function percentOf(cents: number, percent: number): number {
 export function applyDiscount(cents: number, percent: number): number {
   return cents - percentOf(cents, percent);
 }
+
+/**
+ * GST contained in a tax-inclusive price, in integer paise.
+ * Example: 11800 paise at 18% -> 1800 paise of GST (10000 base).
+ */
+export function gstFromInclusive(inclusiveCents: number, ratePercent: number): number {
+  assertCents(inclusiveCents);
+  return Math.round((inclusiveCents * ratePercent) / (100 + ratePercent));
+}
