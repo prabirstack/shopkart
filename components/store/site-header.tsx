@@ -1,13 +1,12 @@
 import Link from "next/link"
-import { ChevronDown, Flame, Heart, LayoutGrid, Package, ShoppingBag, ShoppingCart, User } from "lucide-react"
+import { Heart, Package, ShoppingBag, ShoppingCart, User } from "lucide-react"
 import { CartCount } from "@/features/cart/cart-count"
 import { WishlistCount } from "@/features/wishlist/wishlist-count"
+import { MegaNav } from "./mega-nav"
 import { MobileNavigation } from "./mobile-navigation"
 import { SearchBox } from "./search-box"
 import { StickyHeader } from "./sticky-header"
 import { UtilityBar } from "./utility-bar"
-
-const navLinks = [["New Arrivals", "/new-arrivals"], ["Bestsellers", "/bestsellers"], ["Top Selling", "/top-selling"], ["Brands", "/brands"], ["Gift Cards", "/gift-cards"], ["Sell on ShopKart", "/sell"]]
 
 const actions = [
   { label: "Orders", href: "/account/orders", icon: Package, wide: true },
@@ -45,29 +44,7 @@ export function SiteHeader() {
           </ul>
         </div>
       </div>
-      <nav aria-label="Store navigation" className="hidden border-b lg:block">
-        <div className="store-container grid grid-cols-[14rem_minmax(0,1fr)] items-center gap-4">
-          <Link href="/categories" className="my-2 flex h-11 items-center justify-between rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
-            <span className="flex items-center gap-3"><LayoutGrid className="size-5" aria-hidden="true" /> All Categories</span>
-            <ChevronDown className="size-4" aria-hidden="true" />
-          </Link>
-          <ul className="flex items-center justify-between text-sm font-medium">
-            <li>
-              <Link href="/deals" className="flex items-center gap-1.5 hover:text-primary">
-                <Flame className="size-4 text-primary" aria-hidden="true" /> Deals
-              </Link>
-            </li>
-            {navLinks.map(([label, href]) => (
-              <li key={label}>
-                <Link href={href} className="flex items-center gap-1 hover:text-primary">
-                  {label}
-                  {label === "Brands" && <ChevronDown className="size-3.5" aria-hidden="true" />}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+      <nav aria-label="Store navigation" className="hidden border-b lg:block"><MegaNav /></nav>
     </header>
     </StickyHeader>
   )
