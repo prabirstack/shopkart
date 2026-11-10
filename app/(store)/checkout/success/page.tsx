@@ -43,7 +43,7 @@ async function Confirmation({ searchParams }: { searchParams: Promise<{ order?: 
   const s = order.shipTo
   const payment = order.payments.find((p) => p.status === "captured") ?? order.payments[0]
   const steps = [
-    { icon: Mail, title: "Confirmation email", text: `A receipt and GST invoice are on their way to ${order.customerEmail}.` },
+    { icon: Mail, title: "Your GST invoice", text: "Download your GST invoice any time from Account, then Billing history. We don't send order emails yet." },
     { icon: PackageCheck, title: "We pack your order", text: "Usually within 1 business day." },
     { icon: Truck, title: "Out for delivery", text: `Delivery to ${s.city} typically takes 3 to 5 days. Returns accepted for ${RETURN_WINDOW_DAYS} days.` },
   ]
