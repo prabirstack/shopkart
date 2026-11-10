@@ -41,7 +41,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   }, [])
 
   if (slides.length === 0) return null
-  const arrow = "absolute top-1/2 z-10 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-white/20 text-white backdrop-blur hover:bg-white/35 focus-visible:ring-[3px] focus-visible:ring-white/60"
+  const arrow = "absolute top-1/2 z-10 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-black/30 text-white backdrop-blur-md transition-colors hover:bg-black/50 focus-visible:ring-[3px] focus-visible:ring-white/70"
 
   return (
     <section aria-label="Featured promotions" className="relative"
@@ -80,29 +80,33 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           <button type="button" aria-label="Next slide" className={`${arrow} right-3`} onClick={() => api?.scrollNext()}>
             <ChevronRight className="size-5" aria-hidden="true" />
           </button>
-          <div className="absolute inset-x-4 bottom-3 z-10 flex items-center gap-3">
-            <div className="flex flex-1 gap-2" role="group" aria-label="Choose a slide">
-              {slides.map((slide, i) => (
-                <button key={slide.id} type="button" onClick={() => api?.scrollTo(i)}
-                  aria-label={`Show slide ${i + 1}: ${slide.title}`} aria-current={selected === i}
-                  className="group h-5 max-w-16 flex-1 py-2 focus-visible:outline-none">
-                  <span className="relative block h-1 overflow-hidden rounded-full bg-white/40 group-focus-visible:ring-2 group-focus-visible:ring-white">
-                    {selected === i && (
-                      <span key={`${selected}-${running}`} className="absolute inset-y-0 left-0 block rounded-full bg-white"
-                        style={!reduceMotion && slides.length > 1
-                          ? { animation: "hero-progress 6s linear forwards", animationPlayState: running ? "running" : "paused" }
-                          : { width: "100%" }}
-                        onAnimationEnd={() => api?.scrollNext()} />
-                    )}
-                  </span>
-                </button>
-              ))}
-            </div>
+          <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/40 py-1.5 pl-1.5 pr-4 shadow-lg backdrop-blur-md">
             <button type="button" aria-label={userPaused || reduceMotion ? "Play slideshow" : "Pause slideshow"} disabled={reduceMotion}
               onClick={() => setUserPaused((v) => !v)}
-              className="grid size-8 place-items-center rounded-full bg-white/20 text-white backdrop-blur hover:bg-white/35 focus-visible:ring-[3px] focus-visible:ring-white/60 disabled:opacity-40">
-              {userPaused || reduceMotion ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
+              className="grid size-8 place-items-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/35 focus-visible:ring-[3px] focus-visible:ring-white/70 disabled:opacity-40">
+              {userPaused || reduceMotion ? <Play className="size-3.5 translate-x-px fill-current" aria-hidden="true" /> : <Pause className="size-3.5 fill-current" aria-hidden="true" />}
             </button>
+            <div className="flex items-center gap-1.5" role="group" aria-label="Choose a slide">
+              {slides.map((slide, i) => {
+                const on = selected === i
+                return (
+                  <button key={slide.id} type="button" onClick={() => api?.scrollTo(i)}
+                    aria-label={`Show slide ${i + 1}: ${slide.title}`} aria-current={on}
+                    className="group grid h-6 place-items-center focus-visible:outline-none">
+                    <span className={`relative block h-2 overflow-hidden rounded-full transition-all duration-300 group-focus-visible:ring-2 group-focus-visible:ring-white ${on ? "w-9 bg-white/35" : "w-2 bg-white/55 group-hover:bg-white/90"}`}>
+                      {on && (
+                        <span key={`${selected}-${running}`} className="absolute inset-y-0 left-0 block rounded-full bg-white"
+                          style={!reduceMotion && slides.length > 1
+                            ? { animation: "hero-progress 6s linear forwards", animationPlayState: running ? "running" : "paused" }
+                            : { width: "100%" }}
+                          onAnimationEnd={() => api?.scrollNext()} />
+                      )}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <span aria-hidden="true" className="price text-xs font-medium text-white/85">{selected + 1} / {slides.length}</span>
           </div>
         </>
       )}
