@@ -101,7 +101,7 @@ export function CompareView({ suggestions }: { suggestions: ReactNode }) {
             {products.map((p) => (
               <div key={p.id} role="columnheader" className="relative grid content-start gap-2 border-b border-l p-4">
                 <button type="button" onClick={() => remove(p.id)} aria-label={`Remove ${p.title}`} className="absolute right-2 top-2 grid size-7 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"><X className="size-4" aria-hidden="true" /></button>
-                <Link href={`/products/${p.slug}`} className="relative block aspect-square w-28 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200"><ProductArt slug={p.slug} title={p.title} category={p.category} sizes="112px" imageClassName="object-contain p-2" /></Link>
+                <Link href={`/products/${p.slug}`} className="relative block aspect-square w-28 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200"><ProductArt slug={p.slug} images={p.images} title={p.title} category={p.category} sizes="112px" imageClassName="object-contain p-2" /></Link>
                 <p className="text-xs text-muted-foreground">{p.brand}</p>
                 <Link href={`/products/${p.slug}`} className="line-clamp-2 font-semibold hover:text-primary">{p.title}</Link>
                 <AddToCartButton productId={p.id} product={p} disabled={p.stock === 0} className="mt-1 h-9 w-full" label="Add to cart" />

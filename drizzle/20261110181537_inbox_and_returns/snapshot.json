@@ -1,0 +1,1197 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "06735066-efad-4a13-b579-11c59f132521",
+  "prevIds": [
+    "52ba0df3-b793-4dc2-a11c-e87655cdf0de"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "contact_status"
+      ],
+      "writes": [
+        "s|enum|public.contact_status",
+        "n|enum|public.contact_status",
+        "e|enum|public.contact_status",
+        "n|type|public.contact_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "newsletter_status"
+      ],
+      "writes": [
+        "s|enum|public.newsletter_status",
+        "n|enum|public.newsletter_status",
+        "e|enum|public.newsletter_status",
+        "n|type|public.newsletter_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "return_items"
+      ],
+      "writes": [
+        "s|tbl|public.return_items",
+        "n|tbl|public.return_items",
+        "e|tbl|public.return_items",
+        "n|rel|public.return_items",
+        "n|type|public.return_items",
+        "n|rel|public.return_items_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "contact_messages"
+      ],
+      "writes": [
+        "s|tbl|public.contact_messages",
+        "n|tbl|public.contact_messages",
+        "e|tbl|public.contact_messages",
+        "n|rel|public.contact_messages",
+        "n|type|public.contact_messages",
+        "n|rel|public.contact_messages_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.contact_status"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "newsletter_subscribers"
+      ],
+      "writes": [
+        "s|tbl|public.newsletter_subscribers",
+        "n|tbl|public.newsletter_subscribers",
+        "e|tbl|public.newsletter_subscribers",
+        "n|rel|public.newsletter_subscribers",
+        "n|type|public.newsletter_subscribers",
+        "n|rel|public.newsletter_subscribers_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.newsletter_status"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "returns",
+        "note"
+      ],
+      "writes": [
+        "s|col|public.returns.note",
+        "n|col|public.returns.note",
+        "e|col|public.returns.note"
+      ],
+      "reads": [
+        "n|tbl|public.returns",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "returns",
+        "requested_by"
+      ],
+      "writes": [
+        "s|col|public.returns.requested_by",
+        "n|col|public.returns.requested_by",
+        "e|col|public.returns.requested_by"
+      ],
+      "reads": [
+        "n|tbl|public.returns",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "returns",
+        "received_at"
+      ],
+      "writes": [
+        "s|col|public.returns.received_at",
+        "n|col|public.returns.received_at",
+        "e|col|public.returns.received_at"
+      ],
+      "reads": [
+        "n|tbl|public.returns",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "return_items",
+        "return_items_line_idx"
+      ],
+      "writes": [
+        "s|idx|public.return_items_line_idx",
+        "n|idx|public.return_items_line_idx",
+        "e|idx|public.return_items_line_idx",
+        "n|rel|public.return_items_line_idx"
+      ],
+      "reads": [
+        "n|tbl|public.return_items",
+        "n|sch|public",
+        "n|col|public.return_items.return_id",
+        "n|col|public.return_items.order_item_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "return_items",
+        "return_items_order_item_idx"
+      ],
+      "writes": [
+        "s|idx|public.return_items_order_item_idx",
+        "n|idx|public.return_items_order_item_idx",
+        "e|idx|public.return_items_order_item_idx",
+        "n|rel|public.return_items_order_item_idx"
+      ],
+      "reads": [
+        "n|tbl|public.return_items",
+        "n|sch|public",
+        "n|col|public.return_items.order_item_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "contact_messages",
+        "contact_messages_status_idx"
+      ],
+      "writes": [
+        "s|idx|public.contact_messages_status_idx",
+        "n|idx|public.contact_messages_status_idx",
+        "e|idx|public.contact_messages_status_idx",
+        "n|rel|public.contact_messages_status_idx"
+      ],
+      "reads": [
+        "n|tbl|public.contact_messages",
+        "n|sch|public",
+        "n|col|public.contact_messages.status",
+        "n|col|public.contact_messages.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "newsletter_subscribers",
+        "newsletter_email_idx"
+      ],
+      "writes": [
+        "s|idx|public.newsletter_email_idx",
+        "n|idx|public.newsletter_email_idx",
+        "e|idx|public.newsletter_email_idx",
+        "n|rel|public.newsletter_email_idx"
+      ],
+      "reads": [
+        "n|tbl|public.newsletter_subscribers",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "newsletter_subscribers",
+        "newsletter_token_idx"
+      ],
+      "writes": [
+        "s|idx|public.newsletter_token_idx",
+        "n|idx|public.newsletter_token_idx",
+        "e|idx|public.newsletter_token_idx",
+        "n|rel|public.newsletter_token_idx"
+      ],
+      "reads": [
+        "n|tbl|public.newsletter_subscribers",
+        "n|sch|public",
+        "n|col|public.newsletter_subscribers.unsubscribe_token"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "newsletter_subscribers",
+        "newsletter_status_idx"
+      ],
+      "writes": [
+        "s|idx|public.newsletter_status_idx",
+        "n|idx|public.newsletter_status_idx",
+        "e|idx|public.newsletter_status_idx",
+        "n|rel|public.newsletter_status_idx"
+      ],
+      "reads": [
+        "n|tbl|public.newsletter_subscribers",
+        "n|sch|public",
+        "n|col|public.newsletter_subscribers.status"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "return_items"
+      ],
+      "writes": [
+        "s|fk|public.return_items.return_items_return_id_returns_id_fkey",
+        "n|fk|public.return_items.return_items_return_id_returns_id_fkey",
+        "e|fk|public.return_items.return_items_return_id_returns_id_fkey",
+        "n|con|public.return_items.return_items_return_id_returns_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.return_items",
+        "n|sch|public",
+        "n|tbl|public.returns",
+        "n|sch|public",
+        "n|col|public.return_items.return_id",
+        "n|col|public.returns.id",
+        "e|uniqueness|public.returns.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "return_items"
+      ],
+      "writes": [
+        "s|fk|public.return_items.return_items_order_item_id_order_items_id_fkey",
+        "n|fk|public.return_items.return_items_order_item_id_order_items_id_fkey",
+        "e|fk|public.return_items.return_items_order_item_id_order_items_id_fkey",
+        "n|con|public.return_items.return_items_order_item_id_order_items_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.return_items",
+        "n|sch|public",
+        "n|tbl|public.order_items",
+        "n|sch|public",
+        "n|col|public.return_items.order_item_id",
+        "n|col|public.order_items.id",
+        "e|uniqueness|public.order_items.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "returns"
+      ],
+      "writes": [
+        "s|fk|public.returns.returns_requested_by_users_id_fkey",
+        "n|fk|public.returns.returns_requested_by_users_id_fkey",
+        "e|fk|public.returns.returns_requested_by_users_id_fkey",
+        "n|con|public.returns.returns_requested_by_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.returns",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.returns.requested_by",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "contact_messages"
+      ],
+      "writes": [
+        "s|fk|public.contact_messages.contact_messages_user_id_users_id_fkey",
+        "n|fk|public.contact_messages.contact_messages_user_id_users_id_fkey",
+        "e|fk|public.contact_messages.contact_messages_user_id_users_id_fkey",
+        "n|con|public.contact_messages.contact_messages_user_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.contact_messages",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.contact_messages.user_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "contact_messages"
+      ],
+      "writes": [
+        "s|fk|public.contact_messages.contact_messages_handled_by_users_id_fkey",
+        "n|fk|public.contact_messages.contact_messages_handled_by_users_id_fkey",
+        "e|fk|public.contact_messages.contact_messages_handled_by_users_id_fkey",
+        "n|con|public.contact_messages.contact_messages_handled_by_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.contact_messages",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.contact_messages.handled_by",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "return_items",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "contact_messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "newsletter_subscribers",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "contact_status",
+        "values": [
+          "new",
+          "read",
+          "resolved"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "newsletter_status",
+        "values": [
+          "subscribed",
+          "unsubscribed"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "return_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "order_item_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "quantity",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "returns",
+        "name": "note",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "returns",
+        "name": "requested_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "returns",
+        "name": "received_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "email",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "topic",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "order_number",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "message",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "status",
+        "type": "contact_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'new'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "handled_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "handled_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "uuidv7()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "email",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "status",
+        "type": "newsletter_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'subscribed'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "unsubscribe_token",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "source",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'footer'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "unsubscribed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "return_items_line_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "return_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "order_item_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "return_items_order_item_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "order_item_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "contact_messages_status_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "newsletter_email_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "lower(\"email\")",
+            "isExpression": true,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "newsletter_token_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "unsubscribe_token",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "newsletter_status_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "return_items_return_id_returns_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "return_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "returns",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "return_items_order_item_id_order_items_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "order_item_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "order_items",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "returns",
+        "name": "returns_requested_by_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "requested_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "contact_messages_user_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "contact_messages_handled_by_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "handled_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "return_items_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "contact_messages_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "newsletter_subscribers",
+        "name": "newsletter_subscribers_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "return_items",
+        "name": "return_items_quantity_positive",
+        "value": "\"quantity\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "contact_messages",
+        "name": "contact_messages_lengths",
+        "value": "char_length(\"name\") between 2 and 80 and char_length(\"message\") between 10 and 2000",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

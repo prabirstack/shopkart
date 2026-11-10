@@ -14,7 +14,7 @@ const field = "h-10 w-full rounded-lg border bg-background px-3 text-sm outline-
 const PERMISSION_LABEL: Record<Permission, string> = {
   "catalog:write": "Edit catalog", "inventory:read": "See stock", "inventory:write": "Adjust stock", "orders:read": "See orders", "orders:fulfil": "Pack and ship", "orders:cancel": "Cancel orders",
   "reviews:moderate": "Moderate reviews", "content:write": "Write articles", "coupons:write": "Manage coupons", "banners:write": "Manage banners", "customers:read": "See customers",
-  "returns:manage": "Returns and refunds", "settings:write": "Store settings", "reports:read": "Reports",
+  "returns:manage": "Returns and refunds", "inbox:manage": "Inbox", "settings:write": "Store settings", "reports:read": "Reports",
 }
 
 function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {

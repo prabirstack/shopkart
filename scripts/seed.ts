@@ -10,7 +10,7 @@
 import "dotenv/config"
 
 import argon2 from "argon2"
-import { sql } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 
@@ -19,7 +19,9 @@ import { catalog, categories as demoCategories } from "./data/catalog"
 import { addresses as demoAddresses } from "./data/account"
 import { customers, initialBanners, initialCoupons, initialMovements, initialOrders, initialProducts, initialReturns, initialSettings } from "./data/admin"
 import { reviewsFor } from "./data/reviews"
+import imageManifest from "../features/catalog/image-manifest.json"
 import { gstFromInclusive } from "../lib/money"
+import { lineNetPaise, refundForUnits } from "../lib/returns"
 import * as s from "../lib/db/schema"
 
 // NOTE: builds its own pool instead of importing lib/db, which imports "server-only" and throws outside Next.js.
@@ -42,7 +44,7 @@ const demoDate = (t: string) => { const d = new Date(`${t} 00:00 UTC`); return N
 
 async function main() {
   await db.transaction(async (tx) => {
-    await tx.execute(sql`TRUNCATE TABLE order_notes, verifications, accounts, audit_events, settings, wishlist_items, reviews, article_products, articles, banners, coupon_redemptions, webhook_events, payments, order_events, order_items, returns, orders, coupons, stock_movements, stock_levels, product_images, products, tax_categories, categories, brands, sessions, addresses, users RESTART IDENTITY CASCADE`)
+    await tx.execute(sql`TRUNCATE TABLE contact_messages, newsletter_subscribers, return_items, order_notes, verifications, accounts, audit_events, settings, wishlist_items, reviews, article_products, articles, banners, coupon_redemptions, webhook_events, payments, order_events, order_items, returns, orders, coupons, stock_movements, stock_levels, product_images, products, tax_categories, categories, brands, sessions, addresses, users RESTART IDENTITY CASCADE`)
 
     // ---- Catalog lookups
     const taxRows = await tx.insert(s.taxCategories).values([
@@ -69,6 +71,10 @@ async function main() {
         seoTitle: a.seoTitle, seoDescription: a.seoDescription, createdAt: new Date(`${a.createdAt}T09:00:00Z`),
       }
     })).returning()
+    // Demo photos from public/images (listed by `pnpm images`) become real product_images rows, so nothing that showed a photo before loses it.
+    const manifestPhotos = (imageManifest as { products: Record<string, string[]> }).products
+    const photoRows = productRows.flatMap((p) => (manifestPhotos[p.slug] ?? []).slice(0, 8).map((url, position) => ({ productId: p.id, url, alt: "", position })))
+    if (photoRows.length) await tx.insert(s.productImages).values(photoRows)
     const productByDemoId = new Map(catalog.map((p) => [p.id, productRows.find((r) => r.slug === p.slug)!]))
 
     // ---- Stock: opening balance as a movement, plus the sample movements, so on_hand always equals the ledger
@@ -119,7 +125,24 @@ async function main() {
       await tx.insert(s.payments).values({ orderId: order.id, providerOrderId: `order_demo_${o.id.slice(3)}`, providerPaymentId: captured ? o.paymentId : null, amountPaise: order.totalPaise, status: o.status === "refunded" ? "refunded" : captured ? "captured" : "created", method: o.paymentMethod, signatureVerifiedAt: captured ? new Date(o.placed) : null })
     }
     const orderByNumber = new Map((await tx.select().from(s.orders)).map((o) => [o.number, o]))
-    await tx.insert(s.returns).values(initialReturns.map((r) => ({ number: r.id, orderId: orderByNumber.get(r.orderId)!.id, status: r.status, reason: r.reason, refundPaise: r.refundPaise, createdAt: new Date(r.requested) })))
+    // Returns: refund amounts come from the same rules the live server uses (lib/returns.ts), so demo numbers match real ones.
+    const returnLines = await tx.select().from(s.orderItems)
+    const productIdByDemo = new Map(productByDemoId)
+    for (const r of initialReturns) {
+      const order = orderByNumber.get(r.orderId)!
+      const lines = returnLines.filter((l) => l.orderId === order.id)
+      const picked = r.items.map(([demoId, quantity]) => ({ line: lines.find((l) => l.productId === productIdByDemo.get(demoId)!.id)!, quantity }))
+      const refundPaise = picked.reduce((t, { line, quantity }) => t + refundForUnits(lineNetPaise(line, lines, order.discountPaise), line.quantity, quantity), 0)
+      const [ret] = await tx.insert(s.returns).values({ number: r.number, orderId: order.id, status: r.status, reason: r.reason, note: r.note ?? null, requestedBy: order.userId, refundPaise, receivedAt: r.receivedAt ? new Date(r.receivedAt) : null, createdAt: new Date(r.requested) }).returning()
+      await tx.insert(s.returnItems).values(picked.map(({ line, quantity }) => ({ returnId: ret.id, orderItemId: line.id, quantity })))
+      if (r.status === "received" || r.status === "refunded") {
+        // The goods are back on the shelf, so the ledger and the stock level both show it.
+        for (const { line, quantity } of picked) {
+          await tx.insert(s.stockMovements).values({ productId: line.productId, delta: quantity, reason: "return", note: `Return ${r.number}`, reference: `${r.number}:${line.productId}`, createdAt: new Date(r.receivedAt!) })
+          await tx.update(s.stockLevels).set({ onHand: sql`${s.stockLevels.onHand} + ${quantity}` }).where(eq(s.stockLevels.productId, line.productId))
+        }
+      }
+    }
 
     // ---- Marketing and content
     await tx.insert(s.banners).values(initialBanners.map((b) => ({ title: b.title, slot: BANNER_SLOT[b.slot as keyof typeof BANNER_SLOT], startsAt: dayStart(b.starts), endsAt: dayEnd(b.ends), href: b.href, isPaused: b.paused })))

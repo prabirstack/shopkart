@@ -18,16 +18,17 @@ import { Crown } from "lucide-react"
 import { getDeals, getTopSelling } from "@/features/catalog/data"
 import { RecentlyViewedRow } from "@/features/catalog/recently-viewed"
 import { DEALS_END_AT, heroSlides } from "@/features/promotions/demo"
+import { getHeroBanners } from "@/features/promotions/data"
 
 export async function StorefrontHome() {
-  const [dealProducts, topSelling, guides] = await Promise.all([getDeals(5), getTopSelling(5), getPublishedArticles()])
+  const [dealProducts, topSelling, guides, heroBanners] = await Promise.all([getDeals(10), getTopSelling(5), getPublishedArticles(), getHeroBanners()])
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-8 py-4">
       <h1 className="sr-only">ShopKart online store</h1>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[14rem_minmax(0,1fr)]">
         <CategoryRail />
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
-          <HeroCarousel slides={heroSlides} />
+          <HeroCarousel slides={heroSlides} banners={heroBanners} />
           <TrustStrip />
         </div>
       </div>
@@ -37,7 +38,7 @@ export async function StorefrontHome() {
         <SectionHeader id="deals-heading" title="Today's Deals" href="/deals" linkLabel="View All Deals">
           <Countdown endsAt={DEALS_END_AT} />
         </SectionHeader>
-        <ProductRow products={dealProducts} label="Today's deals" />
+        <ProductRow products={dealProducts} label="Today's deals" alwaysShowArrows />
       </section>
       <section aria-labelledby="top-heading">
         <SectionHeader id="top-heading" title={<><Crown className="size-6 text-amber-500" aria-hidden="true" /> Top Selling Products</>} href="/top-selling" linkLabel="View All" />

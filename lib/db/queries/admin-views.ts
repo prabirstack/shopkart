@@ -3,7 +3,8 @@ import "server-only"
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm"
 
 import { db } from "../index"
-import { articleProducts, articles, banners, brands, categories, coupons, orderEvents, orderItems, orderNotes, orders, payments, products, returns, reviews, settings, stockLevels, stockMovements, users } from "../schema"
+import { returnItems } from "../schema"
+import { articleProducts, articles, banners, productImages, contactMessages, brands, categories, coupons, orderEvents, orderItems, orderNotes, orders, payments, products, returns, reviews, settings, stockLevels, stockMovements, users } from "../schema"
 import type { AdminBanner, AdminCoupon, AdminOrder, AdminProduct, AdminReturn, AdminReview, Customer, Settings, StockMovement } from "@/features/admin/types"
 import { BANNER_SLOT_LABEL } from "@/features/admin/types"
 import type { Article, ArticleCategory } from "@/features/articles/types"
@@ -20,25 +21,36 @@ const productSelect = {
   status: products.status, description: products.description, seoTitle: products.seoTitle, seoDescription: products.seoDescription, createdAt: products.createdAt,
 }
 
-const toProduct = (r: Record<string, unknown>): AdminProduct => ({
+const toProduct = (r: Record<string, unknown>, images: NonNullable<AdminProduct["images"]> = []): AdminProduct => ({
   id: r.id as string, title: r.title as string, slug: r.slug as string, sku: r.sku as string, category: r.category as string, brand: r.brand as string,
   pricePaise: r.pricePaise as number, comparePaise: (r.comparePaise as number | null) ?? null, gstPercent: Number(r.gstPercent),
   stock: Number(r.stock), reserved: Number(r.reserved), reorderAt: Number(r.reorderAt), status: r.status as AdminProduct["status"],
-  description: r.description as string, seoTitle: r.seoTitle as string, seoDescription: r.seoDescription as string, createdAt: day(r.createdAt as Date),
+  description: r.description as string, seoTitle: r.seoTitle as string, seoDescription: r.seoDescription as string, createdAt: day(r.createdAt as Date), images,
 })
+
+/** Photos for the given products, grouped by product, in display order. */
+async function imagesFor(ids: string[]) {
+  const map = new Map<string, NonNullable<AdminProduct["images"]>>()
+  if (ids.length === 0) return map
+  for (const i of await db.select().from(productImages).where(inArray(productImages.productId, ids)).orderBy(asc(productImages.productId), asc(productImages.position)))
+    map.set(i.productId, [...(map.get(i.productId) ?? []), { url: i.url, alt: i.alt, width: i.width, height: i.height }])
+  return map
+}
 
 function baseProducts() {
   return db.select(productSelect).from(products).innerJoin(categories, eq(categories.id, products.categoryId)).innerJoin(brands, eq(brands.id, products.brandId)).leftJoin(stockLevels, eq(stockLevels.productId, products.id))
 }
 
 export async function loadAdminProducts(): Promise<AdminProduct[]> {
-  return (await baseProducts().orderBy(desc(products.createdAt), asc(products.id))).map((r) => toProduct(r))
+  const rows = await baseProducts().orderBy(desc(products.createdAt), asc(products.id))
+  const imgs = await imagesFor(rows.map((r) => r.id))
+  return rows.map((r) => toProduct(r, imgs.get(r.id)))
 }
 
 export async function loadAdminProduct(id: string): Promise<AdminProduct | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null
   const [r] = await baseProducts().where(eq(products.id, id)).limit(1)
-  return r ? toProduct(r) : null
+  return r ? toProduct(r, (await imagesFor([r.id])).get(r.id)) : null
 }
 
 export async function loadAdminRefs() {
@@ -96,13 +108,17 @@ export async function loadAdminCoupons(): Promise<AdminCoupon[]> {
 }
 
 export async function loadAdminBanners(): Promise<AdminBanner[]> {
-  return (await db.select().from(banners).orderBy(desc(banners.startsAt))).map((b) => ({ id: b.id, title: b.title, slot: BANNER_SLOT_LABEL[b.slot], starts: day(b.startsAt), ends: day(b.endsAt), href: b.href, paused: b.isPaused }))
+  return (await db.select().from(banners).orderBy(desc(banners.startsAt))).map((b) => ({ id: b.id, title: b.title, slot: BANNER_SLOT_LABEL[b.slot], starts: day(b.startsAt), ends: day(b.endsAt), href: b.href, paused: b.isPaused, image: b.imageUrl ? { url: b.imageUrl, alt: b.imageAlt, width: b.imageWidth, height: b.imageHeight } : null }))
 }
 
 export async function loadAdminReturns(): Promise<AdminReturn[]> {
-  const rows = await db.select({ id: returns.id, number: returns.number, order: orders.number, customerName: orders.customerName, reason: returns.reason, refundPaise: returns.refundPaise, status: returns.status, requested: returns.createdAt })
-    .from(returns).innerJoin(orders, eq(orders.id, returns.orderId)).orderBy(desc(returns.createdAt))
-  return rows.map((r) => ({ id: r.id, number: r.number, orderId: r.order, customerName: r.customerName, reason: r.reason, refundPaise: r.refundPaise, status: r.status, requested: day(r.requested) }))
+  const rows = await db.select({ id: returns.id, number: returns.number, order: orders.number, customerName: orders.customerName, reason: returns.reason, note: returns.note, refundPaise: returns.refundPaise, status: returns.status, requested: returns.createdAt, receivedAt: returns.receivedAt })
+    .from(returns).innerJoin(orders, eq(orders.id, returns.orderId)).orderBy(desc(returns.createdAt), desc(returns.number))
+  const lines = rows.length === 0 ? [] : await db.select({ returnId: returnItems.returnId, title: orderItems.title, quantity: returnItems.quantity }).from(returnItems).innerJoin(orderItems, eq(orderItems.id, returnItems.orderItemId)).where(inArray(returnItems.returnId, rows.map((r) => r.id))).orderBy(asc(orderItems.title))
+  return rows.map((r) => ({
+    id: r.id, number: r.number, orderId: r.order, customerName: r.customerName, reason: r.reason, note: r.note, refundPaise: r.refundPaise, status: r.status,
+    requested: r.requested.toISOString(), receivedAt: r.receivedAt?.toISOString() ?? null, items: lines.filter((l) => l.returnId === r.id).map((l) => ({ title: l.title, quantity: l.quantity })),
+  }))
 }
 
 export async function loadAdminReviews(limit = 500): Promise<AdminReview[]> {
@@ -137,16 +153,17 @@ export async function loadAdminSettings(): Promise<Settings> {
 }
 
 /** Badge counts for the sidebar and bell. Only counts the role is allowed to see are computed. */
-export type AdminCounts = { orders: number; pendingPayment: number; stock: number; returns: number; reviews: number; lowItems: { title: string; available: number }[] }
+export type AdminCounts = { orders: number; pendingPayment: number; stock: number; returns: number; reviews: number; inbox: number; lowItems: { title: string; available: number }[] }
 
-export async function loadAdminCounts(can: { orders: boolean; stock: boolean; returns: boolean; reviews: boolean }): Promise<AdminCounts> {
-  const [o, s, r, v, pp, low] = await Promise.all([
+export async function loadAdminCounts(can: { orders: boolean; stock: boolean; returns: boolean; reviews: boolean; inbox: boolean }): Promise<AdminCounts> {
+  const [o, s, r, v, pp, low, ib] = await Promise.all([
     can.orders ? db.select({ n: sql<number>`count(*)::int` }).from(orders).where(inArray(orders.status, ["pending", "paid"])) : [{ n: 0 }],
     can.stock ? db.select({ n: sql<number>`count(*)::int` }).from(stockLevels).innerJoin(products, eq(products.id, stockLevels.productId)).where(and(sql`${products.status} <> 'archived'`, sql`${stockLevels.onHand} - ${stockLevels.reserved} <= ${stockLevels.reorderAt}`)) : [{ n: 0 }],
     can.returns ? db.select({ n: sql<number>`count(*)::int` }).from(returns).where(eq(returns.status, "requested")) : [{ n: 0 }],
     can.reviews ? db.select({ n: sql<number>`count(*)::int` }).from(reviews).where(eq(reviews.status, "pending")) : [{ n: 0 }],
     can.orders ? db.select({ n: sql<number>`count(*)::int` }).from(orders).where(eq(orders.status, "pending")) : [{ n: 0 }],
     can.stock ? db.select({ title: products.title, available: sql<number>`${stockLevels.onHand} - ${stockLevels.reserved}` }).from(stockLevels).innerJoin(products, eq(products.id, stockLevels.productId)).where(and(sql`${products.status} <> 'archived'`, sql`${stockLevels.onHand} - ${stockLevels.reserved} <= ${stockLevels.reorderAt}`)).orderBy(sql`${stockLevels.onHand} - ${stockLevels.reserved}`).limit(4) : [],
+    can.inbox ? db.select({ n: sql<number>`count(*)::int` }).from(contactMessages).where(eq(contactMessages.status, "new")) : [{ n: 0 }],
   ])
-  return { orders: o[0].n, pendingPayment: pp[0].n, stock: s[0].n, returns: r[0].n, reviews: v[0].n, lowItems: low.map((l) => ({ title: l.title, available: Math.max(Number(l.available), 0) })) }
+  return { orders: o[0].n, pendingPayment: pp[0].n, stock: s[0].n, returns: r[0].n, reviews: v[0].n, inbox: ib[0].n, lowItems: low.map((l) => ({ title: l.title, available: Math.max(Number(l.available), 0) })) }
 }

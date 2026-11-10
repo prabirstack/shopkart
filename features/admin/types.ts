@@ -1,9 +1,13 @@
 export type ProductStatus = "published" | "draft" | "archived"
+/** A stored photo. width/height are null for demo files that were never measured. */
+export type AdminImage = { url: string; alt: string; width: number | null; height: number | null }
 export type AdminProduct = {
   id: string; title: string; slug: string; sku: string; category: string; brand: string
   pricePaise: number; comparePaise: number | null; gstPercent: number
   stock: number; reserved: number; reorderAt: number
   status: ProductStatus; description: string; seoTitle: string; seoDescription: string; createdAt: string
+  /** Photos in display order; the first is the main image. */
+  images?: AdminImage[]
 }
 
 export type OrderStatus = "pending" | "paid" | "packed" | "shipped" | "delivered" | "cancelled" | "refunded"
@@ -22,9 +26,9 @@ export type StockReason = "restock" | "sale" | "damage" | "return" | "correction
 export type StockMovement = { id: string; productId: string; delta: number; reason: StockReason; note: string; at: string; by: string }
 
 export type AdminCoupon = { id: string; code: string; kind: "percent" | "flat"; value: number; minOrderPaise: number; used: number; limit: number; expires: string; active: boolean }
-export type AdminBanner = { id: string; title: string; slot: string; starts: string; ends: string; href: string; paused: boolean }
-export type ReturnStatus = "requested" | "approved" | "received" | "refunded" | "rejected"
-export type AdminReturn = { id: string; /** Human-friendly number like RT-2100. */ number: string; orderId: string; customerName: string; reason: string; refundPaise: number; status: ReturnStatus; requested: string }
+export type AdminBanner = { id: string; title: string; slot: string; starts: string; ends: string; href: string; paused: boolean; image?: AdminImage | null }
+export type ReturnStatus = "requested" | "approved" | "received" | "refunded" | "rejected" | "cancelled"
+export type AdminReturn = { id: string; /** Human-friendly number like RT-2100. */ number: string; orderId: string; customerName: string; reason: string; /** What the customer wrote, if anything. */ note: string | null; refundPaise: number; status: ReturnStatus; /** ISO timestamp. */ requested: string; /** ISO timestamp, set once the goods are back on the shelf. */ receivedAt: string | null; items: { title: string; quantity: number }[] }
 
 export type Settings = {
   storeName: string; supportEmail: string; phone: string; gstin: string

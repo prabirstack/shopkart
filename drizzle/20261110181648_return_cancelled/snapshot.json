@@ -1,0 +1,41 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6e7d2520-32e0-4176-9c3f-ee889234f3d4",
+  "prevIds": [
+    "06735066-efad-4a13-b579-11c59f132521"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "return_status"
+      ],
+      "writes": [
+        "s|enum|public.return_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"return_status\"]",
+      "set": {
+        "values": [
+          "requested",
+          "approved",
+          "received",
+          "refunded",
+          "rejected",
+          "cancelled"
+        ]
+      }
+    }
+  ]
+}

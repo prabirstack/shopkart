@@ -71,9 +71,18 @@ export const products = pgTable("products", {
 export const productImages = pgTable("product_images", {
   id: id(),
   productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
-  /** Public path or object-storage key, e.g. /images/products/air-fryer-5-5l.webp */
+  /** An uploaded photo (/media/products/<uuid>.webp) or a demo file in public/images/products. */
   url: text("url").notNull(),
   alt: text("alt").notNull().default(""),
+  /** 0 is the main image (the one on cards). Saving a product rewrites the whole set, so positions stay 0..n-1. */
   position: integer("position").notNull().default(0),
+  /** Pixel size of the stored file; null for demo files that were never measured. */
+  width: integer("width"),
+  height: integer("height"),
   ...timestamps,
-}, (t) => [index("product_images_product_idx").on(t.productId, t.position)])
+}, (t) => [
+  uniqueIndex("product_images_position_idx").on(t.productId, t.position),
+  check("product_images_alt_len", sql`char_length(${t.alt}) <= 160`),
+  check("product_images_position", sql`${t.position} >= 0`),
+  check("product_images_url", sql`${t.url} like '/media/products/%' or ${t.url} like '/images/products/%'`),
+])

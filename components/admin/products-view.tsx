@@ -18,7 +18,7 @@ const tone = { published: "good", draft: "warn", archived: "muted" } as const
 const field = "h-9 rounded-lg border bg-card px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
 
 function Thumb({ p }: { p: AdminProduct }) {
-  return <span className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200"><ProductArt slug={p.slug} title="" category={p.category} sizes="44px" imageClassName="object-contain p-1" iconClassName="size-1/2 text-neutral-700" /></span>
+  return <span className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200"><ProductArt slug={p.slug} images={p.images} title="" category={p.category} sizes="44px" imageClassName="object-contain p-1" iconClassName="size-1/2 text-neutral-700" /></span>
 }
 
 export function ProductsView({ products, categories }: { products: AdminProduct[]; categories: { slug: string; name: string }[] }) {

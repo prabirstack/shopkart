@@ -1,7 +1,7 @@
 // Sample data used ONLY by `pnpm db:seed` (scripts/seed.ts) to fill a local development database.
 // The app reads the database; nothing imports this at runtime.
 import { catalog, productById } from "./catalog"
-import type { AdminBanner, AdminCoupon, AdminOrder, AdminProduct, AdminReturn, Customer, OrderStatus, Settings, StockMovement, TimelineEvent } from "@/features/admin/types"
+import type { AdminBanner, AdminCoupon, AdminOrder, AdminProduct, Customer, OrderStatus, Settings, StockMovement, TimelineEvent } from "@/features/admin/types"
 
 export const customers: Customer[] = [
   { id: "c1", name: "Aarav Mehta", email: "aarav@example.com", phone: "9876543210", city: "Bengaluru", joined: "2026-01-14", verified: true },
@@ -36,9 +36,10 @@ const seeds: Seed[] = [
   { n: 10485, cust: 8, day: 5, lines: [["x3", 1]], status: "delivered", method: "Card" },
   { n: 10484, cust: 5, day: 6, lines: [["d1", 1]], status: "delivered", method: "Wallet" },
   { n: 10483, cust: 9, day: 7, lines: [["x6", 3]], status: "delivered", method: "UPI" },
-  { n: 10482, cust: 0, day: 8, lines: [["t5", 1]], status: "delivered", method: "UPI" },
+  { n: 10482, cust: 0, day: 3, lines: [["t5", 1]], status: "delivered", method: "UPI" },
   { n: 10481, cust: 2, day: 9, lines: [["x5", 2]], status: "cancelled", method: "UPI" },
   { n: 10480, cust: 5, day: 11, lines: [["d5", 1]], status: "refunded", method: "Card" },
+  { n: 10478, cust: 0, day: 5, lines: [["t1", 1], ["t4", 1]], status: "delivered", method: "Card", discount: 100000 },
   { n: 10479, cust: 4, day: 12, lines: [["x4", 1]], status: "delivered", method: "Netbanking" },
 ]
 
@@ -91,11 +92,13 @@ export const initialBanners: AdminBanner[] = [
   { id: "b4", title: "Winter Fashion", slot: "Home hero", starts: "2026-11-20", ends: "2026-12-10", href: "/products?category=fashion", paused: false },
 ]
 
-export const initialReturns: AdminReturn[] = [
-  { id: "RT-2034", number: "RT-2034", orderId: "SK-10485", customerName: "Vikram Singh", reason: "Not as described", refundPaise: 5499900, status: "requested", requested: iso(1, 14) },
-  { id: "RT-2033", number: "RT-2033", orderId: "SK-10484", customerName: "Rohan Iyer", reason: "Changed my mind", refundPaise: 249900, status: "approved", requested: iso(2, 11) },
-  { id: "RT-2032", number: "RT-2032", orderId: "SK-10486", customerName: "Isha Rao", reason: "Wrong size", refundPaise: 159800, status: "received", requested: iso(4, 16) },
-  { id: "RT-2031", number: "RT-2031", orderId: "SK-10480", customerName: "Rohan Iyer", reason: "Item arrived damaged", refundPaise: 64900, status: "refunded", requested: iso(9, 10) },
+/** A return to seed: which demo product lines come back, and how many units. The refund is worked out from the order when seeding. */
+export type SeedReturn = { number: string; orderId: string; reason: string; note?: string; status: "requested" | "approved" | "received" | "refunded" | "rejected" | "cancelled"; requested: string; receivedAt?: string; items: [productId: string, quantity: number][] }
+export const initialReturns: SeedReturn[] = [
+  { number: "RT-2034", orderId: "SK-10485", reason: "Not as described", note: "The listing said 256 GB but the box says 128 GB.", status: "requested", requested: iso(1, 14), items: [["x3", 1]] },
+  { number: "RT-2033", orderId: "SK-10484", reason: "Changed my mind", status: "approved", requested: iso(2, 11), items: [["d1", 1]] },
+  { number: "RT-2032", orderId: "SK-10486", reason: "Wrong size or fit", note: "Ordered two, the second one is too small. Keeping the first.", status: "received", requested: iso(4, 16), receivedAt: iso(2, 12), items: [["x2", 1]] },
+  { number: "RT-2031", orderId: "SK-10480", reason: "Item arrived damaged", note: "The corner of the box was crushed and the lid is cracked.", status: "refunded", requested: iso(9, 10), receivedAt: iso(7, 15), items: [["d5", 1]] },
 ]
 
 export const initialSettings: Settings = {

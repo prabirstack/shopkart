@@ -11,13 +11,13 @@ export class RazorpayError extends Error {
   constructor(public readonly status: number, message: string, public readonly code?: string) { super(message); this.name = "RazorpayError" }
 }
 
-async function call<T>(path: string, body: unknown): Promise<T> {
+async function call<T>(path: string, body: unknown, extraHeaders: Record<string, string> = {}): Promise<T> {
   const id = process.env.RAZORPAY_KEY_ID, secret = process.env.RAZORPAY_KEY_SECRET
   if (!id || !secret) throw new RazorpayError(500, "Razorpay keys are not configured.")
   let res: Response
   try {
     res = await fetch(`${BASE}${path}`, {
-      method: "POST", headers: { "content-type": "application/json", authorization: `Basic ${Buffer.from(`${id}:${secret}`).toString("base64")}` },
+      method: "POST", headers: { ...extraHeaders, "content-type": "application/json", authorization: `Basic ${Buffer.from(`${id}:${secret}`).toString("base64")}` },
       body: JSON.stringify(body), signal: AbortSignal.timeout(10_000), cache: "no-store",
     })
   } catch (e) {
@@ -36,9 +36,9 @@ export async function createRazorpayOrder(input: { amountPaise: number; receipt:
 }
 
 /** Sends money back to the customer for a captured payment (full or partial). Returns Razorpay's refund id. */
-export async function refundRazorpayPayment(input: { paymentId: string; amountPaise: number; receipt: string; notes?: Record<string, string> }): Promise<{ id: string }> {
+export async function refundRazorpayPayment(input: { paymentId: string; amountPaise: number; receipt: string; notes?: Record<string, string>; /** Razorpay returns the same refund for a repeated key, so a retry or double click can never pay out twice. */ idempotencyKey?: string }): Promise<{ id: string }> {
   if (!/^pay_[A-Za-z0-9]+$/.test(input.paymentId)) throw new RazorpayError(400, "Not a Razorpay payment id.")
-  const r = await call<{ id: string }>(`/payments/${input.paymentId}/refund`, { amount: input.amountPaise, speed: "normal", receipt: input.receipt.slice(0, 40), notes: input.notes })
+  const r = await call<{ id: string }>(`/payments/${input.paymentId}/refund`, { amount: input.amountPaise, speed: "normal", receipt: input.receipt.slice(0, 40), notes: input.notes }, input.idempotencyKey ? { "X-Refund-Idempotency": input.idempotencyKey } : {})
   if (!r.id?.startsWith("rfnd_")) throw new RazorpayError(502, "Razorpay returned an unexpected refund.")
   return r
 }

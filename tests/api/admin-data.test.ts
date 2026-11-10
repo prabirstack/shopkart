@@ -130,7 +130,7 @@ describe("admin dashboard data is scoped to what a role may see", () => {
     await makeOrder("paid")
     const d = await loadAdminDashboard(none)
     expect(d).toEqual({ statusCounts: null, pendingPayment: null, recentOrders: null, topCategories: null, low: null, activity: [] })
-    expect(EMPTY_REPORT.series).toEqual([]); expect(await loadAdminCounts({ orders: false, stock: false, returns: false, reviews: false })).toMatchObject({ orders: 0, stock: 0, returns: 0, reviews: 0, lowItems: [] })
+    expect(EMPTY_REPORT.series).toEqual([]); expect(await loadAdminCounts({ orders: false, stock: false, returns: false, reviews: false, inbox: false })).toMatchObject({ orders: 0, stock: 0, returns: 0, reviews: 0, lowItems: [] })
   })
 
   it("counts only paid-and-not-cancelled orders in sales reports, and zero-fills quiet days", async () => {

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { connection } from "next/server"
 import { Suspense } from "react"
 import { CheckCircle2, Clock, Mail, PackageCheck, PackageX, Truck } from "lucide-react"
 import { PurchaseEvent } from "@/features/analytics/purchase-event"
@@ -33,6 +34,7 @@ function Notice({ icon: Icon, title, text, action }: { icon: typeof Clock; title
 async function Confirmation({ searchParams }: { searchParams: Promise<{ order?: string | string[] }> }) {
   const raw = (await searchParams).order
   const number = (Array.isArray(raw) ? raw[0] : raw)?.trim().toUpperCase() ?? ""
+  await connection() // request time: reading the session compares expiry dates (`new Date()`)
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect(`/login?next=${encodeURIComponent(`/checkout/success${number ? `?order=${number}` : ""}`)}`)
   const order = number ? await getOrderForUser(number, session.user.id) : null

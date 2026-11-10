@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight, Headphones, Armchair, Pause, Play, Shirt, type LucideIcon } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel"
 import type { HeroSlide } from "@/features/promotions/demo"
+import type { HeroBanner } from "@/features/promotions/data"
 import { campaignImage } from "@/features/catalog/images"
 import { usePrefersReducedMotion } from "./use-reduced-motion"
 
@@ -15,7 +16,12 @@ const art: { icon: LucideIcon; bg: string }[] = [
   { icon: Shirt, bg: "from-neutral-900 via-fuchsia-950 to-pink-700" },
 ]
 
-export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
+/**
+ * `banners` are the scheduled, image-led hero banners staff upload in the admin. When there are any, they replace the
+ * built-in `slides`; when there are none, the static slides show, so the hero is never empty.
+ */
+export function HeroCarousel({ slides: staticSlides, banners = [] }: { slides: HeroSlide[]; banners?: HeroBanner[] }) {
+  const slides: { id: string; title: string }[] = banners.length > 0 ? banners : staticSlides
   const [api, setApi] = useState<CarouselApi>()
   const [selected, setSelected] = useState(0)
   const [userPaused, setUserPaused] = useState(false)
@@ -49,7 +55,21 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
       onFocusCapture={() => setHold(true)} onBlurCapture={() => setHold(false)}>
       <Carousel setApi={setApi} opts={{ loop: slides.length > 1 }} aria-label="Promotional slides">
         <CarouselContent className="ml-0">
-          {slides.map((slide, i) => {
+          {banners.length > 0 ? banners.map((b, i) => (
+            <CarouselItem key={b.id} className="pl-0" aria-hidden={i !== selected} inert={i !== selected}>
+              {/* The artwork fills the frame; the headline and button are real text over a soft gradient, so they stay readable and translatable. */}
+              <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-neutral-900 text-white sm:aspect-[2/1] md:aspect-[8/3]">
+                <Image src={b.image.url} alt={b.image.alt} fill priority={i === 0} sizes="(max-width: 1024px) 100vw, 70vw" className="object-cover" />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-transparent" />
+                <div className="absolute inset-0 z-10 flex flex-col items-start justify-center gap-2 px-14 sm:gap-3 sm:px-16">
+                  <h2 className="store-title max-w-md">{b.title}</h2>
+                  <Link href={b.href} className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold hover:bg-primary/90 focus-visible:ring-[3px] focus-visible:ring-white/60 sm:h-10 sm:px-5">
+                    Shop now <ChevronRight className="size-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+            </CarouselItem>
+          )) : staticSlides.map((slide, i) => {
             const { icon: Icon, bg } = art[i % art.length]
             return (
               <CarouselItem key={slide.id} className="pl-0" aria-hidden={i !== selected} inert={i !== selected}>

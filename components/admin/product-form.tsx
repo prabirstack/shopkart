@@ -1,17 +1,18 @@
 "use client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
-import { ArrowLeft, CheckCircle2, ImagePlus, Info, Save } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Info, Save } from "lucide-react"
 import { PageHeader } from "./page-header"
+import { ProductMedia } from "./product-media"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { adminApi, ApiFailure, failureMessage } from "@/features/admin/api"
 import { money } from "@/features/admin/format"
-import type { AdminProduct } from "@/features/admin/types"
+import type { AdminImage, AdminProduct } from "@/features/admin/types"
 import { gstFromInclusive, toCents } from "@/lib/money"
 
 const GST_RATES = [0, 5, 12, 18, 28]
@@ -62,6 +63,11 @@ export function ProductForm({ product, refs }: { product?: AdminProduct | null; 
 function Editor({ product, refs, onDone }: { product?: AdminProduct; refs: Refs; onDone: () => void }) {
   const [saved, setSaved] = useState(false)
   const [formError, setFormError] = useState("")
+  // Photos are not part of the react-hook-form values: they upload on their own, and the list is sent with the product on save.
+  const initialImages = useMemo(() => product?.images ?? [], [product])
+  const [images, setImages] = useState<AdminImage[]>(initialImages)
+  const [imagesError, setImagesError] = useState("")
+  const imagesDirty = JSON.stringify(images) !== JSON.stringify(initialImages)
   const { register, handleSubmit, control, setValue, setError, formState: { errors, isDirty, isSubmitting } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: product ? toValues(product) : blank })
   const v = useWatch({ control })
   const err = (k: keyof Values) => errors[k]?.message as string | undefined
@@ -76,10 +82,11 @@ function Editor({ product, refs, onDone }: { product?: AdminProduct; refs: Refs;
   // Field names in the API differ from the form's; map problems back so messages appear beside the right input.
   const FIELD: Record<string, keyof Values> = { categorySlug: "category", brandName: "brand", pricePaise: "price", comparePaise: "compare", gstPercent: "gst" }
   const save = handleSubmit(async (d) => {
-    setFormError("")
+    setFormError(""); setImagesError("")
     const body = {
       title: d.title, slug: d.slug, sku: d.sku, description: d.description, categorySlug: d.category, brandName: d.brand, gstPercent: d.gst,
       pricePaise: toCents(d.price), comparePaise: d.compare ? toCents(d.compare) : null, status: d.status, seoTitle: d.seoTitle, seoDescription: d.seoDescription, reorderAt: d.reorderAt,
+      ...(imagesDirty ? { images: images.map((i) => ({ url: i.url, alt: i.alt.trim(), width: i.width, height: i.height })) } : {}),
     }
     try {
       if (product) await adminApi(`admin/products/${product.id}`, { method: "PATCH", body })
@@ -87,9 +94,13 @@ function Editor({ product, refs, onDone }: { product?: AdminProduct; refs: Refs;
       setSaved(true); window.setTimeout(onDone, 700)
     } catch (e) {
       if (e instanceof ApiFailure && e.fields.length > 0) {
-        for (const f of e.fields) { const name = FIELD[f.path] ?? (f.path as keyof Values); if (name in blank) setError(name, { message: f.message }) }
+        for (const f of e.fields) {
+          if (f.path.startsWith("images")) { setImagesError(f.message); continue }
+          const name = FIELD[f.path] ?? (f.path as keyof Values); if (name in blank) setError(name, { message: f.message })
+        }
         setFormError(e.message)
-      } else setFormError(failureMessage(e))
+      } else if (e instanceof ApiFailure && e.code === "INVALID_IMAGE") setImagesError(e.message)
+      else setFormError(failureMessage(e))
     }
   })
 
@@ -111,7 +122,7 @@ function Editor({ product, refs, onDone }: { product?: AdminProduct; refs: Refs;
         <TabsList variant="line" aria-label="Product sections" className="h-auto w-full justify-start overflow-x-auto rounded-none border-b p-0">
           {([["general", "General"], ["pricing", "Pricing & GST"], ["inventory", "Inventory"], ["media", "Media"], ["seo", "SEO"]] as const).map(([val, label]) => (
             <TabsTrigger key={val} value={val} className="h-auto flex-none rounded-none border-0 px-5 py-3 text-[0.95rem] text-muted-foreground data-active:bg-transparent data-active:font-semibold data-active:text-primary data-active:shadow-none after:!bottom-0 after:h-[3px] after:rounded-full after:bg-primary">
-              {label}{val in errorTabs && bad(val as keyof typeof errorTabs) && <span aria-label="has errors" className="ml-1.5 size-2 rounded-full bg-destructive" />}
+              {label}{val in errorTabs && bad(val as keyof typeof errorTabs) && <span aria-label="has errors" className="ml-1.5 size-2 rounded-full bg-destructive" />}{val === "media" && imagesError && <span aria-label="has errors" className="ml-1.5 size-2 rounded-full bg-destructive" />}{val === "media" && imagesDirty && !imagesError && <span aria-label="unsaved changes" className="ml-1.5 size-2 rounded-full bg-amber-500" />}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -152,14 +163,10 @@ function Editor({ product, refs, onDone }: { product?: AdminProduct; refs: Refs;
           </div>
         </TabsContent>
 
-        <TabsContent value="media" className="pt-6">
-          <div className="grid gap-4 rounded-2xl border bg-card p-5">
-            <div className="grid place-items-center gap-2 rounded-xl border-2 border-dashed p-10 text-center">
-              <span className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary"><ImagePlus className="size-6" aria-hidden="true" /></span>
-              <p className="font-medium">Photos arrive with the media chapter</p>
-              <p className="max-w-md text-sm text-muted-foreground">For now, add files to <code className="rounded bg-muted px-1">public/images/products/{v.slug || "slug"}.webp</code> and run <code className="rounded bg-muted px-1">pnpm images</code>. See docs/images.md.</p>
-            </div>
-          </div>
+        <TabsContent value="media" className="grid gap-3 pt-6">
+          {imagesError && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">{imagesError}</p>}
+          <ProductMedia images={images} onChange={setImages} dirty={imagesDirty}
+            card={{ slug: v.slug ?? "", title: v.title ?? "", brand: v.brand ?? "", category: v.category ?? "", pricePaise: price }} />
         </TabsContent>
 
         <TabsContent value="seo" className="grid gap-4 pt-6 lg:grid-cols-2">
@@ -173,7 +180,7 @@ function Editor({ product, refs, onDone }: { product?: AdminProduct; refs: Refs;
           </aside>
         </TabsContent>
       </Tabs>
-      {isDirty && !saved && <p className="text-xs text-muted-foreground">You have unsaved changes.</p>}
+      {(isDirty || imagesDirty) && !saved && <p className="text-xs text-muted-foreground">You have unsaved changes.</p>}
     </form>
   )
 }

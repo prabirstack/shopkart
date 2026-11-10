@@ -5,7 +5,7 @@ import { CompareToggle } from "@/features/compare/compare-toggle"
 import { WishlistButton } from "@/features/wishlist/wishlist-button"
 import { AddToCartButton } from "@/features/cart/add-to-cart-button"
 import { discountPercent, type Product } from "@/features/catalog/types"
-import { productImages } from "@/features/catalog/images"
+import { productPhotos } from "@/features/catalog/images"
 import { ProductArt } from "./product-art"
 
 const SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -17,7 +17,7 @@ const SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
  */
 export function ProductCard({ product }: { product: Product }) {
   const off = discountPercent(product)
-  const second = productImages(product.slug)[1]
+  const second = productPhotos(product.slug, product.images)[1]?.url
   const badge = off > 0 ? `-${off}%` : product.badge
   return (
     <article className="group/card relative flex h-full flex-col rounded-2xl border bg-card p-3 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-within:border-primary/30 focus-within:shadow-xl">
@@ -30,7 +30,7 @@ export function ProductCard({ product }: { product: Product }) {
       <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col gap-2 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
         <div className={`relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80 ${product.stock === 0 ? "opacity-50" : ""}`}>
           <div className={`absolute inset-0 transition-all duration-500 ease-out group-hover/card:scale-110 ${second ? "group-hover/card:opacity-0" : ""}`}>
-            <ProductArt slug={product.slug} title={product.title} category={product.category} sizes={SIZES} />
+            <ProductArt slug={product.slug} title={product.title} category={product.category} images={product.images} sizes={SIZES} />
           </div>
           {second && (
             <div className="absolute inset-0 scale-105 opacity-0 transition-all duration-500 ease-out group-hover/card:scale-110 group-hover/card:opacity-100">

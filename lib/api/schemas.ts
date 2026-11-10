@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { isLegacyProductImage, keyFromUrl, MEDIA_LIMITS } from "@/lib/media"
+
 export const uuid = z.string().uuid("Invalid id.")
 const text = (min: number, max: number) => z.string().trim().min(min).max(max)
 export const email = z.string().trim().toLowerCase().email("Enter a valid email.").max(254)
@@ -42,12 +44,21 @@ export const createOrderBody = z.object({
 
 export const verifyPaymentBody = z.object({ razorpay_order_id: z.string().max(80), razorpay_payment_id: z.string().max(80), razorpay_signature: z.string().max(200) })
 
+const px = z.number().int().min(1).max(MEDIA_LIMITS.maxSourcePx).nullish()
+/** Only photos uploaded through /api/v1/admin/uploads (or the demo files that ship with the app): never an arbitrary URL. */
+const imageAlt = z.string().trim().max(MEDIA_LIMITS.altMax, `Describe the photo in ${MEDIA_LIMITS.altMax} characters or fewer.`).default("")
+const productImage = z.object({
+  url: z.string().trim().max(200).refine((u) => keyFromUrl(u, "product") !== null || isLegacyProductImage(u), "Use a photo uploaded here."),
+  alt: imageAlt, width: px, height: px,
+})
+const bannerImage = z.object({ url: z.string().trim().max(200).refine((u) => keyFromUrl(u, "banner") !== null, "Use an image uploaded here."), alt: imageAlt, width: px, height: px })
+
 const productShape = z.object({
   title: text(3, 140), slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Lowercase letters, numbers and hyphens only.").max(100),
   sku: text(2, 40), description: z.string().trim().max(5000).default(""), categorySlug: text(1, 60), brandName: text(2, 60), gstPercent: z.number().refine((n) => [0, 5, 12, 18, 28].includes(n), "Use a real GST rate."),
   pricePaise: paiseAmount, comparePaise: paiseAmount.nullish(), badge: text(1, 24).nullish(), status: z.enum(["draft", "published", "archived"]),
   seoTitle: z.string().trim().max(70).default(""), seoDescription: z.string().trim().max(160).default(""),
-  images: z.array(z.object({ url: z.string().trim().max(500).regex(/^(\/|https:\/\/)/, "Use a site path or an https URL."), alt: z.string().max(160).default("") })).max(12).optional(),
+  images: z.array(productImage).max(MEDIA_LIMITS.maxImagesPerProduct, `A product can have at most ${MEDIA_LIMITS.maxImagesPerProduct} photos.`).refine((a) => new Set(a.map((i) => i.url)).size === a.length, "The same photo is listed twice.").optional(),
   initialStock: z.number().int().min(0).max(100000).optional(), reorderAt: z.number().int().min(0).max(100000).optional(),
 })
 const compareAbovePrice = { path: ["comparePaise"], message: "The original price must be higher than the selling price." }
@@ -70,9 +81,9 @@ export const couponBody = z.object({ code: z.string().trim().toUpperCase().regex
   .refine((v) => v.kind !== "percent" || v.value <= 90, { path: ["value"], message: "A percentage coupon can be at most 90%." })
 export const couponPatch = z.object({ kind: z.enum(["percent", "flat"]), value: z.number().int().positive(), minOrderPaise: z.number().int().min(0), usageLimit: z.number().int().min(1).max(1_000_000), startsAt: date.nullable(), expiresAt: date, isActive: z.boolean() }).partial()
 
-export const bannerBody = z.object({ title: text(2, 80), slot: z.enum(["home_hero", "home_promo_grid", "category_banner", "cart_banner"]), startsAt: date, endsAt: date, href: z.string().trim().regex(/^\/[^/\\]/, "Use a link inside the site, like /products.").max(200), isPaused: z.boolean().optional() })
+export const bannerBody = z.object({ title: text(2, 80), slot: z.enum(["home_hero", "home_promo_grid", "category_banner", "cart_banner"]), startsAt: date, endsAt: date, href: z.string().trim().regex(/^\/[^/\\]/, "Use a link inside the site, like /products.").max(200), isPaused: z.boolean().optional(), image: bannerImage.nullish() })
   .refine((v) => v.endsAt >= v.startsAt, { path: ["endsAt"], message: "The end date must be after the start date." })
-export const bannerPatch = z.object({ title: text(2, 80), slot: z.enum(["home_hero", "home_promo_grid", "category_banner", "cart_banner"]), startsAt: date, endsAt: date, href: z.string().trim().regex(/^\/[^/\\]/).max(200), isPaused: z.boolean() }).partial()
+export const bannerPatch = z.object({ title: text(2, 80), slot: z.enum(["home_hero", "home_promo_grid", "category_banner", "cart_banner"]), startsAt: date, endsAt: date, href: z.string().trim().regex(/^\/[^/\\]/).max(200), isPaused: z.boolean(), image: bannerImage.nullable() }).partial()
 
 export const returnStatusBody = z.object({ status: z.enum(["approved", "received", "refunded", "rejected"]) })
 export const advanceBody = z.object({ to: z.enum(["packed", "shipped", "delivered"]) })
@@ -88,3 +99,17 @@ export const storeSettingsBody = z.object({
   razorpayMode: z.enum(["test", "live"]), lowStockDefault: z.number().int().min(0).max(100_000),
   notifyNewOrder: z.boolean(), notifyLowStock: z.boolean(), notifyReturn: z.boolean(),
 }).strict()
+
+// ---- contact form, newsletter and the admin inbox
+import { CONTACT_TOPICS } from "@/features/contact/topics"
+export { CONTACT_TOPICS }
+export const contactBody = z.object({
+  name: text(2, 80), email, topic: z.enum(CONTACT_TOPICS, { message: "Choose a topic." }),
+  orderNumber: z.union([z.literal("").transform(() => undefined), z.string().trim().toUpperCase().regex(/^SK-\d{3,8}$/, "Use an order number like SK-10482.")]).optional(),
+  message: text(10, 2000),
+  /** A hidden field real people never fill in. Bots do. */
+  website: z.string().max(200).optional(),
+})
+export const newsletterBody = z.object({ email, source: z.enum(["footer", "band"]).default("footer"), website: z.string().max(200).optional() })
+export const unsubscribeBody = z.object({ token: z.string().min(20).max(80) })
+export const inboxStatusBody = z.object({ status: z.enum(["new", "read", "resolved"]) })

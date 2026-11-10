@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm"
 import { db } from "../lib/db"
 import * as s from "../lib/db/schema"
 
-const TABLES = "order_notes, verifications, accounts, audit_events, settings, wishlist_items, reviews, article_products, articles, banners, coupon_redemptions, webhook_events, payments, order_events, order_items, returns, orders, coupons, stock_movements, stock_levels, product_images, products, tax_categories, categories, brands, sessions, addresses, users"
+const TABLES = "contact_messages, newsletter_subscribers, return_items, order_notes, verifications, accounts, audit_events, settings, wishlist_items, reviews, article_products, articles, banners, coupon_redemptions, webhook_events, payments, order_events, order_items, returns, orders, coupons, stock_movements, stock_levels, product_images, products, tax_categories, categories, brands, sessions, addresses, users"
 
 /** Empties every table so each test starts from a known state. */
 export async function resetDb() {

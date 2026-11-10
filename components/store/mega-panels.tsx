@@ -40,7 +40,7 @@ function MiniProduct({ p, rank }: { p: Product; rank?: number }) {
   return (
     <Link href={`/products/${p.slug}`} className="group grid gap-3 rounded-xl border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
       <span className="relative block aspect-square overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200/80">
-        <span className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"><ProductArt slug={p.slug} title="" category={p.category} sizes="180px" /></span>
+        <span className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"><ProductArt slug={p.slug} images={p.images} title="" category={p.category} sizes="180px" /></span>
         {rank && <span className="absolute left-2 top-2 grid size-7 place-items-center rounded-full bg-foreground text-xs font-bold text-background">{rank}</span>}
         {!rank && off > 0 && <span className="absolute left-2 top-2 rounded-md bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">-{off}%</span>}
       </span>

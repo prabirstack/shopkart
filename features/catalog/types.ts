@@ -22,6 +22,8 @@ export type Product = {
   stock: number
   gstPercent: number
   description: string
+  /** Photos in display order (the first is the card image). Missing or empty means "use the demo file or the placeholder". */
+  images?: { url: string; alt: string }[]
 }
 
 /** A category as listed in the shop, with how many published products it holds. */

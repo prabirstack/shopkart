@@ -27,6 +27,8 @@ const DOMAIN_STATUS: Record<string, number> = {
   INVALID_REVIEW: 422, INVALID_QUANTITY: 422, NOTE_REQUIRED: 422, EMPTY_CART: 422, QUANTITY_LIMIT: 422,
   ALREADY_REVIEWED: 409, OUT_OF_STOCK: 409, INSUFFICIENT_STOCK: 409, PRODUCT_UNAVAILABLE: 409, COUPON_INVALID: 409,
   INVALID_TRANSITION: 409, IN_USE: 409, INVALID_CATEGORY: 422, INVALID_TAX: 422, ORDER_NOT_PAYABLE: 409, AMOUNT_MISMATCH: 409, CONFLICT: 409,
+  IMAGE_INVALID: 422, IMAGE_TOO_BIG: 422, IMAGE_TOO_SMALL: 422, TOO_MANY_IMAGES: 422, INVALID_IMAGE: 422, FILE_TOO_LARGE: 413,
+  RETURN_NOT_ELIGIBLE: 409, RETURN_WINDOW_CLOSED: 409, RETURN_OPEN: 409, NOTHING_TO_REFUND: 409, RETURN_INVALID_ITEM: 422,
 }
 
 /** Which field a unique-index violation belongs to, so forms can show the message beside it. */
@@ -49,6 +51,11 @@ export type Ctx<P = Record<string, string>> = {
   ip: string | null
   /** Validated JSON body. Throws a 422 with field errors when it does not match. */
   json: <T>(schema: ZodType<T>) => Promise<T>
+  /**
+   * The multipart/form-data body, read with a hard cap (`maxBodyBytes` option) even when the client sends no
+   * Content-Length. Throws 415 for other content types and 413 for bodies over the cap.
+   */
+  form: () => Promise<FormData>
   /** Validated query string. */
   query: <T>(schema: ZodType<T>) => T
   /** The signed-in user, or throws 401. */
@@ -64,6 +71,8 @@ type Options = {
   cache?: string
   /** Skip the same-origin check (only for server-to-server calls like webhooks, which carry their own signature). */
   noOriginCheck?: boolean
+  /** Largest request body this endpoint accepts, in bytes (default 256 KB). Uploads raise it; it is enforced before and while reading. */
+  maxBodyBytes?: number
   /** Read the raw body yourself (webhooks need the exact bytes for signature checks). */
   rawBody?: boolean
   /** Storefront caches to expire after this request succeeds (it changed catalog or content data). */
@@ -142,9 +151,10 @@ export function route<P = Record<string, string>>(handler: (ctx: Ctx<P>) => Prom
         if (!rl.allowed) throw new ApiError(429, "RATE_LIMITED", "Too many requests. Please slow down.", { retryAfter: rl.retryAfter })
       }
 
+      const maxBody = opts.maxBodyBytes ?? MAX_BODY_BYTES
       if (mutating && !opts.rawBody) {
         const len = Number(req.headers.get("content-length") ?? 0)
-        if (len > MAX_BODY_BYTES) throw new ApiError(413, "BODY_TOO_LARGE", "Request body is too large.")
+        if (len > maxBody) throw new ApiError(413, "BODY_TOO_LARGE", "Request body is too large.")
       }
 
       const session = await getSession(req)
@@ -172,6 +182,21 @@ export function route<P = Record<string, string>>(handler: (ctx: Ctx<P>) => Prom
             bodyRead = true
           }
           return schema.parse(cached)
+        },
+        form: async () => {
+          if (!(req.headers.get("content-type") ?? "").includes("multipart/form-data")) throw new ApiError(415, "UNSUPPORTED_MEDIA_TYPE", "Send the file as multipart/form-data.")
+          // Count bytes as they arrive: Content-Length can be missing or wrong, and the stream must not be buffered without a cap.
+          const chunks: Uint8Array[] = []
+          let total = 0
+          const reader = req.body?.getReader()
+          while (reader) {
+            const { done, value } = await reader.read()
+            if (done) break
+            total += value.byteLength
+            if (total > maxBody) { void reader.cancel().catch(() => undefined); throw new ApiError(413, "BODY_TOO_LARGE", "That upload is too large.") }
+            chunks.push(value)
+          }
+          try { return await new Response(new Blob(chunks as BlobPart[]), { headers: { "content-type": req.headers.get("content-type")! } }).formData() } catch { throw new ApiError(400, "INVALID_FORM", "The upload could not be read.") }
         },
         query: (schema) => schema.parse(Object.fromEntries(url.searchParams)),
         user: () => { if (!session) throw new ApiError(401, "UNAUTHENTICATED", "Please sign in."); return session },

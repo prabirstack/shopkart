@@ -1,5 +1,6 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { connection } from "next/server"
 import type { ReactNode } from "react"
 import { AccessDenied } from "@/components/admin/access-denied"
 import { canViewRoute } from "@/features/admin/access"
@@ -18,6 +19,7 @@ import { isStaff, type Role } from "@/lib/api/permissions"
  * The role is read from the database each time (no cookie cache) and the API endpoints enforce it again.
  */
 export async function Authorized({ section, children }: { section: string; children: ReactNode }) {
+  await connection() // request time: reading the session compares expiry dates (`new Date()`)
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect(`/login?next=${encodeURIComponent(section)}`)
   const role = ((session.user as { role?: string }).role ?? "customer") as Role
@@ -27,6 +29,7 @@ export async function Authorized({ section, children }: { section: string; child
 
 /** For pages that need the signed-in user (for example to label who did something). Same checks as Authorized. */
 export async function requireAdminUser(section: string) {
+  await connection() // request time: reading the session compares expiry dates (`new Date()`)
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect(`/login?next=${encodeURIComponent(section)}`)
   const role = ((session.user as { role?: string }).role ?? "customer") as Role
@@ -36,6 +39,7 @@ export async function requireAdminUser(section: string) {
 
 /** The signed-in person's role. Call it from inside <Authorized> to tailor a screen (for example hide actions the role lacks). */
 export async function currentAdminRole(): Promise<Role> {
+  await connection() // request time: reading the session compares expiry dates (`new Date()`)
   const session = await auth.api.getSession({ headers: await headers() })
   return ((session?.user as { role?: string } | undefined)?.role ?? "customer") as Role
 }

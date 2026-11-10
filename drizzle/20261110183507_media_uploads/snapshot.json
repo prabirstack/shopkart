@@ -1,0 +1,440 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "2fc61fce-d7b9-4a6c-8dc8-4c4aa20db566",
+  "prevIds": [
+    "6e7d2520-32e0-4176-9c3f-ee889234f3d4"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "product_images",
+        "product_images_product_idx"
+      ],
+      "writes": [
+        "s|idx|public.product_images_product_idx",
+        "n|idx|public.product_images_product_idx",
+        "e|idx|public.product_images_product_idx",
+        "n|rel|public.product_images_product_idx"
+      ],
+      "reads": [
+        "e|tbl|public.product_images",
+        "n|sch|public",
+        "e|col|public.product_images.product_id",
+        "e|col|public.product_images.position"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "product_images",
+        "width"
+      ],
+      "writes": [
+        "s|col|public.product_images.width",
+        "n|col|public.product_images.width",
+        "e|col|public.product_images.width"
+      ],
+      "reads": [
+        "n|tbl|public.product_images",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "product_images",
+        "height"
+      ],
+      "writes": [
+        "s|col|public.product_images.height",
+        "n|col|public.product_images.height",
+        "e|col|public.product_images.height"
+      ],
+      "reads": [
+        "n|tbl|public.product_images",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "banners",
+        "image_url"
+      ],
+      "writes": [
+        "s|col|public.banners.image_url",
+        "n|col|public.banners.image_url",
+        "e|col|public.banners.image_url"
+      ],
+      "reads": [
+        "n|tbl|public.banners",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "banners",
+        "image_alt"
+      ],
+      "writes": [
+        "s|col|public.banners.image_alt",
+        "n|col|public.banners.image_alt",
+        "e|col|public.banners.image_alt"
+      ],
+      "reads": [
+        "n|tbl|public.banners",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "banners",
+        "image_width"
+      ],
+      "writes": [
+        "s|col|public.banners.image_width",
+        "n|col|public.banners.image_width",
+        "e|col|public.banners.image_width"
+      ],
+      "reads": [
+        "n|tbl|public.banners",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "banners",
+        "image_height"
+      ],
+      "writes": [
+        "s|col|public.banners.image_height",
+        "n|col|public.banners.image_height",
+        "e|col|public.banners.image_height"
+      ],
+      "reads": [
+        "n|tbl|public.banners",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "product_images",
+        "product_images_position_idx"
+      ],
+      "writes": [
+        "s|idx|public.product_images_position_idx",
+        "n|idx|public.product_images_position_idx",
+        "e|idx|public.product_images_position_idx",
+        "n|rel|public.product_images_position_idx"
+      ],
+      "reads": [
+        "n|tbl|public.product_images",
+        "n|sch|public",
+        "n|col|public.product_images.product_id",
+        "n|col|public.product_images.position"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "product_images"
+      ],
+      "writes": [
+        "s|ck|public.product_images.product_images_alt_len",
+        "n|ck|public.product_images.product_images_alt_len",
+        "e|ck|public.product_images.product_images_alt_len",
+        "n|con|public.product_images.product_images_alt_len"
+      ],
+      "reads": [
+        "n|tbl|public.product_images",
+        "n|sch|public",
+        "n|col|public.product_images.alt"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "product_images"
+      ],
+      "writes": [
+        "s|ck|public.product_images.product_images_position",
+        "n|ck|public.product_images.product_images_position",
+        "e|ck|public.product_images.product_images_position",
+        "n|con|public.product_images.product_images_position"
+      ],
+      "reads": [
+        "n|tbl|public.product_images",
+        "n|sch|public",
+        "n|col|public.product_images.position"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "product_images"
+      ],
+      "writes": [
+        "s|ck|public.product_images.product_images_url",
+        "n|ck|public.product_images.product_images_url",
+        "e|ck|public.product_images.product_images_url",
+        "n|con|public.product_images.product_images_url"
+      ],
+      "reads": [
+        "n|tbl|public.product_images",
+        "n|sch|public",
+        "n|col|public.product_images.url"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "banners"
+      ],
+      "writes": [
+        "s|ck|public.banners.banners_image_alt_len",
+        "n|ck|public.banners.banners_image_alt_len",
+        "e|ck|public.banners.banners_image_alt_len",
+        "n|con|public.banners.banners_image_alt_len"
+      ],
+      "reads": [
+        "n|tbl|public.banners",
+        "n|sch|public",
+        "n|col|public.banners.image_alt"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "banners"
+      ],
+      "writes": [
+        "s|ck|public.banners.banners_image_url",
+        "n|ck|public.banners.banners_image_url",
+        "e|ck|public.banners.banners_image_url",
+        "n|con|public.banners.banners_image_url"
+      ],
+      "reads": [
+        "n|tbl|public.banners",
+        "n|sch|public",
+        "n|col|public.banners.image_url"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "product_images",
+        "name": "width",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "product_images",
+        "name": "height",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "banners",
+        "name": "image_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "banners",
+        "name": "image_alt",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "''",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "banners",
+        "name": "image_width",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "banners",
+        "name": "image_height",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "product_images",
+        "name": "product_images_position_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "product_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "position",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "product_images",
+        "name": "product_images_alt_len",
+        "value": "char_length(\"alt\") <= 160",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "product_images",
+        "name": "product_images_position",
+        "value": "\"position\" >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "product_images",
+        "name": "product_images_url",
+        "value": "\"url\" like '/media/products/%' or \"url\" like '/images/products/%'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "banners",
+        "name": "banners_image_alt_len",
+        "value": "char_length(\"image_alt\") <= 160",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "banners",
+        "name": "banners_image_url",
+        "value": "\"image_url\" is null or \"image_url\" like '/media/banners/%'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"product_images_product_idx\"]"
+    }
+  ]
+}

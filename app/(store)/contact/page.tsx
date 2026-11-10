@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowRight, Clock, LifeBuoy, Mail, MapPin, MessageCircle, Package, Phone, RotateCcw, ShieldCheck, Truck } from "lucide-react"
-import { DemoForm } from "@/components/info/demo-form"
+import { ContactForm } from "@/features/contact/contact-form"
 import { InfoPage } from "@/components/info/info-page"
 
 export const metadata: Metadata = { title: "Contact us", description: "Get in touch with ShopKart support about orders, returns, payments or anything else.", alternates: { canonical: "/contact" } }
@@ -48,14 +48,7 @@ export default function ContactPage() {
         <section aria-labelledby="msg" className="rounded-3xl border bg-card p-5 shadow-sm sm:p-8">
           <h2 id="msg" className="section-title">Send us a message</h2>
           <p className="mb-6 mt-1.5 text-sm text-muted-foreground">Share a few details and we&apos;ll get back to you, usually within one working day.</p>
-          <DemoForm submitLabel="Send message" notice="Messages aren't connected yet. Email us directly using the details above."
-            fields={[
-              { name: "name", label: "Your name", required: true, half: true, autoComplete: "name" },
-              { name: "email", label: "Email", type: "email", required: true, half: true, autoComplete: "email" },
-              { name: "topic", label: "Topic", type: "select", required: true, options: ["Order status", "Returns & refunds", "Payments & invoices", "Product question", "Something else"] },
-              { name: "order", label: "Order number (optional)", hint: "For example SK-10482" },
-              { name: "message", label: "How can we help?", type: "textarea", required: true },
-            ]} />
+          <ContactForm />
         </section>
 
         <div className="grid gap-4">

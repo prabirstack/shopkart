@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
-import { Check, FileText, Headphones, X } from "lucide-react"
+import { Check, FileText, Headphones, Undo2, X } from "lucide-react"
 import { CancelOrderButton } from "@/components/account/cancel-order-button"
+import { OrderReturns } from "@/components/account/order-returns"
 import { OrderStatusPill } from "@/components/account/status-pill"
 import { SummaryRows } from "@/components/store/order-summary"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
@@ -11,9 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { TIMELINE, formatDate, invoiceNumber, paymentOf, stepsDone, wasPaid } from "@/features/account/orders"
 import { productHints } from "@/features/account/products"
 import { requireUser } from "@/features/account/session"
-import { getOrderForUser } from "@/lib/db/queries"
+import { getOrderForUser, getReturnEligibility, listReturnsForOrder } from "@/lib/db/queries"
 import { formatMoney } from "@/lib/money"
-import { RETURN_WINDOW_DAYS } from "@/lib/store-config"
 
 export const instant = false
 
@@ -25,7 +25,7 @@ async function OrderDetail({ params }: { params: PageProps<"/account/orders/[id]
   // The query filters by the signed-in user's id, so another customer's order number is simply "not found".
   const order = await getOrderForUser(id, user.id)
   if (!order) notFound()
-  const hints = await productHints([order])
+  const [hints, returnInfo, returnList] = await Promise.all([productHints([order]), getReturnEligibility(order.number, user.id), listReturnsForOrder(order.number, user.id)])
   const done = stepsDone(order)
   const at = (status: string) => order.events.find((e) => e.status === status)?.at
   const stopped = order.status === "cancelled" || order.status === "refunded"
@@ -41,6 +41,7 @@ async function OrderDetail({ params }: { params: PageProps<"/account/orders/[id]
           <OrderStatusPill status={order.status} />
           {order.status === "pending" && <CancelOrderButton number={order.number} />}
           {(order.status === "paid" || order.status === "packed") && <Link href="/help" className={buttonVariants({ variant: "outline" })}><Headphones aria-hidden="true" /> Contact support</Link>}
+          {returnInfo.eligible && <Link href={`/account/orders/${order.number}/return`} className={buttonVariants({ variant: "outline" })}><Undo2 aria-hidden="true" /> Return items</Link>}
           {wasPaid(order) && <Link href={`/account/billing/${order.number}`} className={buttonVariants({ variant: "outline" })}><FileText aria-hidden="true" /> Invoice</Link>}
         </div>
       </div>
@@ -62,10 +63,11 @@ async function OrderDetail({ params }: { params: PageProps<"/account/orders/[id]
           <p className="mt-4 flex items-start gap-2 text-sm text-muted-foreground"><X className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
             {order.status === "cancelled" ? "This order was cancelled" : "This order was refunded"}{closing ? ` on ${formatDate(closing.at)}` : ""}.{closing?.note ? ` ${closing.note}` : ""}</p>
         )}
-        {delivered && !stopped && <p className="mt-4 text-sm text-muted-foreground">Delivered on {formatDate(delivered)}. Returns accepted for {RETURN_WINDOW_DAYS} days after delivery.</p>}
+        {delivered && !stopped && <p className="mt-4 text-sm text-muted-foreground">Delivered on {formatDate(delivered)}. {returnInfo.eligible && returnInfo.deadline ? `You can return items until ${formatDate(returnInfo.deadline)} (${returnInfo.windowDays} days after delivery).` : returnInfo.reason}</p>}
         {order.status === "pending" && <p className="mt-4 text-sm text-muted-foreground">We&apos;re waiting for your payment.</p>}
       </section>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="grid gap-5">
         <section aria-labelledby="items" className="rounded-xl border bg-card p-5">
           <h2 id="items" className="mb-3 font-semibold">Items</h2>
           <ul className="divide-y">
@@ -80,6 +82,8 @@ async function OrderDetail({ params }: { params: PageProps<"/account/orders/[id]
             })}
           </ul>
         </section>
+        <OrderReturns returns={returnList} />
+        </div>
         <aside className="grid gap-5">
           <section aria-labelledby="pay" className="rounded-xl border bg-card p-5"><h2 id="pay" className="mb-3 font-semibold">Payment</h2><SummaryRows q={order} couponCode={order.couponCode} />
             {pay ? <><p className="mt-3 text-xs text-muted-foreground">Paid by {pay.method}</p><p className="break-all font-mono text-xs text-muted-foreground">{pay.reference}</p></> : <p className="mt-3 text-xs text-muted-foreground">{order.status === "pending" ? "Payment not received yet." : "No payment was taken."}</p>}</section>

@@ -141,9 +141,23 @@ export const returns = pgTable("returns", {
   orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),
   status: returnStatus("status").notNull().default("requested"),
   reason: text("reason").notNull(),
+  /** The customer's own words, shown to staff. */
+  note: text("note"),
+  /** Who asked for it. Null for returns entered by staff or imported. */
+  requestedBy: uuid("requested_by").references(() => users.id, { onDelete: "set null" }),
   refundPaise: integer("refund_paise").notNull(),
+  /** When the returned goods reached us and went back on the shelf. */
+  receivedAt: timestamp("received_at", { withTimezone: true }),
   ...timestamps,
 }, (t) => [uniqueIndex("returns_number_idx").on(t.number), index("returns_order_idx").on(t.orderId), index("returns_status_idx").on(t.status), check("returns_refund_non_negative", sql`${t.refundPaise} >= 0`)])
+
+/** Which order lines, and how many units of each, a return covers. */
+export const returnItems = pgTable("return_items", {
+  id: id(),
+  returnId: uuid("return_id").notNull().references(() => returns.id, { onDelete: "cascade" }),
+  orderItemId: uuid("order_item_id").notNull().references(() => orderItems.id, { onDelete: "restrict" }),
+  quantity: integer("quantity").notNull(),
+}, (t) => [uniqueIndex("return_items_line_idx").on(t.returnId, t.orderItemId), index("return_items_order_item_idx").on(t.orderItemId), check("return_items_quantity_positive", sql`${t.quantity} > 0`)])
 
 export const couponRedemptions = pgTable("coupon_redemptions", {
   id: id(),

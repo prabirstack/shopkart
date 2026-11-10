@@ -3,7 +3,7 @@ import { useRef, useState } from "react"
 import { ChevronLeft, ChevronRight, Maximize2, ZoomIn } from "lucide-react"
 import Image from "next/image"
 import { categoryMeta } from "./category-meta"
-import { productImages } from "./images"
+import { productPhotos, type ProductImage } from "./images"
 import { ImageLightbox } from "./image-lightbox"
 
 const PLACEHOLDER_VIEWS = ["Front", "Side", "Back", "In use", "In the box"]
@@ -14,12 +14,12 @@ const HOVER_ZOOM = 2.2
  * phones). Hover zooms in place, click or the Enlarge button opens the full-screen viewer.
  * The placeholder icons swap for next/image photos later without changing any behaviour.
  */
-export function ProductGallery({ slug, title, category, badge }: { slug: string; title: string; category: string; badge?: string }) {
+export function ProductGallery({ slug, title, category, badge, images }: { slug: string; title: string; category: string; badge?: string; images?: ProductImage[] }) {
   // Icons are functions and cannot cross the server/client boundary, so pick the placeholder from the category here.
   const product = { slug, title }
   const { icon: Icon } = categoryMeta(category)
   // Real photos when they exist (main image first); otherwise five placeholder views.
-  const photos = productImages(product.slug)
+  const photos = productPhotos(product.slug, images)
   const views = photos.length > 0 ? photos.map((_, i) => PLACEHOLDER_VIEWS[i] ?? `View ${i + 1}`) : PLACEHOLDER_VIEWS
   const [active, setActive] = useState(0)
   const [open, setOpen] = useState(false)
@@ -35,7 +35,7 @@ export function ProductGallery({ slug, title, category, badge }: { slug: string;
           <li key={v}>
             <button type="button" onClick={() => setActive(i)} onMouseEnter={() => setActive(i)} aria-label={`Show ${v.toLowerCase()} view of ${product.title}`} aria-pressed={active === i}
               className={`relative grid aspect-square w-full place-items-center overflow-hidden rounded-xl bg-neutral-100 focus-visible:ring-[3px] focus-visible:ring-ring/50 ${active === i ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-border"}`}>
-              {photos[i] ? <Image src={photos[i]} alt="" fill sizes="72px" className="object-contain p-1.5" /> : <Icon className="size-1/2 text-neutral-500" strokeWidth={1.25} aria-hidden="true" />}
+              {photos[i] ? <Image src={photos[i].url} alt="" fill sizes="72px" className="object-contain p-1.5" /> : <Icon className="size-1/2 text-neutral-500" strokeWidth={1.25} aria-hidden="true" />}
             </button>
           </li>
         ))}
@@ -51,7 +51,7 @@ export function ProductGallery({ slug, title, category, badge }: { slug: string;
           className="relative aspect-square cursor-zoom-in overflow-hidden rounded-2xl bg-neutral-100 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
           <div className="relative grid size-full place-items-center transition-transform duration-150 ease-out"
             style={{ transform: hover ? `scale(${HOVER_ZOOM})` : "scale(1)", transformOrigin: hover ? `${hover.x}% ${hover.y}%` : "50% 50%" }}>
-            {photos[active] ? <Image src={photos[active]} alt={`${product.title}, ${views[active]} view`} fill priority={active === 0} sizes="(max-width: 1024px) 100vw, 45vw" className="object-contain p-6" /> : <Icon className="size-1/3 text-neutral-700" strokeWidth={1} aria-hidden="true" />}
+            {photos[active] ? <Image src={photos[active].url} alt={photos[active].alt || `${product.title}, ${views[active]} view`} fill priority={active === 0} sizes="(max-width: 1024px) 100vw, 45vw" className="object-contain p-6" /> : <Icon className="size-1/3 text-neutral-700" strokeWidth={1} aria-hidden="true" />}
           </div>
           {badge && <span className="absolute left-4 top-4 rounded-md bg-primary px-2 py-1 text-sm font-semibold text-primary-foreground">{badge}</span>}
           <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-background/90 px-3 py-1 text-xs text-muted-foreground"><ZoomIn className="size-3.5" aria-hidden="true" /> Hover to zoom · click to enlarge</span>

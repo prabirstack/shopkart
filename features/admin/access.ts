@@ -13,6 +13,7 @@ const SECTION_PERMISSION: [prefix: string, permission: Permission][] = [
   ["/admin/orders", "orders:read"],
   ["/admin/returns", "returns:manage"],
   ["/admin/customers", "customers:read"],
+  ["/admin/inbox", "inbox:manage"],
   ["/admin/coupons", "coupons:write"],
   ["/admin/banners", "banners:write"],
   ["/admin/articles", "content:write"],

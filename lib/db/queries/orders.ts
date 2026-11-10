@@ -3,7 +3,8 @@ import "server-only"
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm"
 
 import { db } from "../index"
-import { couponRedemptions, coupons, orderEvents, orderItems, orders, payments, products, stockLevels, stockMovements, taxCategories, webhookEvents, type ShippingAddress } from "../schema"
+import { couponRedemptions, coupons, orderEvents, orderItems, orders, payments, products, returns, stockLevels, stockMovements, taxCategories, webhookEvents, type ShippingAddress } from "../schema"
+import { formatMoney } from "@/lib/money"
 import { quote } from "@/lib/pricing"
 import { MAX_QUANTITY } from "@/lib/store-config"
 import { couponProblem, toCouponRule } from "./coupons"
@@ -205,19 +206,42 @@ export async function cancelOrder(input: { number: string; actorId: string | nul
   })
 }
 
+/** Returns that still need staff to finish them. A full-order refund must wait for these, or the customer could be paid twice. */
+const OPEN_RETURN_STATUSES = ["requested", "approved", "received"] as const
+
+/**
+ * Money a full-order refund would send back: the captured payment minus whatever returns already refunded. Also the
+ * place the refusals live (an open return, nothing left), so the route and the transaction below agree.
+ */
+async function remainderForFullRefund(client: Pick<typeof db, "select">, orderId: string, number: string, captured: number | null): Promise<number | null> {
+  const [open] = await client.select({ n: sql<number>`count(*)::int` }).from(returns).where(and(eq(returns.orderId, orderId), inArray(returns.status, [...OPEN_RETURN_STATUSES])))
+  if (open.n > 0) throw new DomainError("RETURN_OPEN", `Order ${number} has a return in progress. Finish or reject it before refunding the whole order.`)
+  if (captured === null) return null
+  const [done] = await client.select({ n: sql<number>`coalesce(sum(${returns.refundPaise}), 0)::int` }).from(returns).where(and(eq(returns.orderId, orderId), eq(returns.status, "refunded")))
+  const left = captured - done.n
+  if (left <= 0) throw new DomainError("NOTHING_TO_REFUND", `Everything paid for order ${number} has already been refunded through returns.`)
+  return left
+}
+
 /**
  * Records a refund for a delivered order: the order and its captured payment become "refunded", with a timeline
- * entry. This does NOT move money: sending it back through the payment provider is a separate step (not
- * integrated yet), and returned goods go back on the shelf through an inventory adjustment.
+ * entry. Only what is left after refunded returns is refunded. The `gateway` callback (if given) sends the money back
+ * through the payment provider WHILE the order row is locked, so concurrent refunds queue up and the money leaves once;
+ * if it throws, nothing is changed. Returned goods go back on the shelf through the returns flow.
  */
-export async function refundOrder(input: { number: string; actorId: string | null; actorLabel?: string; /** Razorpay's refund id when the money was sent back through the gateway. */ providerRefundId?: string }): Promise<OrderDTO> {
+export async function refundOrder(input: { number: string; actorId: string | null; actorLabel?: string; /** Razorpay's refund id when the money was sent back through the gateway. */ providerRefundId?: string; /** Sends the money back through the gateway. Runs under the order lock; if it throws, nothing is changed. */ gateway?: (payment: { providerPaymentId: string | null; amountPaise: number } | null) => Promise<string | undefined> }): Promise<OrderDTO> {
   return db.transaction(async (tx: Tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.number, input.number)).for("update")
     if (!o) throw new DomainError("NOT_FOUND", "Order not found.")
     if (o.status !== "delivered") throw new DomainError("INVALID_TRANSITION", `Only delivered orders can be refunded, and this one is ${o.status}.`)
+    const [p] = await tx.select({ amountPaise: payments.amountPaise, providerPaymentId: payments.providerPaymentId }).from(payments).where(and(eq(payments.orderId, o.id), eq(payments.status, "captured"))).limit(1)
+    const left = await remainderForFullRefund(tx, o.id, o.number, p?.amountPaise ?? null)
+    // The money moves while the order row is locked, so a double click (or a return refund) waits and then finds the order already refunded.
+    if (input.gateway) input = { ...input, providerRefundId: (await input.gateway(p ? { providerPaymentId: p.providerPaymentId, amountPaise: left ?? p.amountPaise } : null)) ?? input.providerRefundId }
     await tx.update(orders).set({ status: "refunded" }).where(eq(orders.id, o.id))
     await tx.update(payments).set({ status: "refunded", providerRefundId: input.providerRefundId ?? null }).where(and(eq(payments.orderId, o.id), eq(payments.status, "captured")))
-    await tx.insert(orderEvents).values({ orderId: o.id, status: "refunded", actorId: input.actorId, actorLabel: input.actorLabel ?? "Staff", note: input.providerRefundId ? `Refund sent to the original payment method (${input.providerRefundId}).` : "Refund recorded. Return the money from the payment provider." })
+    const amount = left !== null && p && left < p.amountPaise ? ` of ${formatMoney(left)} (the rest was refunded through returns)` : ""
+    await tx.insert(orderEvents).values({ orderId: o.id, status: "refunded", actorId: input.actorId, actorLabel: input.actorLabel ?? "Staff", note: input.providerRefundId ? `Refund${amount} sent to the original payment method (${input.providerRefundId}).` : `Refund${amount} recorded. Return the money from the payment provider.` })
     return (await loadOrder(tx, eq(orders.id, o.id)))!
   })
 }
@@ -289,10 +313,3 @@ export async function setProviderOrderId(orderId: string, providerOrderId: strin
   if (rows.length === 0) throw new DomainError("NOT_FOUND", "No unpaid payment to attach to.")
 }
 
-/** What a refund needs: the order must be delivered and have a captured payment. */
-export async function getRefundablePayment(number: string): Promise<{ orderStatus: string; payment: { providerPaymentId: string | null; amountPaise: number } | null }> {
-  const [o] = await db.select({ id: orders.id, status: orders.status }).from(orders).where(eq(orders.number, number))
-  if (!o) throw new DomainError("NOT_FOUND", "Order not found.")
-  const [p] = await db.select({ providerPaymentId: payments.providerPaymentId, amountPaise: payments.amountPaise }).from(payments).where(and(eq(payments.orderId, o.id), eq(payments.status, "captured"))).limit(1)
-  return { orderStatus: o.status, payment: p ?? null }
-}

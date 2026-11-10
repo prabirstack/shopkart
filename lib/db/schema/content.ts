@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm"
 import { boolean, check, index, integer, jsonb, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core"
 import { id, timestamps } from "./common"
-import { articleCategory, articleProductKind, articleStatus, bannerSlot, reviewStatus } from "./enums"
+import { articleCategory, articleProductKind, articleStatus, bannerSlot, contactStatus, newsletterStatus, reviewStatus } from "./enums"
 import { products } from "./catalog"
 import { users } from "./identity"
 
@@ -78,5 +78,45 @@ export const banners = pgTable("banners", {
   endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
   href: text("href").notNull(),
   isPaused: boolean("is_paused").notNull().default(false),
+  /** Uploaded artwork (/media/banners/<uuid>.webp). A banner without an image is allowed. */
+  imageUrl: text("image_url"),
+  imageAlt: text("image_alt").notNull().default(""),
+  imageWidth: integer("image_width"),
+  imageHeight: integer("image_height"),
   ...timestamps,
-}, (t) => [index("banners_active_idx").on(t.slot, t.startsAt, t.endsAt), check("banners_dates_ordered", sql`${t.endsAt} >= ${t.startsAt}`), check("banners_href_internal", sql`${t.href} like '/%'`)])
+}, (t) => [
+  index("banners_active_idx").on(t.slot, t.startsAt, t.endsAt), check("banners_dates_ordered", sql`${t.endsAt} >= ${t.startsAt}`), check("banners_href_internal", sql`${t.href} like '/%'`),
+  check("banners_image_alt_len", sql`char_length(${t.imageAlt}) <= 160`), check("banners_image_url", sql`${t.imageUrl} is null or ${t.imageUrl} like '/media/banners/%'`),
+])
+
+/** Messages sent from the contact form. Staff read and resolve them in the admin Inbox. */
+export const contactMessages = pgTable("contact_messages", {
+  id: id(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  topic: text("topic").notNull(),
+  /** Optional order the message is about, like SK-10482. */
+  orderNumber: text("order_number"),
+  message: text("message").notNull(),
+  status: contactStatus("status").notNull().default("new"),
+  /** Set when the sender was signed in. */
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  handledBy: uuid("handled_by").references(() => users.id, { onDelete: "set null" }),
+  handledAt: timestamp("handled_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  index("contact_messages_status_idx").on(t.status, t.createdAt),
+  check("contact_messages_lengths", sql`char_length(${t.name}) between 2 and 80 and char_length(${t.message}) between 10 and 2000`),
+])
+
+/** People who asked for the newsletter. Unsubscribing keeps the row (so we never re-add someone who left) and is one click via the token. */
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: id(),
+  email: text("email").notNull(),
+  status: newsletterStatus("status").notNull().default("subscribed"),
+  /** Random token in the unsubscribe link, so only the person with the email can unsubscribe. */
+  unsubscribeToken: text("unsubscribe_token").notNull(),
+  source: text("source").notNull().default("footer"),
+  unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [uniqueIndex("newsletter_email_idx").on(sql`lower(${t.email})`), uniqueIndex("newsletter_token_idx").on(t.unsubscribeToken), index("newsletter_status_idx").on(t.status)])

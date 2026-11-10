@@ -1,21 +1,32 @@
 "use client"
 import { useState } from "react"
-import { Mail, Send } from "lucide-react"
+import { Check, Mail, Send } from "lucide-react"
 
-/** Layout-only for now: a later chapter connects it to a consent-aware signup API. */
+/** Newsletter signup. Stores the address (see /api/v1/newsletter); every outcome reads the same so it can't reveal who is subscribed. */
 export function NewsletterForm({ variant }: { variant: "band" | "footer" }) {
   const [message, setMessage] = useState("")
-  const submit = (e: React.FormEvent) => {
+  const [done, setDone] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setMessage("Newsletter signup is not connected yet.")
+    if (busy) return
+    const form = new FormData(e.currentTarget)
+    setBusy(true); setMessage("")
+    try {
+      const res = await fetch("/api/v1/newsletter", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: form.get("email"), website: form.get("website") ?? "", source: variant === "band" ? "band" : "footer" }) })
+      if (res.ok) { setDone(true); setMessage("You're on the list. We'll let you know about new arrivals and deals.") }
+      else setMessage(res.status === 429 ? "Too many attempts. Please try again in a few minutes." : res.status === 422 ? "Enter a valid email address." : "Couldn't sign you up. Please try again.")
+    } catch { setMessage("Couldn't reach the server. Check your connection.") } finally { setBusy(false) }
   }
   const field = (
     <form onSubmit={submit} className="flex min-w-0 flex-1 gap-2">
       <label htmlFor={`email-${variant}`} className="sr-only">Email address</label>
-      <input id={`email-${variant}`} type="email" required placeholder="Enter your email"
-        className={`h-10 min-w-0 flex-1 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 ${variant === "footer" ? "border-white/20 bg-white/10 text-white placeholder:text-white/50" : "bg-background"}`} />
-      <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
-        {variant === "band" ? "Subscribe" : <Send className="size-4" aria-label="Subscribe" />}
+      <input id={`email-${variant}`} name="email" type="email" required maxLength={254} placeholder="Enter your email" autoComplete="email" disabled={done}
+        className={`h-10 min-w-0 flex-1 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:opacity-60 ${variant === "footer" ? "border-white/20 bg-white/10 text-white placeholder:text-white/50" : "bg-background"}`} />
+      {/* Honeypot for bots; real people never see or fill it. */}
+      <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 opacity-0" />
+      <button type="submit" disabled={busy || done} className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-70">
+        {done ? <Check className="size-4" aria-label="Subscribed" /> : variant === "band" ? (busy ? "Subscribing…" : "Subscribe") : <Send className="size-4" aria-label="Subscribe" />}
       </button>
     </form>
   )

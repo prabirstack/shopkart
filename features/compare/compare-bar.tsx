@@ -22,7 +22,7 @@ export function CompareBar() {
             <li key={i} className="relative">
               {p ? (
                 <>
-                  <span className="relative block size-12 overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200"><ProductArt slug={p.slug} title={p.title} category={p.category} sizes="48px" imageClassName="object-contain p-1" iconClassName="size-1/2 text-neutral-700" /></span>
+                  <span className="relative block size-12 overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200"><ProductArt slug={p.slug} images={p.images} title={p.title} category={p.category} sizes="48px" imageClassName="object-contain p-1" iconClassName="size-1/2 text-neutral-700" /></span>
                   <button type="button" onClick={() => remove(p.id)} aria-label={`Remove ${p.title} from compare`} className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-foreground text-background shadow hover:bg-primary"><X className="size-3" aria-hidden="true" /></button>
                 </>
               ) : <span aria-hidden="true" className="grid size-12 place-items-center rounded-lg border-2 border-dashed text-xs text-muted-foreground">{i + 1}</span>}

@@ -72,7 +72,7 @@ function ProductDetail({ product, related, articles, category }: { product: Prod
 
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="grid min-w-0 content-start gap-5">
-          <ProductGallery slug={product.slug} title={product.title} category={product.category} badge={off > 0 ? `-${off}%` : undefined} />
+          <ProductGallery images={product.images} slug={product.slug} title={product.title} category={product.category} badge={off > 0 ? `-${off}%` : undefined} />
           <section aria-labelledby="highlights" className="rounded-xl border bg-card p-5">
             <h2 id="highlights" className="mb-3 font-semibold">Highlights</h2>
             <ul className="grid gap-2 text-sm">

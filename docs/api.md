@@ -65,6 +65,15 @@ changes what shoppers can see (products, stock, reviews, articles, orders reserv
 immediately through the `invalidates` option of `route()`, so an admin edit shows on the shop at once. Client components that hold
 only product ids (cart, wishlist, compare) fetch current prices and stock with `GET /products/by-ids`.
 
+**Uploads** (`POST admin/uploads`, multipart/form-data with `file` and `kind` = `product` | `banner`; needs `catalog:write` or
+`banners:write` respectively; 30 a minute per account): validates by file content (JPEG, PNG, WebP, AVIF), re-encodes to WebP
+without metadata and returns `201 {data:{url,width,height,bytes}}` with `url` like `/media/products/<uuid>.webp`. Errors: 413 over 5 MB
+(body cap 6 MB), 422 wrong type, corrupt, too small or too large in pixels, 403, 429. A file is only attached when its URL is saved: send
+`images: [{url, alt, width?, height?}]` (at most 8, first is the main photo) on `POST/PATCH admin/products` (the set is replaced in one transaction),
+and `image: {url, alt, width?, height?} | null` on `POST/PATCH admin/banners`. Only URLs of uploaded files of the right kind are accepted (products
+also accept the demo `/images/products/*` files). Files that lose their last reference are deleted after the save. Uploads are served by `GET /media/<key>`.
+Banner changes expire the `content` cache tag.
+
 Extra public endpoints: `GET /products/by-ids?ids=` (up to 50), `GET /search/suggest?q=` (typo-tolerant, uses PostgreSQL trigram
 similarity), `POST /orders/track {number, email}` (identical answer for a missing order and a wrong email, 10 a minute),
 `POST /reviews/:id/helpful` (signed in; one vote per person; not on your own review), `GET /reviews/voted?ids=`.
@@ -103,8 +112,9 @@ The dummy gateway wins when it is on, so **leave `ENABLE_MOCK_PAYMENTS` empty to
 How it works: the order is saved first (so the amount is the stored total), then the matching Razorpay order is created through their
 API and its id attached. If Razorpay can't be reached the order is cancelled and its stock released, and the shopper is told nothing
 was charged. The popup returns a signature that `POST /payments/verify` checks against `RAZORPAY_KEY_SECRET`; the amount comes from
-our own payment row, never from the browser. Admin refunds of a real payment call the Razorpay refund API first and only mark the order
-refunded if it succeeds (a dummy-gateway payment is just recorded). Going live later means switching to live keys: nothing else changes.
+our own payment row, never from the browser. Admin refunds of a real payment (full order or a return) call the Razorpay refund API while the order row is locked
+in the database, with an idempotency key, and only mark the order or return refunded if it succeeds. A double click or two admins at
+once therefore queue up and the money leaves once (a dummy-gateway payment is just recorded). Going live later means switching to live keys: nothing else changes.
 
 ## Checkout flow
 

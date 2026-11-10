@@ -1,0 +1,1 @@
+ALTER TYPE "return_status" ADD VALUE 'cancelled';

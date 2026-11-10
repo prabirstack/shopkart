@@ -1,5 +1,6 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { connection } from "next/server"
 import type { ReactNode } from "react"
 import { AccessDenied } from "@/components/admin/access-denied"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
@@ -18,6 +19,8 @@ import { can, isStaff, type Role } from "@/lib/api/permissions"
  * is done per page by <Authorized> (components/admin/authorized.tsx), and again by every API endpoint.
  */
 export async function AdminGate({ children }: { children: ReactNode }) {
+  // Opt into request time first: reading the session compares expiry dates (`new Date()`), which Next refuses to do while prerendering.
+  await connection()
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect("/login?next=%2Fadmin")
 
@@ -25,7 +28,7 @@ export async function AdminGate({ children }: { children: ReactNode }) {
   const user = { name: session.user.name, email: session.user.email, role, roleLabel: ROLE_LABELS[role] }
 
   // Badge counts, computed only for the sections this role may open.
-  const counts = isStaff(role) ? await loadAdminCounts({ orders: can(role, "orders:read"), stock: can(role, "inventory:read"), returns: can(role, "returns:manage"), reviews: can(role, "reviews:moderate") }) : null
+  const counts = isStaff(role) ? await loadAdminCounts({ orders: can(role, "orders:read"), stock: can(role, "inventory:read"), returns: can(role, "returns:manage"), reviews: can(role, "reviews:moderate"), inbox: can(role, "inbox:manage") }) : null
 
   return (
     <TooltipProvider>

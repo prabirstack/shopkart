@@ -1,9 +1,9 @@
 import {
   BarChart3, Boxes, FileText, Image as ImageIcon, LayoutDashboard, Package, Percent,
-  MessageSquare, RotateCcw, Settings, ShoppingBag, Ticket, Users, type LucideIcon,
+  Inbox, MessageSquare, RotateCcw, Settings, ShoppingBag, Ticket, Users, type LucideIcon,
 } from "lucide-react"
 
-export type AdminNavItem = { title: string; href: string; icon: LucideIcon; badge?: "orders" | "stock" | "returns" | "reviews" }
+export type AdminNavItem = { title: string; href: string; icon: LucideIcon; badge?: "orders" | "stock" | "returns" | "reviews" | "inbox" }
 export type AdminNavGroup = { label: string; items: AdminNavItem[] }
 
 export const adminNav: AdminNavGroup[] = [
@@ -17,6 +17,7 @@ export const adminNav: AdminNavGroup[] = [
     { title: "Orders", href: "/admin/orders", icon: ShoppingBag, badge: "orders" },
     { title: "Returns", href: "/admin/returns", icon: RotateCcw, badge: "returns" },
     { title: "Customers", href: "/admin/customers", icon: Users },
+    { title: "Inbox", href: "/admin/inbox", icon: Inbox, badge: "inbox" },
   ] },
   { label: "Marketing", items: [
     { title: "Coupons", href: "/admin/coupons", icon: Ticket },

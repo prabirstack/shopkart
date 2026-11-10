@@ -3,7 +3,7 @@ export type Role = "customer" | "owner" | "catalog_editor" | "warehouse" | "supp
 /** Every action a staff role can be granted. The owner can do everything. Customers have none. */
 export const PERMISSIONS = [
   "catalog:write", "inventory:read", "inventory:write", "orders:read", "orders:fulfil", "orders:cancel",
-  "reviews:moderate", "content:write", "coupons:write", "banners:write", "customers:read", "returns:manage", "settings:write", "reports:read",
+  "reviews:moderate", "content:write", "coupons:write", "banners:write", "customers:read", "returns:manage", "settings:write", "reports:read", "inbox:manage",
 ] as const
 export type Permission = (typeof PERMISSIONS)[number]
 
@@ -12,7 +12,7 @@ export const ROLE_PERMISSIONS: Record<Exclude<Role, "customer">, readonly Permis
   owner: PERMISSIONS,
   catalog_editor: ["catalog:write", "content:write", "banners:write", "reviews:moderate", "inventory:read"],
   warehouse: ["inventory:read", "inventory:write", "orders:read", "orders:fulfil"],
-  support: ["orders:read", "orders:cancel", "customers:read", "returns:manage", "reviews:moderate"],
+  support: ["orders:read", "orders:cancel", "customers:read", "returns:manage", "reviews:moderate", "inbox:manage"],
   finance: ["orders:read", "reports:read", "coupons:write", "returns:manage", "customers:read"],
 }
 

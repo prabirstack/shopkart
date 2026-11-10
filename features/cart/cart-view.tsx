@@ -64,7 +64,7 @@ export function CartView({ recommended }: { recommended: Product[] }) {
                 return (
                   <li key={product.id} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 rounded-2xl border bg-card p-4 shadow-xs transition-shadow duration-300 hover:shadow-md sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
                     <Link href={`/products/${product.slug}`} className="relative grid aspect-square place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80">
-                      <ProductArt slug={product.slug} title={product.title} category={product.category} sizes="96px" imageClassName="object-contain p-2" iconClassName="size-1/2 text-neutral-700" />
+                      <ProductArt slug={product.slug} images={product.images} title={product.title} category={product.category} sizes="96px" imageClassName="object-contain p-2" iconClassName="size-1/2 text-neutral-700" />
                     </Link>
                     <div className="grid min-w-0 content-start gap-1">
                       <p className="text-xs text-muted-foreground">{product.brand}</p>
