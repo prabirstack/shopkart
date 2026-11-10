@@ -17,7 +17,7 @@ export default function ResetPasswordPage() {
           if (error) return "This reset link is invalid or has expired. Request a new one."
           router.push("/login?reset=1")
         }} />
-      <p className="text-center text-sm text-muted-foreground"><Link href="/forgot-password" className="font-medium text-primary hover:underline">Request a new link</Link></p>
+      <p className="text-sm text-muted-foreground"><Link href="/forgot-password" className="font-medium text-primary hover:underline">Request a new link</Link></p>
     </AuthCard>
   )
 }

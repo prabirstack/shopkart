@@ -27,7 +27,7 @@ export default function RegisterPage() {
           }
           router.push("/account"); router.refresh()
         }} />
-      <p className="text-center text-sm text-muted-foreground">Already have an account? <Link href="/login" className="font-medium text-primary hover:underline">Sign in</Link></p>
+      <p className="text-sm text-muted-foreground">Already have an account? <Link href="/login" className="font-medium text-primary hover:underline">Sign in</Link></p>
     </AuthCard>
   )
 }

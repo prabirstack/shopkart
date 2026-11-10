@@ -13,7 +13,7 @@ export default function LoginPage() {
   const router = useRouter()
   const next = () => safeNext(new URLSearchParams(window.location.search).get("next"))
   return (
-    <AuthCard title="Welcome back" intro="Sign in to track orders, save favourites and check out faster.">
+    <AuthCard title="Sign in" intro="Use your ShopKart account to continue. Store staff are taken to the admin console.">
       <AuthForm submitLabel="Sign in"
         fields={[
           { name: "email", label: "Email", type: "email", autoComplete: "email" },
@@ -38,7 +38,7 @@ export default function LoginPage() {
             <Button type="button" variant="outline" size="lg" className="h-11 rounded-xl" onClick={() => authClient.signIn.social({ provider: "google", callbackURL: next() })}>Continue with Google</Button>
           </>
         )} />
-      <p className="text-center text-sm text-muted-foreground">New here? <Link href="/register" className="font-medium text-primary hover:underline">Create an account</Link></p>
+      <p className="text-sm text-muted-foreground">New here? <Link href="/register" className="font-medium text-primary hover:underline">Create an account</Link></p>
     </AuthCard>
   )
 }

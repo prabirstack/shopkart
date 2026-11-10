@@ -3,26 +3,58 @@ import type { ReactNode } from "react"
 import { ArrowLeft, ShoppingBag } from "lucide-react"
 import { SITE_NAME } from "@/lib/site"
 
+const facts = [
+  ["Roles", "Owner, catalog, warehouse, support and finance each see only their own sections."],
+  ["Invoices", "GST-inclusive prices and a tax invoice on every paid order."],
+  ["Audit trail", "Stock, price and order changes are recorded with who made them."],
+] as const
+
 /**
- * Sign-in, sign-up and password pages get their own focused layout: just the brand, a way back, and the form.
- * No storefront header, menus, cart or footer, so there is nothing to distract from signing in.
+ * Sign-in, sign-up and password pages: a quiet two-column screen. A dark brand panel with a hairline grid on the
+ * left (hidden on small screens), the form on the right. No storefront header, menus, cart or footer.
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="store-container flex h-16 shrink-0 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 rounded-lg font-bold tracking-tight focus-visible:ring-[3px] focus-visible:ring-ring/50" aria-label={`${SITE_NAME} home`}>
-          <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/75 text-primary-foreground shadow-md shadow-primary/25"><ShoppingBag className="size-5" aria-hidden="true" /></span>
-          <span className="text-xl">{SITE_NAME}</span>
+    <div className="grid min-h-screen bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-neutral-950 p-10 text-neutral-300 lg:flex">
+        {/* Hairline grid, fading out toward the bottom. Pure CSS lines: no blur, no gradient fills. */}
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgb(255_255_255/0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.06)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+        <Link href="/" className="relative flex w-fit items-center gap-2.5 text-white focus-visible:ring-[3px] focus-visible:ring-white/40" aria-label={`${SITE_NAME} home`}>
+          <span className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground"><ShoppingBag className="size-4" aria-hidden="true" /></span>
+          <span className="text-lg font-semibold tracking-tight">{SITE_NAME}</span>
         </Link>
-        <Link href="/" className="group inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50">
-          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" /> Back to store
-        </Link>
-      </header>
-      <div className="flex flex-1 flex-col">{children}</div>
-      <footer className="store-container shrink-0 py-6 text-center text-xs text-muted-foreground">
-        © 2026 {SITE_NAME} · <Link href="/terms" className="underline-offset-4 hover:underline">Terms</Link> · <Link href="/privacy" className="underline-offset-4 hover:underline">Privacy</Link> · <Link href="/help" className="underline-offset-4 hover:underline">Help</Link>
-      </footer>
+        <div className="relative max-w-md">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-neutral-500">Store console</p>
+          <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white">Everything about the shop, in one place.</h2>
+          <dl className="mt-10 divide-y divide-white/10 border-y border-white/10">
+            {facts.map(([term, text]) => (
+              <div key={term} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-4 text-sm">
+                <dt className="font-mono text-xs uppercase tracking-wider text-neutral-500">{term}</dt>
+                <dd className="leading-relaxed text-neutral-400">{text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <p className="relative font-mono text-xs text-neutral-600">© 2026 {SITE_NAME}</p>
+      </aside>
+
+      <div className="flex min-h-screen flex-col">
+        <header className="flex h-16 shrink-0 items-center justify-between px-6 sm:px-12">
+          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight lg:invisible" aria-label={`${SITE_NAME} home`}>
+            <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground"><ShoppingBag className="size-4" aria-hidden="true" /></span>
+            {SITE_NAME}
+          </Link>
+          <Link href="/" className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50">
+            <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" /> Back to store
+          </Link>
+        </header>
+        <div className="flex flex-1 flex-col">{children}</div>
+        <footer className="shrink-0 px-6 py-6 text-xs text-muted-foreground sm:px-12">
+          <div className="mx-auto w-full max-w-sm">
+          <Link href="/terms" className="underline-offset-4 hover:underline">Terms</Link> · <Link href="/privacy" className="underline-offset-4 hover:underline">Privacy</Link> · <Link href="/help" className="underline-offset-4 hover:underline">Help</Link>
+          </div>
+        </footer>
+      </div>
     </div>
   )
 }

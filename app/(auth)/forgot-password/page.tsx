@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
             setSent(email)
           }} />
       )}
-      <p className="text-center text-sm text-muted-foreground"><Link href="/login" className="font-medium text-primary hover:underline">Back to sign in</Link></p>
+      <p className="text-sm text-muted-foreground"><Link href="/login" className="font-medium text-primary hover:underline">Back to sign in</Link></p>
     </AuthCard>
   )
 }

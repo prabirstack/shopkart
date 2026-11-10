@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 
 export type AuthField = { name: string; label: string; type?: "text" | "email" | "tel" | "password"; autoComplete?: string; hint?: string; required?: boolean; minLength?: number; pattern?: string; maxLength?: number; inputMode?: "numeric" | "text" }
 
-const input = "h-11 w-full rounded-xl border bg-background px-3.5 text-sm shadow-xs outline-none transition hover:border-primary/40 focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15 aria-[invalid=true]:border-destructive"
+const input = "h-11 w-full rounded-lg border border-input bg-background px-3.5 text-sm outline-none transition-colors hover:border-foreground/30 focus-visible:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/10 aria-[invalid=true]:border-destructive"
 
 /**
  * Form for sign-in style pages. `onSubmit` returns an error message to show, or nothing on success
@@ -51,7 +51,7 @@ export function AuthForm({ fields, submitLabel, onSubmit, footer, belowFields }:
       <div role="alert" className={error ? "" : "hidden"}>
         {error && <p className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"><AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{error}</p>}
       </div>
-      <Button type="submit" size="lg" disabled={busy} className="h-11 rounded-xl text-base font-semibold shadow-md shadow-primary/25 transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0">
+      <Button type="submit" size="lg" disabled={busy} className="h-11 rounded-lg text-sm font-semibold">
         {busy && <Loader2 className="animate-spin" aria-hidden="true" />}{busy ? "Please wait…" : submitLabel}
       </Button>
       {footer}
