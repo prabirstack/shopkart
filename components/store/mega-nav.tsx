@@ -18,6 +18,7 @@ const entries: Entry[] = [
   { kind: "menu", id: "new" }, { kind: "menu", id: "best" },
   { kind: "link", label: "Top Selling", href: "/top-selling" },
   { kind: "menu", id: "brands" },
+  { kind: "link", label: "Guides", href: "/news" },
   { kind: "link", label: "Gift Cards", href: "/gift-cards" },
   { kind: "link", label: "Sell on ShopKart", href: "/sell" },
 ]

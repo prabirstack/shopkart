@@ -5,7 +5,7 @@ import { NewsletterForm } from "./newsletter-form"
 const columns = [
   { title: "Shop", links: [["All Categories", "/categories"], ["Deals & Offers", "/deals"], ["New Arrivals", "/new-arrivals"], ["Bestsellers", "/bestsellers"], ["Gift Cards", "/gift-cards"]] },
   { title: "Help", links: [["Track Your Order", "/help/track-order"], ["Returns & Refunds", "/help/returns"], ["FAQs", "/help/faq"], ["Contact Us", "/contact"], ["Support", "/help"]] },
-  { title: "About", links: [["About ShopKart", "/about"], ["Careers", "/careers"], ["Sell on ShopKart", "/sell"], ["Press", "/press"], ["Sustainability", "/sustainability"]] },
+  { title: "About", links: [["About ShopKart", "/about"], ["Careers", "/careers"], ["Sell on ShopKart", "/sell"], ["Buying guides", "/news"], ["Press", "/press"], ["Sustainability", "/sustainability"]] },
 ]
 
 export function SiteFooter() {

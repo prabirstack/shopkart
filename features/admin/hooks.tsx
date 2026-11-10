@@ -1,10 +1,11 @@
 "use client"
 import { useEffect, useSyncExternalStore } from "react"
+import { useArticleStore } from "@/features/articles/store"
 import { useAdmin } from "./store"
 
 /** Loads saved demo data from localStorage after the first render. */
 export function AdminHydrator() {
-  useEffect(() => { void useAdmin.persist.rehydrate() }, [])
+  useEffect(() => { void useAdmin.persist.rehydrate(); void useArticleStore.persist.rehydrate() }, [])
   return null
 }
 

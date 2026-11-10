@@ -1,12 +1,13 @@
 "use client"
+import { useArticleStore } from "@/features/articles/store"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
-import { initialArticles, initialBanners, initialCoupons, initialMovements, initialOrders, initialProducts, initialReturns, initialSettings } from "./seed"
-import type { AdminArticle, AdminBanner, AdminCoupon, AdminOrder, AdminProduct, AdminReturn, OrderStatus, ProductStatus, ReturnStatus, Settings, StockMovement, StockReason } from "./types"
+import { initialBanners, initialCoupons, initialMovements, initialOrders, initialProducts, initialReturns, initialSettings } from "./seed"
+import type { AdminBanner, AdminCoupon, AdminOrder, AdminProduct, AdminReturn, OrderStatus, ProductStatus, ReturnStatus, Settings, StockMovement, StockReason } from "./types"
 
 type AdminState = {
   products: AdminProduct[]; orders: AdminOrder[]; movements: StockMovement[]; coupons: AdminCoupon[]
-  banners: AdminBanner[]; returns: AdminReturn[]; articles: AdminArticle[]; settings: Settings
+  banners: AdminBanner[]; returns: AdminReturn[]; settings: Settings
   upsertProduct: (p: AdminProduct) => void
   setProductStatus: (ids: string[], status: ProductStatus) => void
   deleteProducts: (ids: string[]) => void
@@ -19,14 +20,12 @@ type AdminState = {
   upsertBanner: (b: AdminBanner) => void
   deleteBanner: (id: string) => void
   setReturnStatus: (id: string, status: ReturnStatus) => void
-  toggleArticle: (id: string) => void
-  addArticle: (title: string) => void
   saveSettings: (s: Settings) => void
   resetDemo: () => void
 }
 
 const now = () => new Date().toISOString()
-const seed = () => ({ products: initialProducts, orders: initialOrders, movements: initialMovements, coupons: initialCoupons, banners: initialBanners, returns: initialReturns, articles: initialArticles, settings: initialSettings })
+const seed = () => ({ products: initialProducts, orders: initialOrders, movements: initialMovements, coupons: initialCoupons, banners: initialBanners, returns: initialReturns, settings: initialSettings })
 
 /**
  * Demo back-office data, kept in the browser so every admin action really works and survives a refresh.
@@ -57,12 +56,10 @@ export const useAdmin = create<AdminState>()(
       upsertBanner: (b) => set((s) => ({ banners: s.banners.some((x) => x.id === b.id) ? s.banners.map((x) => (x.id === b.id ? b : x)) : [b, ...s.banners] })),
       deleteBanner: (id) => set((s) => ({ banners: s.banners.filter((b) => b.id !== id) })),
       setReturnStatus: (id, status) => set((s) => ({ returns: s.returns.map((r) => (r.id === id ? { ...r, status } : r)) })),
-      toggleArticle: (id) => set((s) => ({ articles: s.articles.map((a) => (a.id === id ? { ...a, published: !a.published, updated: "2026-11-10" } : a)) })),
-      addArticle: (title) => set((s) => ({ articles: [{ id: `a${Date.now()}`, title, slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), author: "You", updated: "2026-11-10", published: false }, ...s.articles] })),
       saveSettings: (settings) => set({ settings }),
-      resetDemo: () => set(seed()),
+      resetDemo: () => { useArticleStore.getState().reset(); set(seed()) },
     }),
-    { name: "shopkart-admin-demo", storage: createJSONStorage(() => localStorage), skipHydration: true, version: 1 },
+    { name: "shopkart-admin-demo", storage: createJSONStorage(() => localStorage), skipHydration: true, version: 2, migrate: (state) => { const { articles: _legacy, ...rest } = state as Record<string, unknown>; void _legacy; return rest as never } },
   ),
 )
 

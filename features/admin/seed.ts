@@ -1,5 +1,5 @@
 import { catalog, productById } from "@/features/catalog/demo"
-import type { AdminArticle, AdminBanner, AdminCoupon, AdminOrder, AdminProduct, AdminReturn, Customer, OrderStatus, Settings, StockMovement, TimelineEvent } from "./types"
+import type { AdminBanner, AdminCoupon, AdminOrder, AdminProduct, AdminReturn, Customer, OrderStatus, Settings, StockMovement, TimelineEvent } from "./types"
 
 export const customers: Customer[] = [
   { id: "c1", name: "Aarav Mehta", email: "aarav@example.com", phone: "9876543210", city: "Bengaluru", joined: "2026-01-14", verified: true },
@@ -94,12 +94,6 @@ export const initialReturns: AdminReturn[] = [
   { id: "RT-2033", orderId: "SK-10484", customerName: "Rohan Iyer", reason: "Changed my mind", refundPaise: 249900, status: "approved", requested: iso(2, 11) },
   { id: "RT-2032", orderId: "SK-10486", customerName: "Isha Rao", reason: "Wrong size", refundPaise: 159800, status: "received", requested: iso(4, 16) },
   { id: "RT-2031", orderId: "SK-10480", customerName: "Rohan Iyer", reason: "Item arrived damaged", refundPaise: 64900, status: "refunded", requested: iso(9, 10) },
-]
-
-export const initialArticles: AdminArticle[] = [
-  { id: "a1", title: "How to choose wireless earbuds", slug: "choose-wireless-earbuds", author: "Team ShopKart", updated: "2026-11-08", published: true },
-  { id: "a2", title: "Air fryer buying guide", slug: "air-fryer-buying-guide", author: "Team ShopKart", updated: "2026-11-05", published: true },
-  { id: "a3", title: "Gift ideas under ₹2,000", slug: "gift-ideas-under-2000", author: "Team ShopKart", updated: "2026-11-10", published: false },
 ]
 
 export const initialSettings: Settings = {

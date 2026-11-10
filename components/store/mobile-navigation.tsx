@@ -39,7 +39,7 @@ export function MobileNavigation() {
               </ul>
             </details>
           ))}
-          {[["Top Selling", "/top-selling"], ["Gift Cards", "/gift-cards"], ["Help", "/help"]].map(([label, href]) => (
+          {[["Top Selling", "/top-selling"], ["Guides & reviews", "/news"], ["Compare", "/compare"], ["Gift Cards", "/gift-cards"], ["Help", "/help"]].map(([label, href]) => (
             <Link key={label} href={href} onClick={close} className="rounded-md px-2 py-2 font-medium hover:bg-muted">{label}</Link>
           ))}
           <p className="mt-4 px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>

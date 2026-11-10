@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { BadgeCheck, Check, CreditCard, FileText, RotateCcw, ShieldCheck, Truck } from "lucide-react"
 import { FaqAccordion } from "@/components/info/faq-accordion"
+import { RelatedArticles } from "@/components/articles/article-list"
+import { publishedSeed } from "@/features/articles/seed"
 import { JsonLd } from "@/components/json-ld"
 import { Price } from "@/components/price"
 import { OffersBox } from "@/components/store/offers-box"
@@ -191,6 +193,8 @@ function ProductDetail({ product }: { product: Product }) {
         </div>
         <ProductAside />
       </div>
+
+      <RelatedArticles productId={product.id} initial={publishedSeed} />
 
       {related.length > 0 && (
         <section aria-labelledby="related">

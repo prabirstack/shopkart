@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next"
+import { publishedSeed } from "@/features/articles/seed"
 import { catalog, categories } from "@/features/catalog/demo"
 import { CONTENT_UPDATED, absoluteUrl } from "@/lib/site"
 
@@ -30,6 +31,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/sell", 0.3, "monthly"),
     page("/terms", 0.2, "monthly"),
     page("/privacy", 0.2, "monthly"),
+    page("/news", 0.7, "weekly"),
+    ...publishedSeed.map((a) => page(`/news/${a.slug}`, 0.6, "monthly")),
     page("/cookies", 0.2, "monthly"),
     ...categories.map((c) => page(`/products?category=${c.slug}`, 0.8, "weekly")),
     ...catalog.map((p) => page(`/products/${p.slug}`, 0.8, "weekly")),

@@ -25,7 +25,6 @@ export type AdminCoupon = { id: string; code: string; kind: "percent" | "flat"; 
 export type AdminBanner = { id: string; title: string; slot: string; starts: string; ends: string; href: string; paused: boolean }
 export type ReturnStatus = "requested" | "approved" | "received" | "refunded" | "rejected"
 export type AdminReturn = { id: string; orderId: string; customerName: string; reason: string; refundPaise: number; status: ReturnStatus; requested: string }
-export type AdminArticle = { id: string; title: string; slug: string; author: string; updated: string; published: boolean }
 
 export type Settings = {
   storeName: string; supportEmail: string; phone: string; gstin: string
