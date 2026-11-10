@@ -1,3 +1,4 @@
+import { Authorized } from "@/components/admin/authorized"
 import { DemoNotice } from "@/components/admin/demo-notice"
 import { PageHeader } from "@/components/admin/page-header"
 import { SimpleTable } from "@/components/admin/simple-table"
@@ -6,7 +7,7 @@ import { formatMoney, gstFromInclusive } from "@/lib/money"
 
 const rupees = (p: number) => formatMoney(p, undefined, undefined, { hideZeroDecimals: true })
 
-export default function AdminTaxPage() {
+function TaxContent() {
   // Worked example with a tax-inclusive price of ₹1,180 at 18% GST.
   const price = 118000
   const rate = 18
@@ -33,4 +34,8 @@ export default function AdminTaxPage() {
         ]} />
     </>
   )
+}
+
+export default function AdminTaxPage() {
+  return <Authorized section="/admin/tax"><TaxContent /></Authorized>
 }
