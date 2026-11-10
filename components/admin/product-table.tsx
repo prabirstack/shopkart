@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatMoney } from "@/lib/money"
@@ -20,7 +21,7 @@ export function AdminProductTable({ rows }: { rows: AdminProductRow[] }) {
             <TableRow><TableCell colSpan={7} className="py-10 text-center">No products match these filters.</TableCell></TableRow>
           ) : rows.map((p) => (
             <TableRow key={p.id}>
-              <TableCell className="min-w-48 font-medium">{p.title}</TableCell>
+              <TableCell className="min-w-48 font-medium"><Link href={`/admin/products/${p.id}`} className="hover:text-primary hover:underline">{p.title}</Link></TableCell>
               <TableCell className="font-mono text-xs">{p.sku}</TableCell>
               <TableCell className="whitespace-nowrap text-muted-foreground">{p.category}</TableCell>
               <TableCell className="price whitespace-nowrap text-right">{formatMoney(p.pricePaise, undefined, undefined, { hideZeroDecimals: true })}</TableCell>

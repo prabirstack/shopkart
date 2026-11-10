@@ -3,9 +3,9 @@ import { ShoppingBag } from "lucide-react"
 import { NewsletterForm } from "./newsletter-form"
 
 const columns = [
-  { title: "Shop", links: ["All Categories", "Deals & Offers", "New Arrivals", "Bestsellers", "Gift Cards"] },
-  { title: "Help", links: ["Track Your Order", "Returns & Refunds", "FAQs", "Contact Us", "Support"] },
-  { title: "About", links: ["About ShopKart", "Careers", "Sell on ShopKart", "Press", "Sustainability"] },
+  { title: "Shop", links: [["All Categories", "/categories"], ["Deals & Offers", "/deals"], ["New Arrivals", "/new-arrivals"], ["Bestsellers", "/bestsellers"], ["Gift Cards", "/gift-cards"]] },
+  { title: "Help", links: [["Track Your Order", "/help/track-order"], ["Returns & Refunds", "/help/returns"], ["FAQs", "/help/faq"], ["Contact Us", "/contact"], ["Support", "/help"]] },
+  { title: "About", links: [["About ShopKart", "/about"], ["Careers", "/careers"], ["Sell on ShopKart", "/sell"], ["Press", "/press"], ["Sustainability", "/sustainability"]] },
 ]
 
 export function SiteFooter() {
@@ -20,7 +20,7 @@ export function SiteFooter() {
           <nav key={title} aria-label={title}>
             <h2 className="text-sm font-semibold">{title}</h2>
             <ul className="mt-3 grid gap-2 text-sm text-background/70">
-              {links.map((l) => <li key={l}><Link href="/" className="hover:text-background hover:underline">{l}</Link></li>)}
+              {links.map(([label, href]) => <li key={label}><Link href={href} className="hover:text-background hover:underline">{label}</Link></li>)}
             </ul>
           </nav>
         ))}
@@ -34,7 +34,7 @@ export function SiteFooter() {
         <div className="store-container flex flex-wrap items-center justify-between gap-2 py-4 text-xs text-background/70">
           <p>© 2026 ShopKart. All rights reserved.</p>
           <ul className="flex flex-wrap gap-4">
-            {[["Terms & Conditions", "/"], ["Privacy Policy", "/"], ["Cookie Policy", "/cookies"]].map(([l, href]) => <li key={l}><Link href={href} className="hover:underline">{l}</Link></li>)}
+            {[["Terms & Conditions", "/terms"], ["Privacy Policy", "/privacy"], ["Cookie Policy", "/cookies"]].map(([l, href]) => <li key={l}><Link href={href} className="hover:underline">{l}</Link></li>)}
           </ul>
         </div>
       </div>

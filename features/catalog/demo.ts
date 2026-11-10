@@ -102,3 +102,7 @@ export const collections: Collection[] = [
   { title: "Smart Kitchen", note: "Up to 50% OFF", href: "/products", icon: CookingPot, tint: "bg-amber-100" },
   { title: "Travel Essentials", note: "Up to 30% OFF", href: "/products", icon: Armchair, tint: "bg-sky-100" },
 ]
+
+// Curated lists for the "New arrivals", "Bestsellers" and "Top selling" pages.
+export const newArrivals: Product[] = pick("x3", "x1", "x6", "x4", "x5", "x2")
+export const bestsellers: Product[] = catalog.filter((p) => p.badge === "Bestseller" || (p.rating ?? 0) >= 4.7)

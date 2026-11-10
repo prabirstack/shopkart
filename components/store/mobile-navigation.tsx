@@ -23,8 +23,8 @@ export function MobileNavigation() {
           <SheetDescription>Browse the store.</SheetDescription>
         </SheetHeader>
         <nav aria-label="Mobile navigation" className="grid gap-1 px-4 pb-6 text-sm">
-          {["Deals", "New Arrivals", "Bestsellers", "Gift Cards"].map((label) => (
-            <Link key={label} href="/products" onClick={close} className="rounded-md px-2 py-2 font-medium hover:bg-muted">{label}</Link>
+          {[["Deals", "/deals"], ["New Arrivals", "/new-arrivals"], ["Bestsellers", "/bestsellers"], ["Gift Cards", "/gift-cards"], ["Help", "/help"]].map(([label, href]) => (
+            <Link key={label} href={href} onClick={close} className="rounded-md px-2 py-2 font-medium hover:bg-muted">{label}</Link>
           ))}
           <p className="mt-4 px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>
           {categories.map(({ slug, name, icon: Icon }) => (

@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatMoney } from "@/lib/money"
 import type { AdminOrderRow } from "@/features/admin/demo"
@@ -20,7 +21,7 @@ export function OrderTable({ rows, caption }: { rows: AdminOrderRow[]; caption: 
             <TableRow><TableCell colSpan={6} className="py-10 text-center">No orders yet.</TableCell></TableRow>
           ) : rows.map((o) => (
             <TableRow key={o.id}>
-              <TableCell className="font-mono text-xs">{o.id}</TableCell>
+              <TableCell className="font-mono text-xs"><Link href={`/admin/orders/${o.id}`} className="text-primary hover:underline">{o.id}</Link></TableCell>
               <TableCell>{o.customer}</TableCell>
               <TableCell className="whitespace-nowrap text-muted-foreground">{o.placed}</TableCell>
               <TableCell className="text-right">{o.items}</TableCell>

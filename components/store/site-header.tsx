@@ -6,7 +6,7 @@ import { MobileNavigation } from "./mobile-navigation"
 import { SearchBox } from "./search-box"
 import { UtilityBar } from "./utility-bar"
 
-const navLinks = ["New Arrivals", "Bestsellers", "Top Selling", "Brands", "Gift Cards", "Sell on ShopKart"]
+const navLinks = [["New Arrivals", "/new-arrivals"], ["Bestsellers", "/bestsellers"], ["Top Selling", "/top-selling"], ["Brands", "/brands"], ["Gift Cards", "/gift-cards"], ["Sell on ShopKart", "/sell"]]
 
 const actions = [
   { label: "Orders", href: "/account/orders", icon: Package, wide: true },
@@ -55,9 +55,9 @@ export function SiteHeader() {
                 <Flame className="size-4 text-primary" aria-hidden="true" /> Deals
               </Link>
             </li>
-            {navLinks.map((label) => (
+            {navLinks.map(([label, href]) => (
               <li key={label}>
-                <Link href="/products" className="flex items-center gap-1 hover:text-primary">
+                <Link href={href} className="flex items-center gap-1 hover:text-primary">
                   {label}
                   {label === "Brands" && <ChevronDown className="size-3.5" aria-hidden="true" />}
                 </Link>

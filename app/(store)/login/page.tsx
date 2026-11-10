@@ -32,11 +32,12 @@ export default function LoginPage() {
           ) : (
             <div className="grid gap-1.5"><label htmlFor="mobile" className="text-sm font-medium">Mobile number</label><input id="mobile" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} required autoComplete="tel-national" className={input} /><p className="text-xs text-muted-foreground">We&apos;ll send a one-time code.</p></div>
           )}
+          {mode === "email" && <Link href="/forgot-password" className="-mt-2 text-right text-xs font-medium text-primary hover:underline">Forgot password?</Link>}
           <Button type="submit" size="lg" className="h-11">{mode === "email" ? "Sign in" : "Send code"}</Button>
           <p role="status" className="text-center text-xs text-muted-foreground">{note}</p>
         </form>
         <Button type="button" variant="outline" size="lg" className="h-11" onClick={() => setNote("Google sign-in isn't connected yet.")}>Continue with Google</Button>
-        <p className="text-center text-sm text-muted-foreground">New here? <Link href="/login" className="font-medium text-primary hover:underline">Create an account</Link></p>
+        <p className="text-center text-sm text-muted-foreground">New here? <Link href="/register" className="font-medium text-primary hover:underline">Create an account</Link></p>
         <p className="text-center text-xs text-muted-foreground">Want to look around? <Link href="/account" className="underline">Open the demo account</Link>.</p>
       </div>
     </main>
