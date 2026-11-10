@@ -1,0 +1,14 @@
+import { pgEnum } from "drizzle-orm/pg-core"
+
+export const userRole = pgEnum("user_role", ["customer", "owner", "catalog_editor", "warehouse", "support", "finance"])
+export const productStatus = pgEnum("product_status", ["draft", "published", "archived"])
+export const orderStatus = pgEnum("order_status", ["pending", "paid", "packed", "shipped", "delivered", "cancelled", "refunded"])
+export const paymentStatus = pgEnum("payment_status", ["created", "captured", "failed", "refunded"])
+export const stockReason = pgEnum("stock_reason", ["restock", "sale", "damage", "return", "correction", "reservation_release"])
+export const couponKind = pgEnum("coupon_kind", ["percent", "flat"])
+export const reviewStatus = pgEnum("review_status", ["pending", "approved", "rejected"])
+export const returnStatus = pgEnum("return_status", ["requested", "approved", "received", "refunded", "rejected"])
+export const articleCategory = pgEnum("article_category", ["buying_guide", "product_review", "comparison", "news"])
+export const articleStatus = pgEnum("article_status", ["draft", "published"])
+export const bannerSlot = pgEnum("banner_slot", ["home_hero", "home_promo_grid", "category_banner", "cart_banner"])
+export const articleProductKind = pgEnum("article_product_kind", ["featured", "compare"])

@@ -1,92 +1,142 @@
-import "dotenv/config";
+/**
+ * Loads the store's sample data into a LOCAL development database.
+ *
+ *   pnpm db:seed
+ *
+ * It empties every table first, then inserts the catalog, customers, orders, coupons, banners,
+ * returns, articles and reviews that the demo storefront already shows, so the database mirrors
+ * the app. Refuses to run against anything that is not localhost.
+ */
+import "dotenv/config"
 
-import argon2 from "argon2";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import argon2 from "argon2"
+import { sql } from "drizzle-orm"
+import { drizzle } from "drizzle-orm/node-postgres"
+import { Pool } from "pg"
 
-import { categories, products, users } from "../lib/db/schema";
+import { seedArticles } from "../features/articles/seed"
+import { catalog, categories as demoCategories } from "../features/catalog/demo"
+import { addresses as demoAddresses } from "../features/account/demo"
+import { customers, initialBanners, initialCoupons, initialMovements, initialOrders, initialProducts, initialReturns, initialSettings } from "../features/admin/seed"
+import { reviewsFor } from "../features/reviews/demo"
+import { gstFromInclusive } from "../lib/money"
+import * as s from "../lib/db/schema"
 
-// NOTE: this script builds its own pool instead of importing lib/db, because
-// lib/db imports "server-only", which throws when run outside Next.js.
+// NOTE: builds its own pool instead of importing lib/db, which imports "server-only" and throws outside Next.js.
+const url = process.env.DATABASE_URL
+if (!url) throw new Error("DATABASE_URL is not set. Add it to .env")
+if (process.env.NODE_ENV === "production") throw new Error("Refusing to seed a production database.")
+if (!/@(localhost|127\.0\.0\.1)(:|\/)/.test(url)) throw new Error("Refusing to seed a database that is not on localhost.")
 
-if (process.env.NODE_ENV === "production") {
-  throw new Error("Refusing to seed a production database.");
-}
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not set. Add it to .env");
-}
+const pool = new Pool({ connectionString: url })
+const db = drizzle({ client: pool })
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle({ client: pool });
-
-// Prices are in paise (₹1 = 100 paise).
-const rupees = (n: number) => n * 100;
-
-const categorySeed = [
-  { name: "Electronics", slug: "electronics" },
-  { name: "Fashion", slug: "fashion" },
-  { name: "Home & Kitchen", slug: "home-kitchen" },
-  { name: "Books", slug: "books" },
-];
-
-const productSeed = [
-  { category: "electronics", name: "Wireless Earbuds", slug: "wireless-earbuds", price: 1999, stock: 120, description: "Bluetooth 5.3 earbuds with 24-hour battery life." },
-  { category: "electronics", name: "Mechanical Keyboard", slug: "mechanical-keyboard", price: 3499, stock: 45, description: "Hot-swappable 75% keyboard with tactile switches." },
-  { category: "electronics", name: "Power Bank 20000mAh", slug: "power-bank-20000", price: 1799, stock: 80, description: "Fast-charging power bank with dual USB-C ports." },
-  { category: "fashion", name: "Cotton Crew T-Shirt", slug: "cotton-crew-tshirt", price: 499, stock: 300, description: "Soft 100% cotton tee in a regular fit." },
-  { category: "fashion", name: "Slim Fit Jeans", slug: "slim-fit-jeans", price: 1499, stock: 150, description: "Stretch denim, mid-rise, slim fit." },
-  { category: "fashion", name: "Running Shoes", slug: "running-shoes", price: 2799, stock: 60, description: "Lightweight breathable shoes for daily runs." },
-  { category: "home-kitchen", name: "Stainless Steel Bottle", slug: "steel-bottle-1l", price: 599, stock: 200, description: "1 litre insulated bottle, keeps drinks cold for 24 hours." },
-  { category: "home-kitchen", name: "Non-Stick Frying Pan", slug: "non-stick-frying-pan", price: 899, stock: 90, description: "26 cm induction-compatible non-stick pan." },
-  { category: "books", name: "Atomic Habits", slug: "atomic-habits", price: 449, stock: 250, description: "Small changes, remarkable results." },
-  { category: "books", name: "The Pragmatic Programmer", slug: "pragmatic-programmer", price: 1299, stock: 40, description: "Your journey to mastery, 20th anniversary edition." },
-];
+const IST = "+05:30"
+const dayStart = (d: string) => new Date(`${d}T00:00:00${IST}`)
+const dayEnd = (d: string) => new Date(`${d}T23:59:59${IST}`)
+const parseCount = (v?: string) => { const n = Number((v ?? "0").replace(/[^0-9.]/g, "")); return Math.round(v?.includes("K") ? n * 1000 : n) }
+const STATE_BY_CITY: Record<string, string> = { Bengaluru: "Karnataka", Kochi: "Kerala", Mumbai: "Maharashtra", Hyderabad: "Telangana", Pune: "Maharashtra", Chennai: "Tamil Nadu", Ahmedabad: "Gujarat", Delhi: "Delhi" }
+const ARTICLE_CATEGORY = { "Buying guide": "buying_guide", "Product review": "product_review", Comparison: "comparison", News: "news" } as const
+const BANNER_SLOT = { "Home hero": "home_hero", "Home promo grid": "home_promo_grid", "Category banner": "category_banner", "Cart banner": "cart_banner" } as const
+const demoDate = (t: string) => { const d = new Date(`${t} 00:00 UTC`); return Number.isNaN(d.getTime()) ? new Date() : d }
 
 async function main() {
-  // Categories
-  await db.insert(categories).values(categorySeed).onConflictDoNothing();
-  const categoryRows = await db.select().from(categories);
-  const categoryIdBySlug = new Map(categoryRows.map((c) => [c.slug, c.id]));
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`TRUNCATE TABLE verifications, accounts, audit_events, settings, wishlist_items, reviews, article_products, articles, banners, coupon_redemptions, webhook_events, payments, order_events, order_items, returns, orders, coupons, stock_movements, stock_levels, product_images, products, tax_categories, categories, brands, sessions, addresses, users RESTART IDENTITY CASCADE`)
 
-  // Products
-  await db
-    .insert(products)
-    .values(
-      productSeed.map(({ category, price, ...p }) => ({
-        ...p,
-        pricePaise: rupees(price),
-        categoryId: categoryIdBySlug.get(category) ?? null,
-      })),
-    )
-    .onConflictDoNothing();
+    // ---- Catalog lookups
+    const taxRows = await tx.insert(s.taxCategories).values([
+      { name: "Printed books (0%)", hsn: "4901", ratePercent: 0 },
+      { name: "Essentials (5%)", ratePercent: 5 },
+      { name: "Footwear, bags and toys (12%)", hsn: "6403", ratePercent: 12 },
+      { name: "Electronics and appliances (18%)", hsn: "8518", ratePercent: 18 },
+      { name: "Luxury goods (28%)", ratePercent: 28 },
+    ]).returning()
+    const catRows = await tx.insert(s.categories).values(demoCategories.map((c, i) => ({ name: c.name, shortName: c.short, slug: c.slug, sortOrder: i }))).returning()
+    const brandRows = await tx.insert(s.brands).values([...new Set(catalog.map((p) => p.brand))].sort().map((name) => ({ name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-") }))).returning()
+    const taxByRate = new Map(taxRows.map((t) => [t.ratePercent, t.id]))
+    const catBySlug = new Map(catRows.map((c) => [c.slug, c.id]))
+    const brandByName = new Map(brandRows.map((b) => [b.name, b.id]))
 
-  // Dev admin user (credentials are for local development only)
-  const adminEmail = "admin@shopkart.local";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "admin12345";
-  const existing = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.email, adminEmail));
+    // ---- Products (admin sample gives SKUs, SEO text and stock; the storefront catalog gives badges and ratings)
+    const productRows = await tx.insert(s.products).values(catalog.map((p) => {
+      const a = initialProducts.find((x) => x.id === p.id)!
+      const count = parseCount(p.reviews)
+      return {
+        categoryId: catBySlug.get(p.category)!, brandId: brandByName.get(p.brand)!, taxCategoryId: taxByRate.get(p.gstPercent)!,
+        title: p.title, slug: p.slug, sku: a.sku, description: p.description, pricePaise: p.pricePaise, comparePaise: p.comparePaise ?? null,
+        badge: p.badge ?? null, status: a.status, ratingCount: count, ratingSum: Math.min(count * 5, Math.round((p.rating ?? 0) * count)),
+        seoTitle: a.seoTitle, seoDescription: a.seoDescription, createdAt: new Date(`${a.createdAt}T09:00:00Z`),
+      }
+    })).returning()
+    const productByDemoId = new Map(catalog.map((p) => [p.id, productRows.find((r) => r.slug === p.slug)!]))
 
-  if (existing.length === 0) {
-    await db.insert(users).values({
-      email: adminEmail,
-      name: "Admin",
-      role: "admin",
-      passwordHash: await argon2.hash(adminPassword),
-      emailVerifiedAt: new Date(),
-    });
-  }
+    // ---- Stock: opening balance as a movement, plus the sample movements, so on_hand always equals the ledger
+    const movementsByProduct = new Map<string, number>()
+    initialMovements.forEach((m) => movementsByProduct.set(m.productId, (movementsByProduct.get(m.productId) ?? 0) + m.delta))
+    await tx.insert(s.stockLevels).values(initialProducts.map((a) => ({ productId: productByDemoId.get(a.id)!.id, onHand: a.stock + (movementsByProduct.get(a.id) ?? 0), reserved: a.reserved, reorderAt: a.reorderAt })))
+    await tx.insert(s.stockMovements).values([
+      ...initialProducts.map((a) => ({ productId: productByDemoId.get(a.id)!.id, delta: a.stock, reason: "correction" as const, note: "Opening balance", reference: `opening:${a.sku}`, createdAt: new Date("2026-01-05T09:00:00Z") })).filter((m) => m.delta !== 0),
+      ...initialMovements.map((m) => ({ productId: productByDemoId.get(m.productId)!.id, delta: m.delta, reason: m.reason, note: m.note, createdAt: new Date(m.at) })),
+    ])
 
-  console.log(
-    `Seeded: ${categoryRows.length} categories, ${productSeed.length} products, admin ${adminEmail}`,
-  );
+    // ---- People
+    const hash = await argon2.hash(process.env.SEED_ADMIN_PASSWORD ?? "admin12345")
+    const staff = await tx.insert(s.users).values((["owner", "catalog_editor", "warehouse", "support", "finance"] as const).map((role) => ({
+      email: `${role.replace("_", "-")}@shopkart.local`, name: role === "owner" ? "Admin" : role.replace("_", " ").replace(/^./, (c) => c.toUpperCase()), role, emailVerified: true,
+    }))).returning()
+    const customerRows = await tx.insert(s.users).values(customers.map((c) => ({
+      email: c.email, name: c.name, phone: c.phone, role: "customer" as const,
+      emailVerified: c.verified, createdAt: new Date(`${c.joined}T10:00:00Z`),
+    }))).returning()
+    // Better Auth keeps the password on a "credential" account. Staff and the first customer can sign in.
+    await tx.insert(s.accounts).values([...staff, customerRows[0]].map((u) => ({ userId: u.id, accountId: u.id, providerId: "credential", password: hash })))
+    const userByCustomerId = new Map(customers.map((c, i) => [c.id, customerRows[i]]))
+    await tx.insert(s.addresses).values(demoAddresses.map((a) => ({ userId: userByCustomerId.get("c1")!.id, label: a.label, name: a.name, phone: a.phone, line1: a.line1, line2: a.line2 ?? null, city: a.city, state: a.state, pincode: a.pincode, isDefault: a.isDefault })))
+
+    // ---- Coupons
+    await tx.insert(s.coupons).values(initialCoupons.map((c) => ({ code: c.code, kind: c.kind, value: c.value, minOrderPaise: c.minOrderPaise, usageLimit: c.limit, usedCount: c.used, expiresAt: dayEnd(c.expires), isActive: c.active })))
+
+    // ---- Orders, items, timeline, payments
+    for (const o of initialOrders) {
+      const subtotal = o.lines.reduce((t, l) => t + l.pricePaise * l.quantity, 0)
+      const gst = o.lines.reduce((t, l) => { const gross = l.pricePaise * l.quantity; const share = subtotal === 0 ? 0 : Math.round((gross / subtotal) * o.discountPaise); return t + gstFromInclusive(gross - share, l.gstPercent) }, 0)
+      const [order] = await tx.insert(s.orders).values({
+        number: o.id, userId: userByCustomerId.get(o.customerId)!.id, status: o.status, subtotalPaise: subtotal, discountPaise: o.discountPaise, shippingPaise: o.shippingPaise,
+        gstIncludedPaise: gst, totalPaise: subtotal - o.discountPaise + o.shippingPaise, customerName: o.customerName, customerEmail: o.email, customerPhone: o.phone,
+        shipTo: { name: o.customerName, phone: o.phone, line1: o.addressLine, city: o.city, state: STATE_BY_CITY[o.city] ?? "Karnataka", pincode: o.pincode }, placedAt: new Date(o.placed), createdAt: new Date(o.placed),
+      }).returning()
+      await tx.insert(s.orderItems).values(o.lines.map((l) => { const p = productByDemoId.get(l.productId)!; return { orderId: order.id, productId: p.id, title: l.title, sku: p.sku, quantity: l.quantity, unitPricePaise: l.pricePaise, gstPercent: l.gstPercent } }))
+      await tx.insert(s.orderEvents).values(o.timeline.map((t) => ({ orderId: order.id, status: t.status, actorLabel: t.by, note: t.note ?? null, createdAt: new Date(t.at) })))
+      const captured = !["pending", "cancelled"].includes(o.status)
+      await tx.insert(s.payments).values({ orderId: order.id, providerOrderId: `order_demo_${o.id.slice(3)}`, providerPaymentId: captured ? o.paymentId : null, amountPaise: order.totalPaise, status: o.status === "refunded" ? "refunded" : captured ? "captured" : "created", method: o.paymentMethod, signatureVerifiedAt: captured ? new Date(o.placed) : null })
+    }
+    const orderByNumber = new Map((await tx.select().from(s.orders)).map((o) => [o.number, o]))
+    await tx.insert(s.returns).values(initialReturns.map((r) => ({ number: r.id, orderId: orderByNumber.get(r.orderId)!.id, status: r.status, reason: r.reason, refundPaise: r.refundPaise, createdAt: new Date(r.requested) })))
+
+    // ---- Marketing and content
+    await tx.insert(s.banners).values(initialBanners.map((b) => ({ title: b.title, slot: BANNER_SLOT[b.slot as keyof typeof BANNER_SLOT], startsAt: dayStart(b.starts), endsAt: dayEnd(b.ends), href: b.href, isPaused: b.paused })))
+    const articleRows = await tx.insert(s.articles).values(seedArticles.map((a) => ({
+      slug: a.slug, title: a.title, excerpt: a.excerpt, category: ARTICLE_CATEGORY[a.category], authorName: a.author, status: a.status, publishedAt: a.status === "published" ? dayStart(a.publishedAt) : null,
+      doc: a.doc, seoTitle: a.seoTitle, seoDescription: a.seoDescription, createdAt: dayStart(a.publishedAt), updatedAt: dayStart(a.updatedAt),
+    }))).returning()
+    const links = seedArticles.flatMap((a) => {
+      const row = articleRows.find((r) => r.slug === a.slug)!
+      return [...a.productIds.map((pid, i) => ({ articleId: row.id, productId: productByDemoId.get(pid)!.id, kind: "featured" as const, position: i })), ...a.compareIds.map((pid, i) => ({ articleId: row.id, productId: productByDemoId.get(pid)!.id, kind: "compare" as const, position: i }))]
+    })
+    if (links.length) await tx.insert(s.articleProducts).values(links)
+    await tx.insert(s.reviews).values(catalog.flatMap((p) => reviewsFor(p.id, p.rating ?? 4.5).map((r) => ({
+      productId: productByDemoId.get(p.id)!.id, authorName: r.name, rating: r.rating, title: r.title, body: r.body, status: "approved" as const, verifiedPurchase: r.verified, createdAt: demoDate(r.date),
+    }))))
+
+    // ---- Settings
+    await tx.insert(s.settings).values(Object.entries(initialSettings).map(([key, value]) => ({ key, value })))
+  })
+
+  const counts = await db.execute(sql`select
+    (select count(*) from products) as products, (select count(*) from categories) as categories, (select count(*) from users) as users,
+    (select count(*) from orders) as orders, (select count(*) from reviews) as reviews, (select count(*) from articles) as articles`)
+  console.log("Seeded:", JSON.stringify((counts as unknown as { rows: unknown[] }).rows[0]))
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(() => pool.end());
+main().catch((err) => { console.error(err); process.exitCode = 1 }).finally(() => pool.end())

@@ -1,0 +1,2 @@
+ALTER TABLE "orders" ADD COLUMN "idempotency_key" text;--> statement-breakpoint
+CREATE UNIQUE INDEX "orders_idempotency_idx" ON "orders" ("user_id","idempotency_key") WHERE "idempotency_key" is not null;
