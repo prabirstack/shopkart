@@ -3,6 +3,7 @@ import "server-only";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
+import { relations } from "./relations";
 import * as schema from "./schema";
 
 if (!process.env.DATABASE_URL) {
@@ -22,5 +23,5 @@ if (process.env.NODE_ENV !== "production") {
   globalForDb.pgPool = pool;
 }
 
-export const db = drizzle(pool, { schema });
-export { schema };
+export const db = drizzle({ client: pool, relations });
+export { relations, schema };
