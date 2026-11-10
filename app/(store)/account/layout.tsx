@@ -30,7 +30,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
         <div className="lg:hidden"><AccountNav /></div>
       </aside>
       <main className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-6">
-        <p role="note" className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2 text-xs text-amber-900">You're signed in. The profile and order history shown here are still sample data until the pages move to the database.</p>
+        <p role="note" className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2 text-xs text-amber-900">You&apos;re signed in. The profile and order history shown here are still sample data until the pages move to the database.</p>
         {children}
       </main>
     </div>
