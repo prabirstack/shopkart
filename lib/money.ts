@@ -39,11 +39,16 @@ export function formatMoney(
   cents: number,
   currency: string = DEFAULT_CURRENCY,
   locale: string = DEFAULT_LOCALE,
+  options: { hideZeroDecimals?: boolean } = {},
 ): string {
   assertCents(cents);
-  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(
-    cents / 100,
-  );
+  // Show "₹699" instead of "₹699.00" for whole-rupee amounts when asked.
+  const whole = options.hideZeroDecimals && cents % 100 === 0;
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    ...(whole && { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+  }).format(cents / 100);
 }
 
 export function addMoney(...amounts: number[]): number {

@@ -10,6 +10,12 @@ type PriceProps = Omit<React.ComponentProps<"span">, "children"> & {
   compareAtCents?: number | null
   currency?: string
   locale?: string
+  /** Show "₹699" instead of "₹699.00" for whole-rupee amounts. Default true. */
+  compact?: boolean
+  /** Show the "% off" label next to a struck-through price. Default true. */
+  showDiscountLabel?: boolean
+  /** Classes for the current-price text, e.g. to colour it. */
+  priceClassName?: string
 }
 
 function Price({
@@ -17,6 +23,9 @@ function Price({
   compareAtCents,
   currency,
   locale,
+  compact = true,
+  showDiscountLabel = true,
+  priceClassName,
   className,
   ...props
 }: PriceProps) {
@@ -31,19 +40,21 @@ function Price({
       className={cn("price inline-flex flex-wrap items-baseline gap-x-2", className)}
       {...props}
     >
-      <span className="font-semibold text-foreground">
+      <span className={cn("font-semibold text-foreground", priceClassName)}>
         <span className="sr-only">Price: </span>
-        {formatMoney(cents, currency, locale)}
+        {formatMoney(cents, currency, locale, { hideZeroDecimals: compact })}
       </span>
       {hasDiscount && (
         <>
           <del className="text-sm text-muted-foreground">
             <span className="sr-only">Original price: </span>
-            {formatMoney(compareAtCents, currency, locale)}
+            {formatMoney(compareAtCents, currency, locale, { hideZeroDecimals: compact })}
           </del>
-          <span className="text-sm font-medium text-primary">
-            {discountPercent}% off
-          </span>
+          {showDiscountLabel && (
+            <span className="text-sm font-medium text-primary">
+              {discountPercent}% off
+            </span>
+          )}
         </>
       )}
     </span>
