@@ -118,6 +118,9 @@
 }
 
 @layer base {
+  /* Scroll containers also contain absolutely positioned children (like sr-only text in far
+     table columns), so they can never widen the whole page. */
+  .overflow-x-auto { position: relative; }
   * {
     @apply border-border outline-ring/50;
   }

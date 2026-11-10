@@ -88,7 +88,7 @@ function Editor({ product, onDone }: { product?: AdminProduct; onDone: () => voi
   })
 
   return (
-    <form onSubmit={save} noValidate className="grid gap-6">
+    <form onSubmit={save} noValidate className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <Link href="/admin/products" className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> All products</Link>
       <PageHeader title={product ? product.title : "New product"} description={product ? `SKU ${product.sku}` : "Fill in the details. Save as a draft first, publish when it's ready."}>
         <div className="flex items-center gap-2">

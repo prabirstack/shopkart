@@ -51,7 +51,7 @@ function Form({ initial }: { initial: Settings }) {
   }
   const toggle = (k: "notifyNewOrder" | "notifyLowStock" | "notifyReturn", label: string, desc: string) => <li className="flex items-center justify-between gap-4 py-3"><div><label htmlFor={k} className="text-sm font-medium">{label}</label><p className="text-xs text-muted-foreground">{desc}</p></div><Switch id={k} checked={s[k]} onCheckedChange={(v) => set(k, v)} /></li>
   return (
-    <form onSubmit={submit} noValidate className="grid gap-6">
+    <form onSubmit={submit} noValidate className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <PageHeader title="Store settings" description="Business details, delivery rules, payments and who can do what."><Button type="submit">{done ? <CheckCircle2 aria-hidden="true" /> : <Save aria-hidden="true" />}{done ? "Saved" : "Save settings"}</Button></PageHeader>
       <p role="status" className="text-sm text-emerald-700">{done ? "Settings saved." : ""}</p>
       <div className="grid gap-6 lg:grid-cols-2">

@@ -29,7 +29,7 @@ export function ReturnsView() {
         <li className="rounded-2xl border bg-card p-4 shadow-xs"><p className="text-sm text-muted-foreground">Refunded to date</p><p className="price mt-1 text-2xl font-bold">{ready ? money(returns.filter((r) => r.status === "refunded").reduce((s, r) => s + r.refundPaise, 0)) : "–"}</p></li>
       </ul>
       {!ready ? <Skeleton className="h-64 rounded-2xl" /> : (
-        <ul className="grid gap-4">{returns.map((r) => {
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-4">{returns.map((r) => {
           const step = STEPS.indexOf(r.status)
           return (
             <li key={r.id} className="grid gap-4 rounded-2xl border bg-card p-5 shadow-xs">
@@ -39,7 +39,7 @@ export function ReturnsView() {
                 <p className="price text-xl font-bold">{money(r.refundPaise)}</p>
               </div>
               {r.status !== "rejected" && (
-                <ol className="flex items-center gap-2 text-xs">{STEPS.map((s, i) => (
+                <ol className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs">{STEPS.map((s, i) => (
                   <li key={s} className="flex flex-1 items-center gap-2"><span className={`grid size-6 shrink-0 place-items-center rounded-full font-semibold ${i <= step ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}>{i <= step ? <Check className="size-3.5" aria-hidden="true" /> : i + 1}</span><span className={`capitalize ${i <= step ? "font-medium" : "text-muted-foreground"}`}>{s}</span>{i < STEPS.length - 1 && <span aria-hidden="true" className={`h-px flex-1 ${i < step ? "bg-emerald-600" : "bg-border"}`} />}</li>))}</ol>)}
               <div className="flex flex-wrap gap-2">
                 {r.status === "requested" && <><button onClick={() => setStatus(r.id, "approved")} className={`${btn} border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100`}><Check className="size-3.5" aria-hidden="true" /> Approve</button><button onClick={() => setStatus(r.id, "rejected")} className={`${btn} text-destructive hover:bg-destructive/5`}><X className="size-3.5" aria-hidden="true" /> Reject</button></>}
