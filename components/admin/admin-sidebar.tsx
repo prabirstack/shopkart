@@ -6,12 +6,13 @@ import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
   SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarRail,
 } from "@/components/ui/sidebar"
-import { adminNav } from "@/features/admin/nav"
+import { navFor } from "@/features/admin/access"
+import type { Role } from "@/lib/api/permissions"
 import { useAdminReady } from "@/features/admin/hooks"
 import { useAdmin } from "@/features/admin/store"
 import { useReviewStore } from "@/features/reviews/store"
 
-export function AdminSidebar() {
+export function AdminSidebar({ role }: { role: Role }) {
   const pathname = usePathname()
   const ready = useAdminReady()
   const orders = useAdmin((s) => s.orders)
@@ -38,7 +39,7 @@ export function AdminSidebar() {
         </SidebarMenuItem></SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {adminNav.map((group) => (
+        {navFor(role).map((group) => (
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>

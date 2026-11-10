@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { AlertTriangle, Bell, LogOut, MessageSquare, Search, Settings, ShoppingBag, User } from "lucide-react"
 import { AdminBreadcrumbs } from "./admin-breadcrumbs"
 import { Separator } from "@/components/ui/separator"
@@ -8,8 +9,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useAdminReady } from "@/features/admin/hooks"
 import { useAdmin } from "@/features/admin/store"
 import { useReviewStore } from "@/features/reviews/store"
+import { authClient } from "@/lib/auth-client"
 
-export function AdminTopbar() {
+export type AdminUser = { name: string; email: string; roleLabel: string }
+
+export function AdminTopbar({ user }: { user: AdminUser }) {
+  const router = useRouter()
   const ready = useAdminReady()
   const orders = useAdmin((s) => s.orders)
   const products = useAdmin((s) => s.products)
@@ -44,16 +49,16 @@ export function AdminTopbar() {
       </DropdownMenu>
       <DropdownMenu>
         <DropdownMenuTrigger aria-label="Account menu" className="flex items-center gap-2 rounded-lg p-1 pr-2 hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">
-          <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">A</span>
-          <span className="hidden text-left leading-tight sm:block"><span className="block text-sm font-medium">Admin</span><span className="block text-xs text-muted-foreground">Owner</span></span>
+          <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">{user.name.slice(0, 1).toUpperCase()}</span>
+          <span className="hidden text-left leading-tight sm:block"><span className="block text-sm font-medium">{user.name}</span><span className="block text-xs text-muted-foreground">{user.roleLabel}</span></span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuLabel>admin@shopkart.example</DropdownMenuLabel>
+          <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild><Link href="/admin/settings"><Settings aria-hidden="true" /> Store settings</Link></DropdownMenuItem>
           <DropdownMenuItem asChild><Link href="/account/profile"><User aria-hidden="true" /> My profile</Link></DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild><Link href="/login"><LogOut aria-hidden="true" /> Sign out</Link></DropdownMenuItem>
+          <DropdownMenuItem onSelect={async () => { await authClient.signOut(); router.push("/login"); router.refresh() }}><LogOut aria-hidden="true" /> Sign out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>

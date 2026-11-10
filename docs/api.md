@@ -25,6 +25,20 @@ Passwords are hashed with argon2id. A sign-up can never choose its own role. Sig
 Roles: `customer`, `owner`, `catalog_editor`, `warehouse`, `support`, `finance`. Permissions are in
 `lib/api/permissions.ts`. The role is read from the database on every request, so removing access is immediate.
 
+## Admin console access
+
+`/admin/*` needs a signed-in staff account, enforced in three independent layers:
+
+1. `proxy.ts` redirects requests with no session cookie to `/login?next=...` (a fast, optimistic check).
+2. The admin layout (`components/admin/admin-gate.tsx`) runs on the server for every request, validates the session and reads the
+   role from the database, then checks the section's permission (`features/admin/access.ts`). Customers see "this area is for staff";
+   a staff role without the permission sees "no access" and the page content is never rendered. Unknown admin paths are owner-only.
+3. Every `/api/v1/admin/*` endpoint checks the same permission matrix itself, so the data is protected even if a screen were bypassed.
+
+The sidebar only lists sections the role may open. `proxy.ts` always overwrites the `x-pathname` header the gate relies on, so a client
+cannot forge it. Denial screens are rendered with status 200 because the layout streams; the APIs return real 401/403.
+Seeded dev staff accounts: `owner@`, `catalog-editor@`, `warehouse@`, `support@`, `finance@shopkart.local`.
+
 ## Endpoints
 
 **Public:** `GET products`, `products/facets`, `products/:slug`, `products/:slug/related`, `products/:slug/reviews`,
