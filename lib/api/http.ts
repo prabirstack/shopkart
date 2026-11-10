@@ -7,6 +7,7 @@ import { DomainError, pgCode, pgConstraint } from "@/lib/db/queries/errors"
 import { rateLimit, type Limit } from "./rate-limit"
 import { getSession, type Session } from "./session"
 import { can, type Permission } from "./permissions"
+import { invalidate, type CacheTag } from "@/lib/cache"
 
 // ---------------------------------------------------------------------------
 // One wrapper every route handler goes through, so every endpoint behaves the same:
@@ -65,6 +66,8 @@ type Options = {
   noOriginCheck?: boolean
   /** Read the raw body yourself (webhooks need the exact bytes for signature checks). */
   rawBody?: boolean
+  /** Storefront caches to expire after this request succeeds (it changed catalog or content data). */
+  invalidates?: CacheTag[]
 }
 
 const parsedHops = Number(process.env.TRUSTED_PROXY_HOPS ?? 1)
@@ -180,6 +183,7 @@ export function route<P = Record<string, string>>(handler: (ctx: Ctx<P>) => Prom
       }
 
       const res = await handler(ctx)
+      if (opts.invalidates && res.status < 400) invalidate(...opts.invalidates)
       const h = new Headers(res.headers)
       h.set("x-request-id", requestId)
       h.set("x-content-type-options", "nosniff")

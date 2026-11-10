@@ -12,7 +12,7 @@
  */
 import { readdirSync, writeFileSync, existsSync } from "node:fs"
 import { join, extname, basename } from "node:path"
-import { catalog, categories } from "../features/catalog/demo"
+import { catalog, categories } from "./data/catalog"
 import { heroSlides } from "../features/promotions/demo"
 
 const ROOT = join(process.cwd(), "public", "images")

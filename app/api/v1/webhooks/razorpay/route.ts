@@ -29,4 +29,4 @@ export const POST = route(async ({ req }) => {
   }
   await markWebhookProcessed("razorpay", eventId)
   return ok({ received: true })
-}, { noOriginCheck: true, rawBody: true, limit: { max: 300, windowSec: 60 } })
+}, { noOriginCheck: true, rawBody: true, limit: { max: 300, windowSec: 60 }, invalidates: ["catalog"] })

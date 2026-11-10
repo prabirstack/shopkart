@@ -58,7 +58,8 @@ function filters(p: SearchParams, skip: ("category" | "brands")[] = []): SQL {
   const q = p.q?.trim()
   if (q) {
     const like = `%${escapeLike(q)}%`
-    c.push(sql`(${products.searchVector} @@ websearch_to_tsquery('simple', ${q}) or ${products.title} ilike ${like} or ${brands.name} ilike ${like})`)
+    // Exact words first (full-text), then substrings, then typo-tolerant trigram similarity ("earbud", "samsng").
+    c.push(sql`(${products.searchVector} @@ websearch_to_tsquery('simple', ${q}) or ${products.title} ilike ${like} or ${brands.name} ilike ${like} or word_similarity(${q}, ${products.title}) > 0.6 or word_similarity(${q}, ${brands.name}) > 0.5)`)
   }
   return and(...c) as SQL
 }
@@ -68,7 +69,7 @@ export async function searchProducts(p: SearchParams = {}): Promise<SearchResult
   const pageSize = Math.min(Math.max(p.pageSize ?? PAGE_SIZE, 1), 48)
   const where = filters(p)
   const q = p.q?.trim()
-  const rank = q ? sql`ts_rank(${products.searchVector}, websearch_to_tsquery('simple', ${q}))` : sql`0`
+  const rank = q ? sql`(ts_rank(${products.searchVector}, websearch_to_tsquery('simple', ${q})) * 2 + word_similarity(${q}, ${products.title}))` : sql`0`
   const order: Record<string, SQL[]> = {
     relevance: q ? [desc(rank), desc(products.ratingCount)] : [desc(products.createdAt)],
     popular: [desc(products.ratingCount), desc(products.createdAt)],
@@ -135,4 +136,33 @@ export const dealProducts = (limit = 5) => searchProducts({ discount: 1, sort: "
 export async function bestsellers(limit = 6): Promise<ProductDTO[]> {
   const rows = await baseSelect(projection).where(and(eq(products.status, "published"), sql`(${products.badge} = 'Bestseller' or (${products.ratingCount} > 0 and ${products.ratingSum}::numeric / ${products.ratingCount} >= 4.7))`)).orderBy(sql`${avgRating} desc nulls last`, desc(products.ratingCount)).limit(limit)
   return toDTOs(rows as Record<string, unknown>[])
+}
+
+/**
+ * "Did you mean...?" for a search with no results: the closest product title or brand name, or null when
+ * nothing is close enough. Uses trigram similarity, so it copes with typos.
+ */
+export async function didYouMean(query: string): Promise<string | null> {
+  const q = query.trim().toLowerCase()
+  if (q.length < 3) return null
+  const rows = await db.execute(sql`
+    select term, similarity(lower(term), ${q}) as score from (
+      select title as term from products where status = 'published'
+      union select name as term from brands
+    ) t where similarity(lower(term), ${q}) > 0.2 order by score desc limit 1`)
+  const row = (rows as unknown as { rows: { term: string }[] }).rows[0]
+  return row && row.term.toLowerCase() !== q ? row.term : null
+}
+
+/** Quick suggestions for the header search box: matching products plus the categories and brands that match. */
+export async function suggestSearch(query: string, limit = 5) {
+  const q = query.trim()
+  if (q.length < 2) return { products: [] as ProductDTO[], categories: [] as { slug: string; name: string }[], brands: [] as string[] }
+  const like = `%${escapeLike(q)}%`
+  const [prods, cats, brs] = await Promise.all([
+    searchProducts({ q, pageSize: limit }).then((r) => r.items),
+    db.select({ slug: categories.slug, name: categories.name }).from(categories).where(sql`${categories.name} ilike ${like} or word_similarity(${q}, ${categories.name}) > 0.5`).limit(3),
+    db.select({ name: brands.name }).from(brands).where(sql`${brands.name} ilike ${like} or word_similarity(${q}, ${brands.name}) > 0.5`).limit(3),
+  ])
+  return { products: prods, categories: cats, brands: brs.map((b) => b.name) }
 }

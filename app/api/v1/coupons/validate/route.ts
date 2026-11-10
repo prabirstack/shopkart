@@ -1,10 +1,10 @@
 import { ok, route } from "@/lib/api/http"
 import { couponValidateBody } from "@/lib/api/schemas"
-import { couponProblem, getCouponByCode, getProductsByIds, toCouponRule } from "@/lib/db/queries"
+import { couponProblem, getCouponByCode, getProductsByIds, hasRedeemedCoupon, toCouponRule } from "@/lib/db/queries"
 import { quote } from "@/lib/pricing"
 
 /** Previews a coupon against a cart using database prices. Checkout re-validates, so this is advice, not a promise. */
-export const POST = route(async ({ json }) => {
+export const POST = route(async ({ json, session }) => {
   const { code, items } = await json(couponValidateBody)
   const merged = new Map<string, number>()
   for (const i of items) merged.set(i.productId, (merged.get(i.productId) ?? 0) + i.quantity)
@@ -14,5 +14,7 @@ export const POST = route(async ({ json }) => {
   const coupon = await getCouponByCode(code)
   const problem = couponProblem(coupon, subtotal, new Date())
   if (problem || !coupon) return ok({ valid: false, reason: problem })
+  // Signed in: tell them now what checkout would tell them later (each customer may use a coupon once).
+  if (session && (await hasRedeemedCoupon(coupon.id, session.userId))) return ok({ valid: false, reason: "You've already used this coupon." })
   return ok({ valid: true, code: coupon.code, totals: quote(lines, toCouponRule(coupon)) })
 }, { limit: { max: 20, windowSec: 60 } })

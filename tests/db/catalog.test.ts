@@ -35,7 +35,8 @@ describe("catalog queries", () => {
 
   it("finds products by full-text search and by brand name", async () => {
     expect((await searchProducts({ q: "earbuds" })).items.map((p) => p.slug)).toEqual(["earbuds"])
-    expect((await searchProducts({ q: "wired" })).items.map((p) => p.slug)).toEqual(["headphones"])
+    // "wired" also loosely resembles "Wireless" (typo tolerance), but the exact match always ranks first
+    expect((await searchProducts({ q: "wired" })).items[0].slug).toBe("headphones")
     expect((await searchProducts({ q: "zen" })).items.map((p) => p.slug)).toEqual(["headphones"])
     expect((await searchProducts({ q: "nothing-like-this" })).total).toBe(0)
     expect((await searchProducts({ q: "50%_" })).total).toBe(0) // LIKE wildcards in input are escaped, not interpreted
@@ -81,5 +82,21 @@ describe("catalog queries", () => {
     const earbuds = (await getProductBySlug("earbuds"))!
     const rel = await relatedProducts(earbuds.id, 5)
     expect(rel.map((p) => p.slug)).toEqual(["headphones", "shirt"])
+  })
+})
+
+describe("typo-tolerant search", () => {
+  beforeEach(async () => {
+    await resetDb(); const cat = await makeCatalog()
+    await makeProduct(cat, { title: "Wireless Earbuds Pro", slug: "earbuds" }); await makeProduct(cat, { title: "Cotton Shirt", slug: "shirt", brandId: cat.zen.id })
+  })
+  it("finds products despite a typo, and suggests the right spelling when nothing matches", async () => {
+    const { searchProducts, didYouMean, suggestSearch } = await import("../../lib/db/queries")
+    expect((await searchProducts({ q: "earbud" })).items.map((p) => p.slug)).toEqual(["earbuds"])
+    expect((await searchProducts({ q: "wirless earbuds" })).items.map((p) => p.slug)).toEqual(["earbuds"])
+    expect((await searchProducts({ q: "xylophone" })).total).toBe(0)
+    expect(await didYouMean("cotten shrt")).toBe("Cotton Shirt")
+    expect(await didYouMean("zzzzzz")).toBeNull()
+    const s = await suggestSearch("zen"); expect(s.brands).toEqual(["Zen"]); expect(s.products.map((p) => p.slug)).toEqual(["shirt"])
   })
 })

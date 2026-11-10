@@ -123,7 +123,7 @@ export async function loadAdminArticles(): Promise<Article[]> {
 }
 
 export async function loadAdminProductChoices() {
-  return db.select({ id: products.id, title: products.title }).from(products).where(sql`${products.status} <> 'archived'`).orderBy(asc(products.title))
+  return db.select({ id: products.id, title: products.title, slug: products.slug }).from(products).where(sql`${products.status} <> 'archived'`).orderBy(asc(products.title))
 }
 
 export const DEFAULT_SETTINGS: Settings = {

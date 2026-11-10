@@ -9,4 +9,4 @@ import { cancelOrder } from "@/lib/db/queries"
 export const POST = route<{ number: string }>(async ({ params, user }) => {
   const me = user()
   return ok(await cancelOrder({ number: params.number, actorId: me.userId, actorLabel: "Customer", onlyForUserId: me.userId, onlyStatuses: ["pending"], statusMessage: "A paid order can only be cancelled by our support team." }))
-}, { limit: { max: 10, windowSec: 60 } })
+}, { limit: { max: 10, windowSec: 60 }, invalidates: ["catalog"] })

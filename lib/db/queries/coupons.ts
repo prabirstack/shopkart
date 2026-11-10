@@ -1,9 +1,9 @@
 import "server-only"
 
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import { db } from "../index"
-import { coupons } from "../schema"
+import { couponRedemptions, coupons } from "../schema"
 import type { CouponRule } from "@/lib/pricing"
 
 type CouponRow = typeof coupons.$inferSelect
@@ -27,4 +27,10 @@ export const toCouponRule = (c: CouponRow): CouponRule => ({
 export async function getCouponByCode(code: string) {
   const [c] = await db.select().from(coupons).where(eq(coupons.code, code.trim().toUpperCase())).limit(1)
   return c
+}
+
+/** One use per customer: has this customer already redeemed this coupon? */
+export async function hasRedeemedCoupon(couponId: string, userId: string): Promise<boolean> {
+  const [r] = await db.select({ id: couponRedemptions.id }).from(couponRedemptions).where(and(eq(couponRedemptions.couponId, couponId), eq(couponRedemptions.userId, userId))).limit(1)
+  return !!r
 }

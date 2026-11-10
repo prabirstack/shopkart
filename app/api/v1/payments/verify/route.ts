@@ -15,4 +15,4 @@ export const POST = route(async ({ json, user }) => {
   const { amountPaise } = await pendingAmount(b.razorpay_order_id)
   const { order, alreadyPaid } = await markOrderPaid({ providerOrderId: b.razorpay_order_id, providerPaymentId: b.razorpay_payment_id, amountPaise, onlyForUserId: me.userId })
   return ok({ order, alreadyPaid })
-}, { limit: { max: 10, windowSec: 60 } })
+}, { limit: { max: 10, windowSec: 60 }, invalidates: ["catalog"] })

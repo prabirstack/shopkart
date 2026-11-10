@@ -154,7 +154,7 @@ export async function markOrderPaid(input: { providerOrderId: string; providerPa
     for (const item of order.items) {
       // The reserved units leave the shelf for good: on hand and reserved both drop.
       await tx.update(stockLevels).set({ onHand: sql`${stockLevels.onHand} - ${item.quantity}`, reserved: sql`${stockLevels.reserved} - ${item.quantity}` }).where(eq(stockLevels.productId, item.productId))
-      await tx.insert(stockMovements).values({ productId: item.productId, delta: -item.quantity, reason: "sale", note: `Order ${order.number}`, reference: order.number })
+      await tx.insert(stockMovements).values({ productId: item.productId, delta: -item.quantity, reason: "sale", note: `Order ${order.number}`, reference: `${order.number}:${item.productId}` })
     }
     return { order: (await loadOrder(tx, eq(orders.id, order.id)))!, alreadyPaid: false }
   })
@@ -191,8 +191,13 @@ export async function cancelOrder(input: { number: string; actorId: string | nul
       if (o.status === "pending") await tx.update(stockLevels).set({ reserved: sql`${stockLevels.reserved} - ${i.quantity}` }).where(eq(stockLevels.productId, i.productId))
       else {
         await tx.update(stockLevels).set({ onHand: sql`${stockLevels.onHand} + ${i.quantity}` }).where(eq(stockLevels.productId, i.productId))
-        await tx.insert(stockMovements).values({ productId: i.productId, delta: i.quantity, reason: "return", note: `Cancelled order ${o.number}`, reference: o.number })
+        await tx.insert(stockMovements).values({ productId: i.productId, delta: i.quantity, reason: "return", note: `Cancelled order ${o.number}`, reference: `${o.number}:${i.productId}` })
       }
+    }
+    if (o.status === "pending" && o.couponId) {
+      // Nothing was bought, so the customer gets the coupon back (one use per customer, and a use of the shared limit).
+      const freed = await tx.delete(couponRedemptions).where(eq(couponRedemptions.orderId, o.id)).returning({ id: couponRedemptions.id })
+      if (freed.length) await tx.update(coupons).set({ usedCount: sql`greatest(${coupons.usedCount} - 1, 0)` }).where(eq(coupons.id, o.couponId))
     }
     await tx.update(orders).set({ status: "cancelled" }).where(eq(orders.id, o.id))
     await tx.insert(orderEvents).values({ orderId: o.id, status: "cancelled", actorId: input.actorId, actorLabel: input.actorLabel ?? "Staff", note: o.status === "pending" ? "Cancelled before payment" : "Cancelled. Refund to be issued to the original payment method." })
@@ -261,4 +266,19 @@ export async function pendingAmount(providerOrderId: string): Promise<{ amountPa
   const [p] = await db.select({ amountPaise: payments.amountPaise }).from(payments).where(and(eq(payments.provider, "razorpay"), eq(payments.providerOrderId, providerOrderId))).limit(1)
   if (!p) throw new DomainError("PAYMENT_NOT_FOUND", "No payment is waiting for this order.")
   return p
+}
+
+/**
+ * Cancels unpaid orders that have been waiting longer than `olderThanMinutes`, releasing their reserved stock and
+ * coupon use, so abandoned checkouts can't hold inventory forever. Each order is cancelled in its own transaction,
+ * and one that was just paid (or already cancelled) is skipped, not failed. Returns how many were expired.
+ */
+export async function expireStalePendingOrders(olderThanMinutes = 30): Promise<number> {
+  const cutoff = new Date(Date.now() - olderThanMinutes * 60_000)
+  const stale = await db.select({ number: orders.number }).from(orders).where(and(eq(orders.status, "pending"), sql`${orders.placedAt} < ${cutoff}`))
+  let expired = 0
+  for (const { number } of stale) {
+    try { await cancelOrder({ number, actorId: null, actorLabel: "System", onlyStatuses: ["pending"] }); expired++ } catch (e) { if (!(e instanceof DomainError)) throw e }
+  }
+  return expired
 }

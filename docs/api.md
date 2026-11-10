@@ -57,6 +57,31 @@ Seeded dev staff accounts: `owner@`, `catalog-editor@`, `warehouse@`, `support@`
 `reviews` + `reviews/:id` (reviews:moderate), `articles` (content:write), `coupons` (coupons:write), `banners` (banners:write),
 `customers` (customers:read), `returns` (returns:manage), `settings` (settings:write).
 
+## Storefront data and caching
+
+The storefront reads the same database as the admin. Server pages use the cached loaders in `features/catalog/data.ts` and
+`features/articles/data.ts` (`"use cache"` with a `catalog` or `content` tag, refreshed every few minutes). Any API call that
+changes what shoppers can see (products, stock, reviews, articles, orders reserving or releasing stock) expires the tag
+immediately through the `invalidates` option of `route()`, so an admin edit shows on the shop at once. Client components that hold
+only product ids (cart, wishlist, compare) fetch current prices and stock with `GET /products/by-ids`.
+
+Extra public endpoints: `GET /products/by-ids?ids=` (up to 50), `GET /search/suggest?q=` (typo-tolerant, uses PostgreSQL trigram
+similarity), `POST /orders/track {number, email}` (identical answer for a missing order and a wrong email, 10 a minute),
+`POST /reviews/:id/helpful` (signed in; one vote per person; not on your own review), `GET /reviews/voted?ids=`.
+`POST /coupons/validate` is account-aware when signed in (one use per customer). Cancelling an unpaid order frees its coupon use.
+
+## Abandoned checkouts
+
+An unpaid order holds its stock. `POST /internal/expire-orders` (header `Authorization: Bearer $CRON_SECRET`; does not exist
+without `CRON_SECRET`) cancels unpaid orders older than `ORDER_HOLD_MINUTES` (default 30) and returns their stock and coupon use.
+Run it from a scheduler every few minutes.
+
+## Dummy payments
+
+`ENABLE_MOCK_PAYMENTS=1` (never honoured in production builds) turns on the dummy gateway: orders get `order_mock_` ids, signed
+with `MOCK_PAYMENT_SECRET`, and the checkout offers the mock Razorpay window. With it off, the mock route returns 404 and
+a mock signature is never accepted. Real payments use `RAZORPAY_KEY_SECRET` and the signed webhook.
+
 ## Checkout flow
 
 1. `POST /orders` with items, customer and address and an `Idempotency-Key`. The server prices everything, reserves stock,

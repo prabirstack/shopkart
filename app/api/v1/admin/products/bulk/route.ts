@@ -8,4 +8,4 @@ export const POST = route(async ({ require, json }) => {
   const { ids, action } = await json(bulkProductsBody)
   if (action === "delete") return ok(await deleteProducts(ids, me.userId))
   return ok(await setProductsStatus(ids, action === "publish" ? "published" : action === "unpublish" ? "draft" : "archived", me.userId))
-}, { limit: { max: 30, windowSec: 60 } })
+}, { limit: { max: 30, windowSec: 60 }, invalidates: ["catalog"] })

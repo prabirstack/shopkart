@@ -16,7 +16,11 @@ import { PUT as putWish } from "../../app/api/v1/account/wishlist/[productId]/ro
 import { GET as wishlist } from "../../app/api/v1/account/wishlist/route"
 import { POST as addAddr, GET as addrs } from "../../app/api/v1/account/addresses/route"
 import { DELETE as delAddr } from "../../app/api/v1/account/addresses/[id]/route"
-import { signPayment } from "../../features/payments/signature"
+import { signMockPayment, signPayment } from "../../features/payments/signature"
+import { webhookSecret } from "../../lib/api/payments"
+
+// Orders get `order_mock_` ids while the dev gateway is on, and those are signed with the mock secret.
+const sign = (orderId: string, paymentId: string) => (orderId.startsWith("order_mock_") ? signMockPayment(orderId, paymentId) : signPayment(orderId, paymentId))
 import { makeCatalog, makeProduct, resetDb, stockOf } from "../helpers"
 import { ctx, json, req, signUp } from "./helpers"
 
@@ -73,7 +77,7 @@ describe("checkout and payment API", () => {
     const pay = async () => {
       const u = await signUp(); const placed = (await json(await order(u.cookie))).body.data
       const oid = placed.payment.providerOrderId, pid = "pay_abc123"
-      return { u, number: placed.order.number, oid, pid, sig: signPayment(oid, pid) }
+      return { u, number: placed.order.number, oid, pid, sig: sign(oid, pid) }
     }
     const verifyReq = (cookie: string, body: object) => verify(req("/api/v1/payments/verify", { method: "POST", cookie, body }))
 
@@ -93,7 +97,7 @@ describe("checkout and payment API", () => {
     })
 
     describe("webhook", () => {
-      const secret = () => process.env.RAZORPAY_WEBHOOK_SECRET ?? process.env.MOCK_PAYMENT_SECRET ?? process.env.RAZORPAY_KEY_SECRET ?? "shopkart-dev-only-secret"
+      const secret = () => webhookSecret() // the real gateway secret path: the mock secret must never sign webhooks
       const send = (payload: object, o: { eventId?: string; sig?: string } = {}) => {
         const raw = JSON.stringify(payload)
         return webhook(new Request("http://localhost:3000/api/v1/webhooks/razorpay", { method: "POST", headers: { "content-type": "application/json", "x-razorpay-event-id": o.eventId ?? "evt_1", "x-razorpay-signature": o.sig ?? createHmac("sha256", secret()).update(raw).digest("hex") }, body: raw }))
@@ -169,7 +173,7 @@ describe("admin API permissions", () => {
     const number = placed.order.number
     const to = (status: string) => advance(req(`/api/v1/admin/orders/${number}/advance`, { method: "POST", cookie: ops.cookie, body: { to: status } }), ctx({ number }))
     expect((await json(await to("packed"))).status).toBe(409) // still pending, not paid
-    await verify(req("/api/v1/payments/verify", { method: "POST", cookie: buyer.cookie, body: { razorpay_order_id: placed.payment.providerOrderId, razorpay_payment_id: "pay_z", razorpay_signature: signPayment(placed.payment.providerOrderId, "pay_z") } }))
+    await verify(req("/api/v1/payments/verify", { method: "POST", cookie: buyer.cookie, body: { razorpay_order_id: placed.payment.providerOrderId, razorpay_payment_id: "pay_z", razorpay_signature: sign(placed.payment.providerOrderId, "pay_z") } }))
     expect((await json(await to("packed"))).body.data.status).toBe("packed")
     expect((await json(await to("delivered"))).status).toBe(409)
     expect((await json(await adminOrders(req("/api/v1/admin/orders?status=packed", { cookie: ops.cookie })))).body.data.total).toBe(1)
@@ -233,7 +237,7 @@ describe("security regressions", () => {
     const u = await signUp()
     const placed = (await json(await placeOrder(req("/api/v1/orders", { method: "POST", cookie: u.cookie, body: { items: [{ productId: p.id, quantity: 1 }], customer, shipTo: address } })))).body.data
     const { providerOrderId } = placed.payment, number = placed.order.number
-    const body = { razorpay_order_id: providerOrderId, razorpay_payment_id: "pay_race", razorpay_signature: signPayment(providerOrderId, "pay_race") }
+    const body = { razorpay_order_id: providerOrderId, razorpay_payment_id: "pay_race", razorpay_signature: sign(providerOrderId, "pay_race") }
     const results = await Promise.all([
       verify(req("/api/v1/payments/verify", { method: "POST", cookie: u.cookie, body })),
       cancelOwn(req(`/api/v1/orders/${number}/cancel`, { method: "POST", cookie: u.cookie }), ctx({ number })),

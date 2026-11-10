@@ -57,6 +57,13 @@ export const reviews = pgTable("reviews", {
   check("reviews_text_lengths", sql`char_length(${t.title}) between 3 and 80 and char_length(${t.body}) between 20 and 1500`),
 ])
 
+/** One "helpful" vote per customer per review. reviews.helpful_count is kept equal to the number of rows here. */
+export const reviewVotes = pgTable("review_votes", {
+  reviewId: uuid("review_id").notNull().references(() => reviews.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [primaryKey({ columns: [t.reviewId, t.userId] }), index("review_votes_user_idx").on(t.userId)])
+
 export const wishlistItems = pgTable("wishlist_items", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
