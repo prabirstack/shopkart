@@ -213,6 +213,8 @@ describe("security regressions", () => {
     expect(clientIp(spoofed, 2)).toBe("1.2.3.4")
     expect(clientIp(spoofed, 0)).toBeNull() // no trustworthy address: skip the per-IP bucket instead of sharing one
     expect(clientIp(new Request("http://localhost/x"), 1)).toBeNull()
+    // X-Real-IP is client-suppliable, so it is never used as a fallback
+    expect(clientIp(new Request("http://localhost/x", { headers: { "x-real-ip": "6.6.6.6" } }), 1)).toBeNull()
   })
 
   it("reprocesses a webhook that was received but never finished", async () => {

@@ -59,20 +59,24 @@ type Options = {
 const parsedHops = Number(process.env.TRUSTED_PROXY_HOPS ?? 1)
 if (!Number.isInteger(parsedHops) || parsedHops < 0) throw new Error("TRUSTED_PROXY_HOPS must be a non-negative integer (0 = no proxy in front).")
 const TRUSTED_HOPS = parsedHops
+const UNATTRIBUTED_FACTOR = 20
 
 /**
  * The client address as seen by OUR proxy, or null when there isn't a trustworthy one.
  * Anyone can send their own X-Forwarded-For, so the left-most entry is attacker-controlled. Each trusted
  * proxy appends the address it received the request from, so we count TRUSTED_PROXY_HOPS entries from the
  * right (1 = a single load balancer in front of the app). Route handlers can't see the socket address, so
- * with 0 hops, or no header, there is no safe per-client key. Returning null skips the per-IP bucket rather
- * than putting every client into one shared bucket, which would let a single caller lock everybody out.
- * Signed-in callers are still limited per account.
+ * with 0 hops, or no header, there is no safe per-client key and this returns null. The caller then
+ * limits signed-in users per account and puts anonymous requests in one shared bucket with a generous
+ * ceiling (UNATTRIBUTED_FACTOR times the endpoint limit): fail closed against floods, without a single
+ * noisy caller being able to lock out signed-in customers.
  */
 export function clientIp(req: Request, hops = TRUSTED_HOPS): string | null {
   if (hops <= 0) return null
   const chain = (req.headers.get("x-forwarded-for") ?? "").split(",").map((s) => s.trim()).filter(Boolean)
-  return chain[chain.length - hops] ?? req.headers.get("x-real-ip")?.trim() ?? null
+  // Fewer entries than trusted hops means the request did not come through our proxy; X-Real-IP is no
+  // fallback because a client can send it too. Treat it as unattributed.
+  return chain[chain.length - hops] ?? null
 }
 
 export function ok<T>(data: T, init: { status?: number; headers?: HeadersInit } = {}) {
@@ -127,10 +131,16 @@ export function route<P = Record<string, string>>(handler: (ctx: Ctx<P>) => Prom
       }
 
       const session = await getSession(req)
-      // Signed-in callers are also limited per account, so rotating IP addresses does not reset the limit.
+      const base = opts.limit ?? { max: 120, windowSec: 60 }
+      const path = url.pathname.replace(/[0-9a-f-]{8,}/gi, ":id")
       if (session) {
-        const ul = await rateLimit(`u:${session.userId}:${req.method}:${url.pathname.replace(/[0-9a-f-]{8,}/gi, ":id")}`, opts.limit ?? { max: 120, windowSec: 60 })
+        // Signed-in callers are limited per account, so rotating IP addresses does not reset the limit.
+        const ul = await rateLimit(`u:${session.userId}:${req.method}:${path}`, base)
         if (!ul.allowed) throw new ApiError(429, "RATE_LIMITED", "Too many requests. Please slow down.", { retryAfter: ul.retryAfter })
+      } else if (!ip) {
+        // Anonymous and unattributable: one shared bucket with a high ceiling instead of no limit at all.
+        const al = await rateLimit(`anon:${req.method}:${path}`, { max: base.max * UNATTRIBUTED_FACTOR, windowSec: base.windowSec })
+        if (!al.allowed) throw new ApiError(429, "RATE_LIMITED", "Too many requests. Please slow down.", { retryAfter: al.retryAfter })
       }
       let cached: unknown
       let bodyRead = false
