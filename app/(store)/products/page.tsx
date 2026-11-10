@@ -10,6 +10,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { categories } from "@/features/catalog/demo"
+import { didYouMean } from "@/features/catalog/search"
 import { PAGE_SIZE, SORTS, parseShopParams, runShopQuery, shopHref, type ShopParams } from "@/features/catalog/query"
 import { formatMoney } from "@/lib/money"
 import { FREE_DELIVERY_ABOVE_PAISE } from "@/lib/store-config"
@@ -26,6 +27,8 @@ function activeChips(p: ShopParams) {
   if (p.minPaise != null) chips.push({ label: `Min ${rupees(p.minPaise)}`, href: shopHref({ ...p, minPaise: null, page: 1 }) })
   if (p.maxPaise != null) chips.push({ label: `Max ${rupees(p.maxPaise)}`, href: shopHref({ ...p, maxPaise: null, page: 1 }) })
   if (p.inStock) chips.push({ label: "In stock", href: shopHref({ ...p, inStock: false, page: 1 }) })
+  if (p.rating) chips.push({ label: `${p.rating}★ & up`, href: shopHref({ ...p, rating: 0, page: 1 }) })
+  if (p.discount) chips.push({ label: `${p.discount}%+ off`, href: shopHref({ ...p, discount: 0, page: 1 }) })
   return chips
 }
 
@@ -33,6 +36,7 @@ async function ShopResults({ searchParams }: { searchParams: PageProps<"/product
   const params = parseShopParams(await searchParams)
   const { items, total, pages, page } = runShopQuery(params)
   const chips = activeChips(params)
+  const suggestion = params.q && total === 0 ? didYouMean(params.q) : null
   const category = categories.find((c) => c.slug === params.category)
   const categoryName = category?.name
   const title = params.q ? `Results for “${params.q}”` : categoryName ?? "All products"
@@ -79,6 +83,11 @@ async function ShopResults({ searchParams }: { searchParams: PageProps<"/product
                 </li>
               ))}
             </ul>
+          )}
+          {suggestion && (
+            <p className="rounded-lg bg-muted px-4 py-3 text-sm">
+              Did you mean <Link href={shopHref({ ...params, q: suggestion, page: 1 })} className="font-semibold text-primary underline-offset-4 hover:underline">{suggestion}</Link>?
+            </p>
           )}
           {items.length === 0 ? (
             <Empty className="rounded-xl border">

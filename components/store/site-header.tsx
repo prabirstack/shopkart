@@ -1,8 +1,9 @@
 import Link from "next/link"
-import { ChevronDown, Flame, Heart, LayoutGrid, Package, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
+import { ChevronDown, Flame, Heart, LayoutGrid, Package, ShoppingBag, ShoppingCart, User } from "lucide-react"
 import { CartCount } from "@/features/cart/cart-count"
 import { WishlistCount } from "@/features/wishlist/wishlist-count"
 import { MobileNavigation } from "./mobile-navigation"
+import { SearchBox } from "./search-box"
 import { UtilityBar } from "./utility-bar"
 
 const navLinks = ["New Arrivals", "Bestsellers", "Top Selling", "Brands", "Gift Cards", "Sell on ShopKart"]
@@ -27,17 +28,7 @@ export function SiteHeader() {
               ShopKart
             </Link>
           </div>
-          <form action="/products" method="get" role="search"
-            className="col-span-3 row-start-2 flex min-w-0 overflow-hidden rounded-lg border bg-background focus-within:ring-[3px] focus-within:ring-ring/40 lg:col-span-1 lg:row-start-auto">
-            <label htmlFor="site-search" className="sr-only">Search products</label>
-            <input id="site-search" name="q" type="search" maxLength={100}
-              placeholder="Search for products, brands and more..."
-              className="h-11 min-w-0 flex-1 bg-transparent px-4 text-sm outline-none placeholder:text-muted-foreground" />
-            <button type="submit" aria-label="Search"
-              className="grid w-14 place-items-center bg-primary text-primary-foreground hover:bg-primary/90">
-              <Search className="size-5" aria-hidden="true" />
-            </button>
-          </form>
+          <div className="col-span-3 row-start-2 min-w-0 lg:col-span-1 lg:row-start-auto"><SearchBox /></div>
           <ul className="col-start-3 row-start-1 flex items-center gap-1 lg:gap-5">
             {actions.map(({ label, href, icon: Icon, cart, wish, wide }) => (
               <li key={label} className={wide ? "hidden sm:block" : undefined}>
