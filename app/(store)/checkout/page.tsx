@@ -4,14 +4,14 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { CreditCard, Info, Lock, ShoppingCart } from "lucide-react"
+import { ChevronDown, CreditCard, Info, Lock, ShoppingCart } from "lucide-react"
 import { Price } from "@/components/price"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { CheckoutSteps } from "@/components/store/checkout-steps"
 import { ProductArt } from "@/components/store/product-art"
 import { SummaryRows } from "@/components/store/order-summary"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Button } from "@/components/ui/button"
+import { StoreEmptyState } from "@/components/store/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MockRazorpayCheckout, type GatewaySuccess } from "@/features/payments/mock-razorpay-dialog"
 import { useCart } from "@/features/cart/store"
@@ -21,11 +21,11 @@ import { useCartSummary } from "@/features/cart/use-cart-summary"
 import { formatMoney } from "@/lib/money"
 import { INDIAN_STATES, checkoutSchema, type CheckoutValues } from "@/features/checkout/schema"
 
-const input = "h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive"
+const input = "h-11 w-full rounded-xl border bg-background px-3.5 text-sm shadow-xs outline-none transition hover:border-primary/40 focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15 aria-invalid:border-destructive"
 
 function Field({ id, label, error, hint, children }: { id: string; label: string; error?: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-1.5">
+    <div className="grid content-start gap-1.5">
       <label htmlFor={id} className="text-sm font-medium">{label}</label>
       {children}
       {hint && !error && <p id={`${id}-hint`} className="text-xs text-muted-foreground">{hint}</p>}
@@ -80,14 +80,7 @@ export default function CheckoutPage() {
       <CheckoutSteps current={1} />
       <h1 className="store-title !text-3xl">Checkout</h1>
       {!hydrated ? <Skeleton className="h-96 w-full rounded-xl" /> : items.length === 0 ? (
-        <Empty className="rounded-xl border">
-          <EmptyHeader>
-            <EmptyMedia variant="icon"><ShoppingCart aria-hidden="true" /></EmptyMedia>
-            <EmptyTitle>Nothing to check out</EmptyTitle>
-            <EmptyDescription>Add a few products to your cart first.</EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent><Link href="/products" className={buttonVariants()}>Browse products</Link></EmptyContent>
-        </Empty>
+        <StoreEmptyState icon={ShoppingCart} title="Nothing to check out" text="Add a few products to your cart and come back here to pay securely." primary={{ href: "/products", label: "Browse products" }} secondary={{ href: "/cart", label: "View cart" }} />
       ) : (
         <form noValidate onSubmit={handleSubmit(startPayment)} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="grid min-w-0 gap-6">
@@ -95,34 +88,34 @@ export default function CheckoutPage() {
               <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <span>Demo checkout with a dummy Razorpay window: no real money moves and no account is needed yet. Checkout will require a verified account (<Link href="/login" className="font-medium underline">sign in</Link>) once identity is built.</span>
             </p>
-            <fieldset className="grid gap-4 rounded-xl border bg-card p-5 sm:grid-cols-2">
-              <legend className="px-2 text-base font-semibold">1. Contact</legend>
+            <fieldset className="grid gap-4 rounded-2xl border bg-card p-5 shadow-xs sm:grid-cols-2 sm:p-6">
+              <legend className="flex items-center gap-2.5 px-2 text-base font-semibold"><span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">1</span>Contact</legend>
               <Field id="fullName" label="Full name" error={errors.fullName?.message}><input {...register("fullName")} {...a("fullName")} autoComplete="name" className={input} /></Field>
               <Field id="phone" label="Mobile number" error={errors.phone?.message} hint="10 digits, without +91"><input {...register("phone")} {...a("phone", true)} inputMode="numeric" autoComplete="tel-national" maxLength={10} className={input} /></Field>
               <div className="sm:col-span-2"><Field id="email" label="Email" error={errors.email?.message} hint="We send your order confirmation and GST invoice here."><input {...register("email")} {...a("email", true)} type="email" autoComplete="email" className={input} /></Field></div>
             </fieldset>
-            <fieldset className="grid gap-4 rounded-xl border bg-card p-5 sm:grid-cols-2">
-              <legend className="px-2 text-base font-semibold">2. Delivery address</legend>
+            <fieldset className="grid gap-4 rounded-2xl border bg-card p-5 shadow-xs sm:grid-cols-2 sm:p-6">
+              <legend className="flex items-center gap-2.5 px-2 text-base font-semibold"><span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">2</span>Delivery address</legend>
               <div className="sm:col-span-2"><Field id="line1" label="Address line 1" error={errors.line1?.message}><input {...register("line1")} {...a("line1")} autoComplete="address-line1" className={input} /></Field></div>
               <div className="sm:col-span-2"><Field id="line2" label="Address line 2 (optional)" error={errors.line2?.message}><input {...register("line2")} {...a("line2")} autoComplete="address-line2" className={input} /></Field></div>
               <Field id="city" label="City" error={errors.city?.message}><input {...register("city")} {...a("city")} autoComplete="address-level2" className={input} /></Field>
               <Field id="pincode" label="PIN code" error={errors.pincode?.message}><input {...register("pincode")} {...a("pincode")} inputMode="numeric" autoComplete="postal-code" maxLength={6} className={input} /></Field>
               <div className="sm:col-span-2"><Field id="state" label="State" error={errors.state?.message}>
-                <select {...register("state")} {...a("state")} autoComplete="address-level1" className={input} defaultValue="">
+                <div className="relative"><select {...register("state")} {...a("state")} autoComplete="address-level1" className={`${input} cursor-pointer appearance-none pr-10`} defaultValue="">
                   <option value="" disabled>Select state</option>
                   {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                </select><ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /></div>
               </Field></div>
             </fieldset>
-            <fieldset className="grid gap-3 rounded-xl border bg-card p-5">
-              <legend className="px-2 text-base font-semibold">3. Payment</legend>
-              <label className="flex items-start gap-3 rounded-lg border border-primary bg-primary/5 p-4 text-sm">
+            <fieldset className="grid gap-3 rounded-2xl border bg-card p-5 shadow-xs sm:p-6">
+              <legend className="flex items-center gap-2.5 px-2 text-base font-semibold"><span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">3</span>Payment</legend>
+              <label className="flex items-start gap-3 rounded-xl border-2 border-primary bg-primary/5 p-4 text-sm shadow-xs">
                 <input type="radio" name="payment" defaultChecked className="mt-1 accent-primary" />
                 <span><span className="flex items-center gap-2 font-medium"><CreditCard className="size-4" aria-hidden="true" /> Razorpay</span><span className="text-muted-foreground">UPI, cards, netbanking and wallets. You&apos;ll pay on Razorpay&apos;s secure page.</span></span>
               </label>
             </fieldset>
           </div>
-          <aside aria-label="Order summary" className="grid gap-4 rounded-xl border bg-card p-5 lg:sticky lg:top-4">
+          <aside aria-label="Order summary" className="grid gap-4 rounded-2xl border bg-card p-5 shadow-sm lg:sticky lg:top-4">
             <h2 className="font-semibold">Order summary</h2>
             <ul className="grid max-h-56 gap-3 overflow-y-auto">
               {items.map(({ product, quantity }) => {

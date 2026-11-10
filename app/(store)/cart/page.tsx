@@ -8,7 +8,7 @@ import { SummaryRows } from "@/components/store/order-summary"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { Price } from "@/components/price"
 import { buttonVariants } from "@/components/ui/button"
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { StoreEmptyState } from "@/components/store/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { trackRemoveFromCart, trackViewCart } from "@/features/analytics/events"
 import { CouponBox } from "@/features/cart/coupon-box"
@@ -38,14 +38,7 @@ export default function CartPage() {
       <CheckoutSteps current={0} />
       <h1 className="store-title !text-3xl">Your cart{hydrated && count > 0 && <span className="ml-2 text-lg font-medium text-muted-foreground">({count} {count === 1 ? "item" : "items"})</span>}</h1>
       {!hydrated ? <Skeleton className="h-72 w-full rounded-xl" /> : items.length === 0 ? (
-        <Empty className="rounded-xl border">
-          <EmptyHeader>
-            <EmptyMedia variant="icon"><ShoppingCart aria-hidden="true" /></EmptyMedia>
-            <EmptyTitle>Your cart is empty</EmptyTitle>
-            <EmptyDescription>Browse today&apos;s deals and add something you like.</EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent><Link href="/products" className={buttonVariants()}>Continue shopping</Link></EmptyContent>
-        </Empty>
+        <StoreEmptyState icon={ShoppingCart} title="Your cart is empty" text="Looks like you haven't added anything yet. Browse today's deals and find something you love." primary={{ href: "/products", label: "Continue shopping" }} secondary={{ href: "/deals", label: "See today's deals" }} />
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <section aria-label="Cart items" className="grid min-w-0 gap-3">
@@ -61,7 +54,7 @@ export default function CartPage() {
                 const Icon = product.icon
                 const atMax = quantity >= Math.min(MAX_QUANTITY, product.stock)
                 return (
-                  <li key={product.id} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 rounded-2xl border bg-card p-4 shadow-xs sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
+                  <li key={product.id} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 rounded-2xl border bg-card p-4 shadow-xs transition-shadow duration-300 hover:shadow-md sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
                     <Link href={`/products/${product.slug}`} className="relative grid aspect-square place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80">
                       <ProductArt slug={product.slug} title={product.title} icon={Icon} sizes="96px" imageClassName="object-contain p-2" iconClassName="size-1/2 text-neutral-700" />
                     </Link>
@@ -71,10 +64,10 @@ export default function CartPage() {
                       <p className="text-xs text-muted-foreground">GST {product.gstPercent}% included</p>
                       {product.stock <= 10 && <p className="text-xs font-medium text-amber-700">Only {product.stock} left</p>}
                       <div className="mt-2 flex flex-wrap items-center gap-3">
-                        <div role="group" aria-label={`Quantity for ${product.title}`} className="flex items-center rounded-lg border">
-                          <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(product.id, quantity - 1)} className="grid size-8 place-items-center"><Minus className="size-3.5" aria-hidden="true" /></button>
+                        <div role="group" aria-label={`Quantity for ${product.title}`} className="flex items-center overflow-hidden rounded-xl border bg-background">
+                          <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(product.id, quantity - 1)} className="grid size-9 place-items-center transition-colors hover:bg-muted"><Minus className="size-3.5" aria-hidden="true" /></button>
                           <span aria-live="polite" className="price w-7 text-center text-sm font-medium">{quantity}</span>
-                          <button type="button" aria-label="Increase quantity" disabled={atMax} onClick={() => setQuantity(product.id, quantity + 1)} className="grid size-8 place-items-center disabled:opacity-40"><Plus className="size-3.5" aria-hidden="true" /></button>
+                          <button type="button" aria-label="Increase quantity" disabled={atMax} onClick={() => setQuantity(product.id, quantity + 1)} className="grid size-9 place-items-center transition-colors hover:bg-muted disabled:opacity-40 disabled:hover:bg-transparent"><Plus className="size-3.5" aria-hidden="true" /></button>
                         </div>
                         <button type="button" onClick={() => { trackRemoveFromCart(product, quantity); remove(product.id) }} className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" aria-hidden="true" /> Remove</button>
                         <button type="button" onClick={() => { toggleWish(product.id); remove(product.id) }} className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary"><Heart className="size-3.5" aria-hidden="true" /> Save for later</button>

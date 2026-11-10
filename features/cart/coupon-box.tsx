@@ -18,22 +18,24 @@ export function CouponBox({ subtotalPaise, appliedCode, appliedOk }: { subtotalP
       </div>
     )
   }
+  // A <div>, not a <form>: this box also renders inside the checkout form, and forms can't be nested
+  // (it caused a hydration error). Enter is handled here so it never submits the checkout by accident.
+  const apply = () => {
+    const problem = couponProblem(findCoupon(code), subtotalPaise)
+    if (problem) { setError(problem); return }
+    setError(""); setCoupon(code.trim().toUpperCase()); trackSelectPromotion(code.trim().toUpperCase()); setCode("")
+  }
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault()
-      const problem = couponProblem(findCoupon(code), subtotalPaise)
-      if (problem) { setError(problem); return }
-      setError(""); setCoupon(code.trim().toUpperCase()); trackSelectPromotion(code.trim().toUpperCase()); setCode("")
-    }} className="grid gap-1.5">
+    <div className="grid gap-1.5">
       <label htmlFor="coupon" className="flex items-center gap-1.5 text-sm font-medium"><Tag className="size-4" aria-hidden="true" /> Have a coupon?</label>
       <div className="flex gap-2">
-        <input id="coupon" value={code} onChange={(e) => { setCode(e.target.value); setError("") }} placeholder="Enter code" autoCapitalize="characters"
+        <input id="coupon" value={code} onChange={(e) => { setCode(e.target.value); setError("") }} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (code.trim()) apply() } }} placeholder="Enter code" autoCapitalize="characters"
           aria-invalid={error ? true : undefined} aria-describedby={error ? "coupon-error" : undefined}
-          className="h-9 min-w-0 flex-1 rounded-lg border bg-background px-3 text-sm uppercase outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40" />
-        <Button type="submit" variant="outline" disabled={code.trim() === ""}>Apply</Button>
+          className="h-10 min-w-0 flex-1 rounded-xl border bg-background px-3 text-sm uppercase outline-none transition hover:border-primary/40 focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15" />
+        <Button type="button" variant="outline" className="h-10 rounded-xl" onClick={apply} disabled={code.trim() === ""}>Apply</Button>
       </div>
       {(error || (appliedCode && !appliedOk)) && <p id="coupon-error" role="alert" className="text-xs text-destructive">{error || `${appliedCode} no longer applies to this cart.`}</p>}
       <p className="text-xs text-muted-foreground">Try WELCOME10 or FLAT200.</p>
-    </form>
+    </div>
   )
 }
