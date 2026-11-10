@@ -170,3 +170,7 @@
     margin-block-start: 1em;
   }
 }
+@keyframes hero-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
