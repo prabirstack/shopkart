@@ -76,11 +76,35 @@ An unpaid order holds its stock. `POST /internal/expire-orders` (header `Authori
 without `CRON_SECRET`) cancels unpaid orders older than `ORDER_HOLD_MINUTES` (default 30) and returns their stock and coupon use.
 Run it from a scheduler every few minutes.
 
-## Dummy payments
+## Payments
 
-`ENABLE_MOCK_PAYMENTS=1` (never honoured in production builds) turns on the dummy gateway: orders get `order_mock_` ids, signed
-with `MOCK_PAYMENT_SECRET`, and the checkout offers the mock Razorpay window. With it off, the mock route returns 404 and
-a mock signature is never accepted. Real payments use `RAZORPAY_KEY_SECRET` and the signed webhook.
+`paymentMode()` (lib/api/payments.ts) decides how payments work, and `GET /payments/config` tells the checkout:
+
+| Mode | When | Behaviour |
+| --- | --- | --- |
+| `mock` | `ENABLE_MOCK_PAYMENTS=1` in a non-production build | Dummy payment window; orders get `order_mock_` ids signed with `MOCK_PAYMENT_SECRET`. |
+| `razorpay` | `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` set | Real Razorpay. Keys starting `rzp_test_` are Razorpay's **test mode** (no real money). |
+| `none` | neither | `POST /orders` answers 503 instead of saving an order nobody can pay. |
+
+The dummy gateway wins when it is on, so **leave `ENABLE_MOCK_PAYMENTS` empty to use Razorpay**.
+
+### Real Razorpay (test mode)
+
+1. In the Razorpay dashboard switch to **Test Mode**, then Account & Settings, API Keys, Generate. Put the Key Id and Key Secret in `.env`
+   as `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` (the secret stays on the server; the key id is public).
+2. Webhook (needed so a paid order is confirmed even if the shopper closes the tab): Settings, Webhooks, add
+   `https://<public-url>/api/v1/webhooks/razorpay`, choose a secret, tick `payment.captured` and `payment.failed`, and put that secret in
+   `RAZORPAY_WEBHOOK_SECRET`. Locally Razorpay can't reach `localhost`, so expose the dev server with a tunnel (for example
+   `cloudflared tunnel --url http://localhost:3000` or `ngrok http 3000`). Without the webhook, payments are still confirmed by the
+   browser's own verify call.
+3. Pay with Razorpay's test details (shown in their popup): card `4111 1111 1111 1111` with any future expiry and CVV, UPI
+   `success@razorpay` (or `failure@razorpay` to see a decline), or the Success/Failure buttons on the test netbanking page.
+
+How it works: the order is saved first (so the amount is the stored total), then the matching Razorpay order is created through their
+API and its id attached. If Razorpay can't be reached the order is cancelled and its stock released, and the shopper is told nothing
+was charged. The popup returns a signature that `POST /payments/verify` checks against `RAZORPAY_KEY_SECRET`; the amount comes from
+our own payment row, never from the browser. Admin refunds of a real payment call the Razorpay refund API first and only mark the order
+refunded if it succeeds (a dummy-gateway payment is just recorded). Going live later means switching to live keys: nothing else changes.
 
 ## Checkout flow
 

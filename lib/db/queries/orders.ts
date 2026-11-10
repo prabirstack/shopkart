@@ -210,14 +210,14 @@ export async function cancelOrder(input: { number: string; actorId: string | nul
  * entry. This does NOT move money: sending it back through the payment provider is a separate step (not
  * integrated yet), and returned goods go back on the shelf through an inventory adjustment.
  */
-export async function refundOrder(input: { number: string; actorId: string | null; actorLabel?: string }): Promise<OrderDTO> {
+export async function refundOrder(input: { number: string; actorId: string | null; actorLabel?: string; /** Razorpay's refund id when the money was sent back through the gateway. */ providerRefundId?: string }): Promise<OrderDTO> {
   return db.transaction(async (tx: Tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.number, input.number)).for("update")
     if (!o) throw new DomainError("NOT_FOUND", "Order not found.")
     if (o.status !== "delivered") throw new DomainError("INVALID_TRANSITION", `Only delivered orders can be refunded, and this one is ${o.status}.`)
     await tx.update(orders).set({ status: "refunded" }).where(eq(orders.id, o.id))
-    await tx.update(payments).set({ status: "refunded" }).where(and(eq(payments.orderId, o.id), eq(payments.status, "captured")))
-    await tx.insert(orderEvents).values({ orderId: o.id, status: "refunded", actorId: input.actorId, actorLabel: input.actorLabel ?? "Staff", note: "Refund recorded. Return the money from the payment provider." })
+    await tx.update(payments).set({ status: "refunded", providerRefundId: input.providerRefundId ?? null }).where(and(eq(payments.orderId, o.id), eq(payments.status, "captured")))
+    await tx.insert(orderEvents).values({ orderId: o.id, status: "refunded", actorId: input.actorId, actorLabel: input.actorLabel ?? "Staff", note: input.providerRefundId ? `Refund sent to the original payment method (${input.providerRefundId}).` : "Refund recorded. Return the money from the payment provider." })
     return (await loadOrder(tx, eq(orders.id, o.id)))!
   })
 }
@@ -281,4 +281,18 @@ export async function expireStalePendingOrders(olderThanMinutes = 30): Promise<n
     try { await cancelOrder({ number, actorId: null, actorLabel: "System", onlyStatuses: ["pending"] }); expired++ } catch (e) { if (!(e instanceof DomainError)) throw e }
   }
   return expired
+}
+
+/** Gives an order the id of its gateway order, once the gateway has created it. */
+export async function setProviderOrderId(orderId: string, providerOrderId: string) {
+  const rows = await db.update(payments).set({ providerOrderId }).where(and(eq(payments.orderId, orderId), eq(payments.status, "created"))).returning({ id: payments.id })
+  if (rows.length === 0) throw new DomainError("NOT_FOUND", "No unpaid payment to attach to.")
+}
+
+/** What a refund needs: the order must be delivered and have a captured payment. */
+export async function getRefundablePayment(number: string): Promise<{ orderStatus: string; payment: { providerPaymentId: string | null; amountPaise: number } | null }> {
+  const [o] = await db.select({ id: orders.id, status: orders.status }).from(orders).where(eq(orders.number, number))
+  if (!o) throw new DomainError("NOT_FOUND", "Order not found.")
+  const [p] = await db.select({ providerPaymentId: payments.providerPaymentId, amountPaise: payments.amountPaise }).from(payments).where(and(eq(payments.orderId, o.id), eq(payments.status, "captured"))).limit(1)
+  return { orderStatus: o.status, payment: p ?? null }
 }

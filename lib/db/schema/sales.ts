@@ -106,6 +106,8 @@ export const payments = pgTable("payments", {
   provider: text("provider").notNull().default("razorpay"),
   providerOrderId: text("provider_order_id").notNull(),
   providerPaymentId: text("provider_payment_id"),
+  /** Razorpay's id for the refund, once money has been sent back through the gateway. */
+  providerRefundId: text("provider_refund_id"),
   amountPaise: integer("amount_paise").notNull(),
   currency: text("currency").notNull().default("INR"),
   status: paymentStatus("status").notNull().default("created"),

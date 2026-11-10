@@ -28,3 +28,18 @@ export function verifyWebhookSignature(rawBody: string, signature: string | null
  */
 export const MOCK_ORDER_PREFIX = "order_mock_"
 export const mockPaymentsEnabled = () => process.env.NODE_ENV !== "production" && process.env.ENABLE_MOCK_PAYMENTS === "1"
+
+export const razorpayConfigured = () => !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
+
+/**
+ * How payments work right now:
+ *  - "mock":     the dummy gateway (development only, explicit opt-in, see above);
+ *  - "razorpay": real Razorpay (test keys `rzp_test_...` give test mode, live keys real money);
+ *  - "none":     nothing is configured, so orders are refused instead of being saved and then impossible to pay.
+ * The dummy gateway wins when it is switched on, so leave ENABLE_MOCK_PAYMENTS empty to use Razorpay.
+ */
+export type PaymentMode = "mock" | "razorpay" | "none"
+export const paymentMode = (): PaymentMode => (mockPaymentsEnabled() ? "mock" : razorpayConfigured() ? "razorpay" : "none")
+
+/** Provider id given to an order between being saved and getting its Razorpay order id. */
+export const PENDING_GATEWAY_PREFIX = "pending_"

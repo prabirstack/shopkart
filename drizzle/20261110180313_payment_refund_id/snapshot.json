@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "52ba0df3-b793-4dc2-a11c-e87655cdf0de",
+  "prevIds": [
+    "18545304-b92d-4b8f-aa2a-7382ba882a5b"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "payments",
+        "provider_refund_id"
+      ],
+      "writes": [
+        "s|col|public.payments.provider_refund_id",
+        "n|col|public.payments.provider_refund_id",
+        "e|col|public.payments.provider_refund_id"
+      ],
+      "reads": [
+        "n|tbl|public.payments",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "payments",
+        "name": "provider_refund_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

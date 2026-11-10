@@ -1,7 +1,8 @@
 import type { GatewaySuccess } from "@/features/payments/mock-razorpay-dialog"
 
 /** The order as the checkout needs it: the number to show and what to hand the payment window. */
-export type PlacedOrder = { number: string; status: string; providerOrderId: string; amountPaise: number }
+export type PaymentConfig = { mode: "mock" | "razorpay" | "none"; keyId: string | null; testMode: boolean }
+export type PlacedOrder = { number: string; status: string; providerOrderId: string; amountPaise: number; mode: PaymentConfig["mode"]; keyId: string | null; testMode: boolean }
 
 type ApiFailure = { ok: false; code: string; message: string; status: number }
 type ApiResult<T> = { ok: true; data: T } | ApiFailure
@@ -33,7 +34,7 @@ export function checkoutErrorMessage(f: ApiFailure): string {
   }
 }
 
-const toPlaced = (order: { number: string; status: string }, p: { providerOrderId: string; amountPaise: number }): PlacedOrder => ({ number: order.number, status: order.status, providerOrderId: p.providerOrderId, amountPaise: p.amountPaise })
+const toPlaced = (order: { number: string; status: string }, p: { providerOrderId: string; amountPaise: number }, cfg: PaymentConfig): PlacedOrder => ({ number: order.number, status: order.status, providerOrderId: p.providerOrderId, amountPaise: p.amountPaise, mode: cfg.mode, keyId: cfg.keyId, testMode: cfg.testMode })
 
 export type NewOrderBody = {
   items: { productId: string; quantity: number }[]
@@ -43,8 +44,8 @@ export type NewOrderBody = {
 }
 
 export async function placeOrder(body: NewOrderBody, idempotencyKey: string): Promise<ApiResult<PlacedOrder>> {
-  const r = await call<{ order: { number: string; status: string }; payment: { providerOrderId: string; amountPaise: number } }>("/api/v1/orders", { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: JSON.stringify(body) })
-  return r.ok ? { ok: true, data: toPlaced(r.data.order, r.data.payment) } : r
+  const r = await call<{ order: { number: string; status: string }; payment: { providerOrderId: string; amountPaise: number; mode: PaymentConfig["mode"]; keyId: string | null } }>("/api/v1/orders", { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: JSON.stringify(body) })
+  return r.ok ? { ok: true, data: toPlaced(r.data.order, r.data.payment, { mode: r.data.payment.mode, keyId: r.data.payment.keyId, testMode: (r.data.payment.keyId ?? "").startsWith("rzp_test_") }) } : r
 }
 
 /** Reloads an order's payment details so the payment window can be reopened for the same order. */
@@ -53,8 +54,12 @@ export async function loadOrder(number: string): Promise<ApiResult<PlacedOrder>>
   if (!r.ok) return r
   const p = r.data.payments.find((x) => x.status === "created") ?? r.data.payments[0]
   if (!p) return { ok: false, status: 404, code: "NOT_FOUND", message: "This order has no payment to retry." }
-  return { ok: true, data: toPlaced(r.data, p) }
+  const cfg = await call<PaymentConfig>("/api/v1/payments/config")
+  if (!cfg.ok) return cfg
+  return { ok: true, data: toPlaced(r.data, p, cfg.data) }
 }
+
+export const loadPaymentConfig = () => call<PaymentConfig>("/api/v1/payments/config")
 
 export const verifyPayment = (g: GatewaySuccess) => call<unknown>("/api/v1/payments/verify", { method: "POST", body: JSON.stringify(g) })
 export const cancelOrder = (number: string) => call<unknown>(`/api/v1/orders/${encodeURIComponent(number)}/cancel`, { method: "POST" })

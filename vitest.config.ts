@@ -17,7 +17,11 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
     globalSetup: ["./tests/global-setup.ts"],
-    env: { DATABASE_URL: testUrl, DISABLE_RATE_LIMIT: "1", BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-123", APP_ORIGIN: "http://localhost:3000" },
+    env: {
+      DATABASE_URL: testUrl, DISABLE_RATE_LIMIT: "1", BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-123", APP_ORIGIN: "http://localhost:3000",
+      // Payments are pinned here so the tests behave the same whatever is in .env: dummy gateway on, no Razorpay keys.
+      ENABLE_MOCK_PAYMENTS: "1", MOCK_PAYMENT_SECRET: "test-mock-secret", RAZORPAY_KEY_ID: "", RAZORPAY_KEY_SECRET: "", RAZORPAY_WEBHOOK_SECRET: "",
+    },
     // One shared database, so test files run one after another.
     fileParallelism: false,
     testTimeout: 30_000,

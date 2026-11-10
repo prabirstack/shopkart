@@ -49,7 +49,7 @@ async function makeOrder(status: "delivered" | "paid" | "pending", total = 50000
   const u = await makeUser(); const cat = catalog ?? await makeCatalog(); const p = await makeProduct(cat)
   const [o] = await db.insert(s.orders).values({ userId: u.id, status, customerName: "Test User", customerEmail: "t@x.com", customerPhone: "9800000001", shipTo, subtotalPaise: total, totalPaise: total }).returning()
   await db.insert(s.orderItems).values({ orderId: o.id, productId: p.id, title: p.title, sku: p.sku, quantity: 1, unitPricePaise: total, gstPercent: 18 })
-  if (status !== "pending") await db.insert(s.payments).values({ orderId: o.id, providerOrderId: `o_${o.number}`, providerPaymentId: `p_${o.number}`, amountPaise: total, status: "captured" })
+  if (status !== "pending") await db.insert(s.payments).values({ orderId: o.id, providerOrderId: `o_${o.number}`, providerPaymentId: `pay_mock_${o.number}`, amountPaise: total, status: "captured" })
   return o
 }
 

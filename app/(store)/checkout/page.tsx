@@ -14,12 +14,13 @@ import { Button } from "@/components/ui/button"
 import { StoreEmptyState } from "@/components/store/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MockRazorpayCheckout, type GatewaySuccess } from "@/features/payments/mock-razorpay-dialog"
+import { RazorpayPopup } from "@/features/payments/razorpay-checkout"
 import { useCart } from "@/features/cart/store"
 import { trackAddPaymentInfo, trackBeginCheckout } from "@/features/analytics/events"
 import { CouponBox } from "@/features/cart/coupon-box"
 import { useCartSummary } from "@/features/cart/use-cart-summary"
 import { forgetProducts } from "@/features/catalog/use-products"
-import { cancelOrder, checkoutErrorMessage, loadOrder, loadPrefill, placeOrder, verifyPayment, type PlacedOrder } from "@/features/checkout/api"
+import { cancelOrder, checkoutErrorMessage, loadOrder, loadPrefill, placeOrder, verifyPayment, type PlacedOrder, loadPaymentConfig, type PaymentConfig } from "@/features/checkout/api"
 import { INDIAN_STATES, checkoutSchema, type CheckoutValues } from "@/features/checkout/schema"
 import { authClient } from "@/lib/auth-client"
 import { formatMoney } from "@/lib/money"
@@ -53,12 +54,14 @@ export default function CheckoutPage() {
   const router = useRouter()
   const clear = useCart((st) => st.clear)
   const [phase, setPhase] = useState<Phase>("idle")
+  const [payConfig, setPayConfig] = useState<PaymentConfig | null>(null)
+  useEffect(() => { void loadPaymentConfig().then((r) => { if (r.ok) setPayConfig(r.data) }) }, [])
   const [error, setError] = useState("")
   const [order, setOrder] = useState<PlacedOrder | null>(null)
   const signedIn = Boolean(session.data?.user)
   const userId = session.data?.user.id
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CheckoutValues>({ resolver: zodResolver(checkoutSchema), defaultValues: { state: undefined } })
+  const { register, handleSubmit, reset, getValues, formState: { errors } } = useForm<CheckoutValues>({ resolver: zodResolver(checkoutSchema), defaultValues: { state: undefined } })
   const a = (id: keyof CheckoutValues, hint?: boolean) => ({
     id, "aria-invalid": errors[id] ? true : undefined,
     "aria-describedby": errors[id] ? `${id}-error` : hint ? `${id}-hint` : undefined,
@@ -113,7 +116,7 @@ export default function CheckoutPage() {
     writeAttempt({ ...attempt, number: placed.number })
     trackAddPaymentInfo(buyable, quote.totalPaise, "razorpay")
     setOrder(placed)
-    if (!placed.providerOrderId.startsWith("order_mock_")) return fail("Online payments are not configured on this site yet, so this order can't be paid. Cancel it and try again later.", "unpaid")
+    if (placed.mode === "none") return fail("Online payments are not set up on this site yet, so this order can't be paid. Cancel it and try again later.", "unpaid")
     setPhase("paying")
   }
 
@@ -135,7 +138,7 @@ export default function CheckoutPage() {
     if (res.data.status === "paid") { writeAttempt(null); clear(); return router.push(`/checkout/success?order=${order.number}`) }
     if (res.data.status !== "pending") { writeAttempt(null); setOrder(null); return fail(`Order ${order.number} is ${res.data.status} and can't be paid any more.`) }
     setOrder(res.data)
-    if (!res.data.providerOrderId.startsWith("order_mock_")) return fail("Online payments are not configured on this site yet, so this order can't be paid. Cancel it and try again later.", "unpaid")
+    if (res.data.mode === "none") return fail("Online payments are not set up on this site yet, so this order can't be paid. Cancel it and try again later.", "unpaid")
     setPhase("paying")
   }
 
@@ -164,10 +167,16 @@ export default function CheckoutPage() {
       ) : (
         <form noValidate onSubmit={handleSubmit(startPayment)} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="grid min-w-0 gap-6">
-            <p role="note" className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-              <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              <span>Demo checkout with a dummy Razorpay window: no real money moves. Your order is saved to your account.</span>
-            </p>
+            {payConfig && !(payConfig.mode === "razorpay" && !payConfig.testMode) && (
+              <p role="note" className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span>
+                  {payConfig.mode === "mock" && "Demo checkout with a dummy payment window: no real money moves. Your order is saved to your account."}
+                  {payConfig.mode === "razorpay" && "Razorpay test mode: use Razorpay's test card, UPI or netbanking details in the payment window. No real money moves."}
+                  {payConfig.mode === "none" && "Online payments aren't set up on this site yet, so orders can't be placed."}
+                </span>
+              </p>
+            )}
             {notices.length > 0 && <p role="status" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{notices.join(" ")}</p>}
             {soldOut > 0 && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">Something in your cart is out of stock. <Link href="/cart" className="font-medium underline">Update your cart</Link> to continue.</p>}
             <fieldset disabled={order !== null} className="grid gap-4 rounded-2xl border bg-card p-5 shadow-xs sm:grid-cols-2 sm:p-6">
@@ -233,10 +242,17 @@ export default function CheckoutPage() {
           </aside>
         </form>
       )}
-      {order && phase === "paying" && (
+      {order && phase === "paying" && order.mode === "mock" && (
         <MockRazorpayCheckout orderId={order.providerOrderId} amountPaise={order.amountPaise} onSuccess={(g) => void finishPayment(g)}
           onFailure={(m) => fail(`${m} Nothing was charged.`, "unpaid")}
           onDismiss={() => fail("You closed the payment window before paying.", "unpaid")} />
+      )}
+      {order && phase === "paying" && order.mode === "razorpay" && order.keyId && (
+        <RazorpayPopup keyId={order.keyId} orderId={order.providerOrderId} amountPaise={order.amountPaise} testMode={order.testMode}
+          prefill={{ name: getValues("fullName") ?? "", email: getValues("email") ?? "", contact: getValues("phone") ?? "" }}
+          onSuccess={(g) => void finishPayment(g)}
+          onFailure={(m) => fail(`${m} Nothing was charged.`, "unpaid")}
+          onDismiss={(last) => fail(last ? `${last} Nothing was charged.` : "You closed the payment window before paying.", "unpaid")} />
       )}
     </main>
   )
