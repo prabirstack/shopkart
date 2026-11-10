@@ -1,10 +1,10 @@
 "use client"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { useReducedMotion } from "motion/react"
 import { ChevronLeft, ChevronRight, Headphones, Armchair, Pause, Play, Shirt, type LucideIcon } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel"
 import type { HeroSlide } from "@/features/promotions/demo"
+import { usePrefersReducedMotion } from "./use-reduced-motion"
 
 // Decorative artwork per slide. Text stays in HTML so it scales and is accessible.
 const art: { icon: LucideIcon; bg: string }[] = [
@@ -19,9 +19,9 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const [userPaused, setUserPaused] = useState(false)
   const [hold, setHold] = useState(false) // pointer over or focus inside
   const [tabHidden, setTabHidden] = useState(false)
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = usePrefersReducedMotion()
   // Autoplay is on by default, but never with reduced motion and always stoppable.
-  const running = !userPaused && !hold && !tabHidden && reduceMotion === false && slides.length > 1
+  const running = !userPaused && !hold && !tabHidden && !reduceMotion && slides.length > 1
 
   useEffect(() => {
     if (!api) return
@@ -87,7 +87,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   <span className="relative block h-1 overflow-hidden rounded-full bg-white/40 group-focus-visible:ring-2 group-focus-visible:ring-white">
                     {selected === i && (
                       <span key={`${selected}-${running}`} className="absolute inset-y-0 left-0 block rounded-full bg-white"
-                        style={reduceMotion === false && slides.length > 1
+                        style={!reduceMotion && slides.length > 1
                           ? { animation: "hero-progress 6s linear forwards", animationPlayState: running ? "running" : "paused" }
                           : { width: "100%" }}
                         onAnimationEnd={() => api?.scrollNext()} />
@@ -96,10 +96,10 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 </button>
               ))}
             </div>
-            <button type="button" aria-label={userPaused ? "Play slideshow" : "Pause slideshow"} disabled={reduceMotion !== false}
+            <button type="button" aria-label={userPaused || reduceMotion ? "Play slideshow" : "Pause slideshow"} disabled={reduceMotion}
               onClick={() => setUserPaused((v) => !v)}
               className="grid size-8 place-items-center rounded-full bg-white/20 text-white backdrop-blur hover:bg-white/35 focus-visible:ring-[3px] focus-visible:ring-white/60 disabled:opacity-40">
-              {userPaused || reduceMotion !== false ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
+              {userPaused || reduceMotion ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
             </button>
           </div>
         </>
