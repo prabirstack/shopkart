@@ -6,8 +6,8 @@ type Event = { event: string; payload?: { payment?: { entity?: { id?: string; or
 
 /**
  * Razorpay calls this server-to-server, so there is no cookie or Origin: authenticity comes from the
- * HMAC signature over the exact raw body. Each event id is stored once, so a redelivery is
- * acknowledged and ignored. Reply 2xx only once the event is safely handled; Razorpay retries otherwise.
+ * HMAC signature over the exact raw body. A redelivery of an already processed event is acknowledged and
+ * ignored; one that failed earlier is processed again. Reply 2xx only once the event is safely handled.
  */
 export const POST = route(async ({ req }) => {
   const raw = await req.text()
@@ -18,7 +18,8 @@ export const POST = route(async ({ req }) => {
   let evt: Event
   try { evt = JSON.parse(raw) } catch { throw new ApiError(400, "INVALID_JSON", "Invalid JSON.") }
 
-  if (!(await recordWebhook({ provider: "razorpay", eventId, type: evt.event, payload: evt }))) return ok({ received: true, duplicate: true })
+  // Only a fully processed event counts as a duplicate. If an earlier attempt failed midway, process it again.
+  if ((await recordWebhook({ provider: "razorpay", eventId, type: evt.event, payload: evt })) === "done") return ok({ received: true, duplicate: true })
 
   const pay = evt.payload?.payment?.entity
   if (evt.event === "payment.captured" && pay?.id && pay.order_id && typeof pay.amount === "number") {

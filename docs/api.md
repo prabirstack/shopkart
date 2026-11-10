@@ -55,4 +55,6 @@ Roles: `customer`, `owner`, `catalog_editor`, `warehouse`, `support`, `finance`.
 * Set `BETTER_AUTH_SECRET`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `APP_ORIGIN`. The app refuses to start without the first.
 * Implement `lib/email.ts` with a mail provider; until then production password-reset and verification fail loudly instead of silently.
 * Rate limiting is in process memory (accurate for one instance). For several instances, back `lib/api/rate-limit.ts` with Redis.
-* Run the app behind a proxy that sets `X-Forwarded-For`, so limits are per client.
+* Rate limits are keyed on the client IP **and** the signed-in account. Set `TRUSTED_PROXY_HOPS` to the number of reverse proxies in
+  front of the app (default 1): the client address is counted from the right of `X-Forwarded-For`, because the left side is client-controlled.
+* Webhooks: an event counts as a duplicate only once it has been fully processed; a half-processed one is retried.

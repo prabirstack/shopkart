@@ -204,3 +204,42 @@ describe("account API", () => {
     expect((await json(await wishlist(req("/api/v1/account/wishlist", { cookie: u.cookie })))).body.data.map((x: any) => x.id)).toEqual([p.id])
   })
 })
+
+describe("security regressions", () => {
+  it("does not trust a client-supplied X-Forwarded-For for rate limiting", async () => {
+    const { clientIp } = await import("../../lib/api/http")
+    const spoofed = new Request("http://localhost/x", { headers: { "x-forwarded-for": "1.2.3.4, 9.9.9.9" } })
+    expect(clientIp(spoofed, 1)).toBe("9.9.9.9") // the address our own proxy appended, not the forged leading one
+    expect(clientIp(spoofed, 2)).toBe("1.2.3.4")
+    expect(clientIp(spoofed, 0)).toBe("direct")
+  })
+
+  it("reprocesses a webhook that was received but never finished", async () => {
+    const { recordWebhook, markWebhookProcessed } = await import("../../lib/db/queries")
+    await resetDb()
+    const evt = { provider: "razorpay", eventId: "evt_x", type: "payment.captured", payload: {} }
+    expect(await recordWebhook(evt)).toBe("new")
+    expect(await recordWebhook(evt)).toBe("retry") // first attempt died before finishing
+    await markWebhookProcessed("razorpay", "evt_x")
+    expect(await recordWebhook(evt)).toBe("done")
+  })
+
+  it("cannot cancel an order that was paid while the cancel request was in flight", async () => {
+    await resetDb()
+    const p = await makeProduct(await makeCatalog(), { pricePaise: 20000, stock: 5 })
+    const u = await signUp()
+    const placed = (await json(await placeOrder(req("/api/v1/orders", { method: "POST", cookie: u.cookie, body: { items: [{ productId: p.id, quantity: 1 }], customer, shipTo: address } })))).body.data
+    const { providerOrderId } = placed.payment, number = placed.order.number
+    const body = { razorpay_order_id: providerOrderId, razorpay_payment_id: "pay_race", razorpay_signature: signPayment(providerOrderId, "pay_race") }
+    const results = await Promise.all([
+      verify(req("/api/v1/payments/verify", { method: "POST", cookie: u.cookie, body })),
+      cancelOwn(req(`/api/v1/orders/${number}/cancel`, { method: "POST", cookie: u.cookie }), ctx({ number })),
+    ].map(async (r) => json(await r)))
+    const final = (await json(await getOrder(req(`/api/v1/orders/${number}`, { cookie: u.cookie }), ctx({ number })))).body.data
+    // Either the payment wins (cancel refused) or the cancel wins (payment refused). Never both.
+    expect(["paid", "cancelled"]).toContain(final.status)
+    expect(results.filter((r) => r.status < 300)).toHaveLength(1)
+    const s = await stockOf(p.id)
+    expect(final.status === "paid" ? s : { onHand: s.onHand, reserved: s.reserved }).toMatchObject(final.status === "paid" ? { onHand: 4, reserved: 0 } : { onHand: 5, reserved: 0 })
+  })
+})

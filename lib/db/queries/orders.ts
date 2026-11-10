@@ -179,10 +179,12 @@ export async function advanceOrder(input: { number: string; to: "packed" | "ship
  * or packed order returns its units to stock. Refunding the customer's money is a separate
  * payment-provider step, noted on the timeline.
  */
-export async function cancelOrder(input: { number: string; actorId: string | null; actorLabel?: string }): Promise<OrderDTO> {
+export async function cancelOrder(input: { number: string; actorId: string | null; actorLabel?: string; /** Customers: the order must be theirs. Checked after the row is locked. */ onlyForUserId?: string; /** Only cancel from these statuses. Checked after the row is locked, so a payment landing meanwhile is respected. */ onlyStatuses?: OrderDTO["status"][]; statusMessage?: string }): Promise<OrderDTO> {
   return db.transaction(async (tx: Tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.number, input.number)).for("update")
-    if (!o) throw new DomainError("NOT_FOUND", "Order not found.")
+    // A stranger gets the same answer as a missing order, so order numbers can't be probed.
+    if (!o || (input.onlyForUserId && o.userId !== input.onlyForUserId)) throw new DomainError("NOT_FOUND", "Order not found.")
+    if (input.onlyStatuses && !input.onlyStatuses.includes(o.status)) throw new DomainError("INVALID_TRANSITION", input.statusMessage ?? `An order that is ${o.status} can't be cancelled.`)
     if (!["pending", "paid", "packed"].includes(o.status)) throw new DomainError("INVALID_TRANSITION", `An order that is ${o.status} can't be cancelled.`)
     const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, o.id))
     for (const i of items) {
@@ -214,12 +216,18 @@ export async function getOrderByNumber(number: string): Promise<OrderDTO | null>
 }
 
 /**
- * Records a webhook delivery before acting on it. Returns false when this event id was already
- * received, so a repeated delivery is acknowledged without being processed twice.
+ * Records a webhook delivery before acting on it and says what to do with it:
+ *  - "new":   first time we see this event id, process it;
+ *  - "retry": seen before but never finished (we crashed or failed midway), process it again;
+ *  - "done":  already processed, acknowledge without acting.
+ * Handlers are idempotent, so re-processing is safe; what must never happen is a received-but-unprocessed
+ * event being treated as finished, because the provider would stop retrying and a payment would be lost.
  */
-export async function recordWebhook(input: { provider: string; eventId: string; type: string; payload: unknown }): Promise<boolean> {
+export async function recordWebhook(input: { provider: string; eventId: string; type: string; payload: unknown }): Promise<"new" | "retry" | "done"> {
   const rows = await db.insert(webhookEvents).values({ provider: input.provider, eventId: input.eventId, type: input.type, payload: input.payload as never }).onConflictDoNothing().returning({ id: webhookEvents.id })
-  return rows.length > 0
+  if (rows.length > 0) return "new"
+  const [existing] = await db.select({ processedAt: webhookEvents.processedAt }).from(webhookEvents).where(and(eq(webhookEvents.provider, input.provider), eq(webhookEvents.eventId, input.eventId)))
+  return existing?.processedAt ? "done" : "retry"
 }
 
 export async function markWebhookProcessed(provider: string, eventId: string) {

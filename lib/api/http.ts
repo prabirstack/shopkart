@@ -56,7 +56,17 @@ type Options = {
   rawBody?: boolean
 }
 
-const clientIp = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown"
+/**
+ * The client address as seen by OUR proxy. Anyone can send their own X-Forwarded-For, so the left-most
+ * entry is attacker-controlled. Each trusted proxy appends the address it received the request from, so we
+ * count TRUSTED_PROXY_HOPS entries from the right (1 = a single load balancer in front of the app).
+ * Set it to 0 when the app is exposed directly, in which case the header is ignored entirely.
+ */
+export function clientIp(req: Request, hops = Number(process.env.TRUSTED_PROXY_HOPS ?? 1)): string {
+  if (hops <= 0) return "direct"
+  const chain = (req.headers.get("x-forwarded-for") ?? "").split(",").map((s) => s.trim()).filter(Boolean)
+  return chain[chain.length - hops] ?? req.headers.get("x-real-ip")?.trim() ?? "unknown"
+}
 
 export function ok<T>(data: T, init: { status?: number; headers?: HeadersInit } = {}) {
   return Response.json({ data }, { status: init.status ?? 200, headers: init.headers })
@@ -108,6 +118,11 @@ export function route<P = Record<string, string>>(handler: (ctx: Ctx<P>) => Prom
       }
 
       const session = await getSession(req)
+      // Signed-in callers are also limited per account, so rotating IP addresses does not reset the limit.
+      if (session) {
+        const ul = await rateLimit(`u:${session.userId}:${req.method}:${url.pathname.replace(/[0-9a-f-]{8,}/gi, ":id")}`, opts.limit ?? { max: 120, windowSec: 60 })
+        if (!ul.allowed) throw new ApiError(429, "RATE_LIMITED", "Too many requests. Please slow down.", { retryAfter: ul.retryAfter })
+      }
       let cached: unknown
       let bodyRead = false
       const ctx: Ctx<P> = {
