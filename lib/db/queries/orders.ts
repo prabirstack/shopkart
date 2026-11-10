@@ -200,6 +200,23 @@ export async function cancelOrder(input: { number: string; actorId: string | nul
   })
 }
 
+/**
+ * Records a refund for a delivered order: the order and its captured payment become "refunded", with a timeline
+ * entry. This does NOT move money: sending it back through the payment provider is a separate step (not
+ * integrated yet), and returned goods go back on the shelf through an inventory adjustment.
+ */
+export async function refundOrder(input: { number: string; actorId: string | null; actorLabel?: string }): Promise<OrderDTO> {
+  return db.transaction(async (tx: Tx) => {
+    const [o] = await tx.select().from(orders).where(eq(orders.number, input.number)).for("update")
+    if (!o) throw new DomainError("NOT_FOUND", "Order not found.")
+    if (o.status !== "delivered") throw new DomainError("INVALID_TRANSITION", `Only delivered orders can be refunded, and this one is ${o.status}.`)
+    await tx.update(orders).set({ status: "refunded" }).where(eq(orders.id, o.id))
+    await tx.update(payments).set({ status: "refunded" }).where(and(eq(payments.orderId, o.id), eq(payments.status, "captured")))
+    await tx.insert(orderEvents).values({ orderId: o.id, status: "refunded", actorId: input.actorId, actorLabel: input.actorLabel ?? "Staff", note: "Refund recorded. Return the money from the payment provider." })
+    return (await loadOrder(tx, eq(orders.id, o.id)))!
+  })
+}
+
 /** A customer's own order. Ownership is part of the query itself: another customer's order number returns null. */
 export async function getOrderForUser(number: string, userId: string): Promise<OrderDTO | null> {
   return loadOrder(db, and(eq(orders.number, number), eq(orders.userId, userId)) as ReturnType<typeof eq>)

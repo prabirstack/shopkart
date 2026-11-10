@@ -24,7 +24,7 @@ export type StockMovement = { id: string; productId: string; delta: number; reas
 export type AdminCoupon = { id: string; code: string; kind: "percent" | "flat"; value: number; minOrderPaise: number; used: number; limit: number; expires: string; active: boolean }
 export type AdminBanner = { id: string; title: string; slot: string; starts: string; ends: string; href: string; paused: boolean }
 export type ReturnStatus = "requested" | "approved" | "received" | "refunded" | "rejected"
-export type AdminReturn = { id: string; orderId: string; customerName: string; reason: string; refundPaise: number; status: ReturnStatus; requested: string }
+export type AdminReturn = { id: string; /** Human-friendly number like RT-2100. */ number: string; orderId: string; customerName: string; reason: string; refundPaise: number; status: ReturnStatus; requested: string }
 
 export type Settings = {
   storeName: string; supportEmail: string; phone: string; gstin: string
@@ -32,3 +32,10 @@ export type Settings = {
   razorpayMode: "test" | "live"; lowStockDefault: number
   notifyNewOrder: boolean; notifyLowStock: boolean; notifyReturn: boolean
 }
+
+/** Banner placements, as the database stores them and as people read them. */
+export const BANNER_SLOT_LABEL = { home_hero: "Home hero", home_promo_grid: "Home promo grid", category_banner: "Category banner", cart_banner: "Cart banner" } as const
+export const BANNER_SLOT_FROM_LABEL = Object.fromEntries(Object.entries(BANNER_SLOT_LABEL).map(([k, v]) => [v, k])) as Record<string, keyof typeof BANNER_SLOT_LABEL>
+
+export type ReviewStatus = "pending" | "approved" | "rejected"
+export type AdminReview = { id: string; productId: string; productTitle: string; productSlug: string; name: string; rating: number; title: string; body: string; status: ReviewStatus; verified: boolean; date: string }

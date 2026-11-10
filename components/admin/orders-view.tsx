@@ -1,14 +1,13 @@
 "use client"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useMemo, useState } from "react"
 import { Check, PackageCheck, Search, Truck } from "lucide-react"
 import { OrderStatusBadge } from "./order-status-badge"
 import { PageHeader } from "./page-header"
-import { Skeleton } from "@/components/ui/skeleton"
 import { fmtDateTime, money } from "@/features/admin/format"
-import { useAdminReady } from "@/features/admin/hooks"
-import { orderTotal, useAdmin } from "@/features/admin/store"
+import { adminApi, failureMessage } from "@/features/admin/api"
+import { orderTotal } from "@/features/admin/order-math"
 import type { AdminOrder, OrderStatus } from "@/features/admin/types"
 
 type Tab = "all" | "action" | "packed" | "shipped" | "delivered" | "closed"
@@ -24,11 +23,16 @@ export const NEXT_STEP: Partial<Record<OrderStatus, { to: OrderStatus; label: st
   paid: { to: "packed", label: "Mark packed" }, packed: { to: "shipped", label: "Ship" }, shipped: { to: "delivered", label: "Mark delivered" },
 }
 
-export function OrdersView() {
-  const ready = useAdminReady()
+export function OrdersView({ orders, canFulfil }: { orders: AdminOrder[]; canFulfil: boolean }) {
+  const router = useRouter()
   const params = useSearchParams()
-  const orders = useAdmin((s) => s.orders)
-  const setStatus = useAdmin((s) => s.setOrderStatus)
+  const [error, setError] = useState("")
+  const [busyId, setBusyId] = useState<string | null>(null)
+  // The server only allows the next step in the flow (paid -> packed -> shipped -> delivered).
+  const setStatus = async (number: string, to: OrderStatus) => {
+    setBusyId(number); setError("")
+    try { await adminApi(`admin/orders/${number}/advance`, { method: "POST", body: { to } }); router.refresh() } catch (e) { setError(failureMessage(e)) } finally { setBusyId(null) }
+  }
   const initial: Tab = params.get("status") === "pending" ? "action" : "all"
   const [tab, setTab] = useState<Tab>(initial)
   const [q, setQ] = useState("")
@@ -40,22 +44,23 @@ export function OrdersView() {
   }, [orders, tab, q])
   const revenue = orders.filter((o) => o.status !== "cancelled" && o.status !== "refunded" && o.status !== "pending").reduce((s, o) => s + orderTotal(o), 0)
   const stat = (label: string, value: string) => <li className="rounded-2xl border bg-card p-4 shadow-xs"><p className="text-sm text-muted-foreground">{label}</p><p className="price mt-1 text-2xl font-bold">{value}</p></li>
-  const quick = (o: AdminOrder) => { const n = NEXT_STEP[o.status]; return n ? (
-    <button onClick={() => setStatus(o.id, n.to)} className="inline-flex items-center gap-1.5 rounded-lg border bg-card px-2.5 py-1 text-xs font-semibold hover:border-primary/40 hover:bg-primary/5 hover:text-primary">{n.to === "packed" ? <PackageCheck className="size-3.5" aria-hidden="true" /> : n.to === "shipped" ? <Truck className="size-3.5" aria-hidden="true" /> : <Check className="size-3.5" aria-hidden="true" />}{n.label}</button>
+  const quick = (o: AdminOrder) => { const n = canFulfil ? NEXT_STEP[o.status] : undefined; return n ? (
+    <button disabled={busyId === o.id} onClick={() => void setStatus(o.id, n.to)} className="inline-flex items-center gap-1.5 rounded-lg border bg-card px-2.5 py-1 text-xs font-semibold hover:border-primary/40 hover:bg-primary/5 hover:text-primary">{n.to === "packed" ? <PackageCheck className="size-3.5" aria-hidden="true" /> : n.to === "shipped" ? <Truck className="size-3.5" aria-hidden="true" /> : <Check className="size-3.5" aria-hidden="true" />}{n.label}</button>
   ) : null }
 
   return (
     <>
       <PageHeader title="Orders" description="Track every order from payment to delivery." />
+      {error && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">{error}</p>}
       <ul aria-label="Order summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {stat("All orders", ready ? String(orders.length) : "–")}{stat("Needs action", ready ? String(orders.filter((o) => o.status === "pending" || o.status === "paid").length) : "–")}
-        {stat("In transit", ready ? String(orders.filter((o) => o.status === "shipped").length) : "–")}{stat("Revenue (paid, not refunded)", ready ? money(revenue) : "–")}
+        {stat("All orders", String(orders.length))}{stat("Needs action", String(orders.filter((o) => o.status === "pending" || o.status === "paid").length))}
+        {stat("In transit", String(orders.filter((o) => o.status === "shipped").length))}{stat("Revenue (paid, not refunded)", money(revenue))}
       </ul>
       <div className="overflow-hidden rounded-2xl border bg-card shadow-xs">
         <div role="tablist" aria-label="Order status" className="flex gap-1 overflow-x-auto border-b px-3 pt-2">
           {TABS.map((t) => (
             <button key={t.value} role="tab" aria-selected={tab === t.value} onClick={() => setTab(t.value)} className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium ${tab === t.value ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              {t.label}<span className={`rounded-full px-2 py-0.5 text-xs ${tab === t.value ? "bg-primary/10" : "bg-muted"}`}>{ready ? orders.filter((o) => t.match(o.status)).length : 0}</span>
+              {t.label}<span className={`rounded-full px-2 py-0.5 text-xs ${tab === t.value ? "bg-primary/10" : "bg-muted"}`}>{orders.filter((o) => t.match(o.status)).length}</span>
             </button>
           ))}
         </div>
@@ -65,9 +70,8 @@ export function OrdersView() {
           <caption className="sr-only">Orders</caption>
           <thead><tr className="border-y bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground"><th className="px-5 py-2.5 font-medium">Order</th><th className="px-3 font-medium">Customer</th><th className="px-3 font-medium">Placed</th><th className="px-3 font-medium">Payment</th><th className="px-3 text-right font-medium">Total</th><th className="px-3 font-medium">Status</th><th className="px-5 text-right font-medium">Next step</th></tr></thead>
           <tbody>
-            {!ready && <tr><td colSpan={7} className="p-4"><Skeleton className="h-40" /></td></tr>}
-            {ready && rows.length === 0 && <tr><td colSpan={7} className="py-14 text-center text-muted-foreground">No orders in this view.</td></tr>}
-            {ready && rows.map((o) => (
+            {rows.length === 0 && <tr><td colSpan={7} className="py-14 text-center text-muted-foreground">No orders in this view.</td></tr>}
+            {rows.map((o) => (
               <tr key={o.id} className="border-b last:border-0 hover:bg-muted/30">
                 <td className="px-5 py-3"><Link href={`/admin/orders/${o.id}`} className="font-mono text-xs font-semibold text-primary hover:underline">{o.id}</Link><span className="block text-xs text-muted-foreground">{o.lines.length} {o.lines.length === 1 ? "item" : "items"}</span></td>
                 <td className="px-3"><span className="font-medium">{o.customerName}</span><span className="block text-xs text-muted-foreground">{o.city}</span></td>

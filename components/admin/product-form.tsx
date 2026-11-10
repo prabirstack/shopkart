@@ -9,17 +9,12 @@ import { ArrowLeft, CheckCircle2, ImagePlus, Info, Save } from "lucide-react"
 import { PageHeader } from "./page-header"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Skeleton } from "@/components/ui/skeleton"
-import { brands, categories } from "@/features/catalog/demo"
+import { adminApi, ApiFailure, failureMessage } from "@/features/admin/api"
 import { money } from "@/features/admin/format"
-import { useAdminReady } from "@/features/admin/hooks"
-import { useAdmin } from "@/features/admin/store"
 import type { AdminProduct } from "@/features/admin/types"
 import { gstFromInclusive, toCents } from "@/lib/money"
 
 const GST_RATES = [0, 5, 12, 18, 28]
-/** New product IDs are made on save, never during render. */
-const newProductId = () => `p${Date.now()}`
 const schema = z.object({
   title: z.string().trim().min(3, "Enter at least 3 characters").max(120),
   slug: z.string().trim().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens"),
@@ -53,21 +48,21 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 const toValues = (p: AdminProduct): Values => ({ title: p.title, slug: p.slug, brand: p.brand, category: p.category, description: p.description, status: p.status, price: p.pricePaise / 100, compare: p.comparePaise ? p.comparePaise / 100 : undefined, gst: p.gstPercent, sku: p.sku, stock: p.stock, reorderAt: p.reorderAt, seoTitle: p.seoTitle, seoDescription: p.seoDescription })
 const blank: Values = { title: "", slug: "", brand: "", category: "", description: "", status: "draft", price: undefined as unknown as number, compare: undefined, gst: 18, sku: "", stock: 0, reorderAt: 10, seoTitle: "", seoDescription: "" }
 
-export function ProductForm({ id }: { id?: string }) {
+type Refs = { categories: { slug: string; name: string }[]; brands: string[] }
+
+/** `product` is undefined when creating, and null when an id was asked for but nothing exists. */
+export function ProductForm({ product, refs }: { product?: AdminProduct | null; refs: Refs }) {
   const router = useRouter()
-  const ready = useAdminReady()
-  const existing = useAdmin((s) => (id ? s.products.find((p) => p.id === id) : undefined))
-  if (!ready) return <Skeleton className="h-[32rem] rounded-2xl" />
-  if (id && !existing) return (
+  if (product === null) return (
     <div className="grid justify-items-center gap-3 rounded-2xl border bg-card p-12 text-center"><p className="font-semibold">Product not found</p><p className="text-sm text-muted-foreground">It may have been deleted.</p><Link href="/admin/products" className="text-sm font-medium text-primary hover:underline">Back to products</Link></div>
   )
-  return <Editor key={id ?? "new"} product={existing} onDone={() => router.push("/admin/products")} />
+  return <Editor key={product?.id ?? "new"} product={product} refs={refs} onDone={() => { router.push("/admin/products"); router.refresh() }} />
 }
 
-function Editor({ product, onDone }: { product?: AdminProduct; onDone: () => void }) {
-  const upsert = useAdmin((s) => s.upsertProduct)
+function Editor({ product, refs, onDone }: { product?: AdminProduct; refs: Refs; onDone: () => void }) {
   const [saved, setSaved] = useState(false)
-  const { register, handleSubmit, control, setValue, formState: { errors, isDirty } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: product ? toValues(product) : blank })
+  const [formError, setFormError] = useState("")
+  const { register, handleSubmit, control, setValue, setError, formState: { errors, isDirty, isSubmitting } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: product ? toValues(product) : blank })
   const v = useWatch({ control })
   const err = (k: keyof Values) => errors[k]?.message as string | undefined
   const a = (k: keyof Values, hint = false) => ({ id: k, "aria-invalid": errors[k] ? true : undefined, "aria-describedby": errors[k] ? `${k}-error` : hint ? `${k}-hint` : undefined })
@@ -78,13 +73,24 @@ function Editor({ product, onDone }: { product?: AdminProduct; onDone: () => voi
   const errorTabs = { general: ["title", "slug", "brand", "category", "description"], pricing: ["price", "compare"], inventory: ["sku", "stock", "reorderAt"], seo: ["seoTitle", "seoDescription"] } as const
   const bad = (t: keyof typeof errorTabs) => errorTabs[t].some((k) => errors[k as keyof Values])
 
-  const save = handleSubmit((d) => {
-    upsert({
-      id: product?.id ?? newProductId(), title: d.title, slug: d.slug, sku: d.sku, category: d.category, brand: d.brand,
-      pricePaise: toCents(d.price), comparePaise: d.compare ? toCents(d.compare) : null, gstPercent: d.gst, stock: d.stock, reserved: product?.reserved ?? 0, reorderAt: d.reorderAt,
-      status: d.status, description: d.description, seoTitle: d.seoTitle, seoDescription: d.seoDescription, createdAt: product?.createdAt ?? "2026-11-10",
-    })
-    setSaved(true); window.setTimeout(onDone, 700)
+  // Field names in the API differ from the form's; map problems back so messages appear beside the right input.
+  const FIELD: Record<string, keyof Values> = { categorySlug: "category", brandName: "brand", pricePaise: "price", comparePaise: "compare", gstPercent: "gst" }
+  const save = handleSubmit(async (d) => {
+    setFormError("")
+    const body = {
+      title: d.title, slug: d.slug, sku: d.sku, description: d.description, categorySlug: d.category, brandName: d.brand, gstPercent: d.gst,
+      pricePaise: toCents(d.price), comparePaise: d.compare ? toCents(d.compare) : null, status: d.status, seoTitle: d.seoTitle, seoDescription: d.seoDescription, reorderAt: d.reorderAt,
+    }
+    try {
+      if (product) await adminApi(`admin/products/${product.id}`, { method: "PATCH", body })
+      else await adminApi("admin/products", { method: "POST", body: { ...body, initialStock: d.stock } })
+      setSaved(true); window.setTimeout(onDone, 700)
+    } catch (e) {
+      if (e instanceof ApiFailure && e.fields.length > 0) {
+        for (const f of e.fields) { const name = FIELD[f.path] ?? (f.path as keyof Values); if (name in blank) setError(name, { message: f.message }) }
+        setFormError(e.message)
+      } else setFormError(failureMessage(e))
+    }
   })
 
   return (
@@ -94,10 +100,11 @@ function Editor({ product, onDone }: { product?: AdminProduct; onDone: () => voi
         <div className="flex items-center gap-2">
           <label htmlFor="status" className="sr-only">Status</label>
           <select {...register("status")} id="status" className="h-10 rounded-lg border bg-card px-3 text-sm"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select>
-          <Button type="submit" disabled={saved}>{saved ? <CheckCircle2 aria-hidden="true" /> : <Save aria-hidden="true" />}{saved ? "Saved" : product ? "Save changes" : "Create product"}</Button>
+          <Button type="submit" disabled={saved || isSubmitting}>{saved ? <CheckCircle2 aria-hidden="true" /> : <Save aria-hidden="true" />}{saved ? "Saved" : product ? "Save changes" : "Create product"}</Button>
         </div>
       </PageHeader>
       <p role="status" className="text-sm text-emerald-700">{saved ? "Saved. Taking you back to the list…" : ""}</p>
+      {formError && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">{formError}</p>}
       {Object.keys(errors).length > 0 && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">Some fields need attention. Tabs with a red dot contain errors.</p>}
 
       <Tabs defaultValue="general" className="gap-0">
@@ -113,8 +120,8 @@ function Editor({ product, onDone }: { product?: AdminProduct; onDone: () => voi
           <div className="grid gap-4 rounded-2xl border bg-card p-5 sm:col-span-2 sm:grid-cols-2">
             <div className="sm:col-span-2"><Field id="title" label="Title" error={err("title")}><input {...register("title", { onChange: (e) => { if (!product && !v.slug) setValue("slug", String(e.target.value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")) } })} {...a("title")} className={input} /></Field></div>
             <Field id="slug" label="URL slug" error={err("slug")} hint={`Shown as /products/${v.slug || "your-slug"}`}><input {...register("slug")} {...a("slug", true)} className={input} /></Field>
-            <Field id="brand" label="Brand" error={err("brand")}><input {...register("brand")} {...a("brand")} list="brand-list" className={input} /><datalist id="brand-list">{brands.map((b) => <option key={b} value={b} />)}</datalist></Field>
-            <Field id="category" label="Category" error={err("category")}><select {...register("category")} {...a("category")} className={input}><option value="">Select category</option>{categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select></Field>
+            <Field id="brand" label="Brand" error={err("brand")}><input {...register("brand")} {...a("brand")} list="brand-list" className={input} /><datalist id="brand-list">{refs.brands.map((b) => <option key={b} value={b} />)}</datalist></Field>
+            <Field id="category" label="Category" error={err("category")}><select {...register("category")} {...a("category")} className={input}><option value="">Select category</option>{refs.categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</select></Field>
             <div className="sm:col-span-2"><Field id="description" label="Description" error={err("description")} hint={`${(v.description ?? "").length} / 2000`}><textarea {...register("description")} {...a("description", true)} rows={6} className={`${input} h-auto py-2`} /></Field></div>
           </div>
         </TabsContent>
@@ -140,7 +147,7 @@ function Editor({ product, onDone }: { product?: AdminProduct; onDone: () => voi
         <TabsContent value="inventory" className="pt-6">
           <div className="grid gap-4 rounded-2xl border bg-card p-5 sm:grid-cols-3">
             <Field id="sku" label="SKU" error={err("sku")}><input {...register("sku")} {...a("sku")} className={`${input} font-mono`} /></Field>
-            <Field id="stock" label="Units in stock" error={err("stock")} hint={product ? `${product.reserved} reserved for open orders. Use Inventory to record adjustments with a reason.` : undefined}><input {...register("stock", { valueAsNumber: true })} {...a("stock", true)} inputMode="numeric" className={input} /></Field>
+            <Field id="stock" label="Units in stock" error={err("stock")} hint={product ? `${product.reserved} reserved for open orders. Stock changes are recorded as movements: use Inventory to adjust it.` : "Opening balance. After this, use Inventory to adjust."}><input {...register("stock", { valueAsNumber: true })} {...a("stock", true)} inputMode="numeric" readOnly={!!product} className={`${input} ${product ? "cursor-not-allowed bg-muted text-muted-foreground" : ""}`} /></Field>
             <Field id="reorderAt" label="Low-stock alert at" error={err("reorderAt")} hint="You'll be alerted at or below this many available units."><input {...register("reorderAt", { valueAsNumber: true })} {...a("reorderAt", true)} inputMode="numeric" className={input} /></Field>
           </div>
         </TabsContent>

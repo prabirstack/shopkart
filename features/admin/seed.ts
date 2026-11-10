@@ -1,3 +1,5 @@
+// Sample data used ONLY by `pnpm db:seed` (scripts/seed.ts) to fill a local development database.
+// The admin screens read the database; nothing imports this at runtime.
 import { catalog, productById } from "@/features/catalog/demo"
 import type { AdminBanner, AdminCoupon, AdminOrder, AdminProduct, AdminReturn, Customer, OrderStatus, Settings, StockMovement, TimelineEvent } from "./types"
 
@@ -90,10 +92,10 @@ export const initialBanners: AdminBanner[] = [
 ]
 
 export const initialReturns: AdminReturn[] = [
-  { id: "RT-2034", orderId: "SK-10485", customerName: "Vikram Singh", reason: "Not as described", refundPaise: 5499900, status: "requested", requested: iso(1, 14) },
-  { id: "RT-2033", orderId: "SK-10484", customerName: "Rohan Iyer", reason: "Changed my mind", refundPaise: 249900, status: "approved", requested: iso(2, 11) },
-  { id: "RT-2032", orderId: "SK-10486", customerName: "Isha Rao", reason: "Wrong size", refundPaise: 159800, status: "received", requested: iso(4, 16) },
-  { id: "RT-2031", orderId: "SK-10480", customerName: "Rohan Iyer", reason: "Item arrived damaged", refundPaise: 64900, status: "refunded", requested: iso(9, 10) },
+  { id: "RT-2034", number: "RT-2034", orderId: "SK-10485", customerName: "Vikram Singh", reason: "Not as described", refundPaise: 5499900, status: "requested", requested: iso(1, 14) },
+  { id: "RT-2033", number: "RT-2033", orderId: "SK-10484", customerName: "Rohan Iyer", reason: "Changed my mind", refundPaise: 249900, status: "approved", requested: iso(2, 11) },
+  { id: "RT-2032", number: "RT-2032", orderId: "SK-10486", customerName: "Isha Rao", reason: "Wrong size", refundPaise: 159800, status: "received", requested: iso(4, 16) },
+  { id: "RT-2031", number: "RT-2031", orderId: "SK-10480", customerName: "Rohan Iyer", reason: "Item arrived damaged", refundPaise: 64900, status: "refunded", requested: iso(9, 10) },
 ]
 
 export const initialSettings: Settings = {

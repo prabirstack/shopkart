@@ -91,6 +91,15 @@ export const orderEvents = pgTable("order_events", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("order_events_order_idx").on(t.orderId, t.createdAt)])
 
+/** Private notes staff leave on an order. Never shown to the customer. */
+export const orderNotes = pgTable("order_notes", {
+  id: id(),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+  authorId: uuid("author_id").references(() => users.id, { onDelete: "set null" }),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("order_notes_order_idx").on(t.orderId, t.createdAt), check("order_notes_body_length", sql`char_length(${t.body}) between 1 and 1000`)])
+
 export const payments = pgTable("payments", {
   id: id(),
   orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),

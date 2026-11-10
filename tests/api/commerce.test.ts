@@ -152,8 +152,8 @@ describe("admin API permissions", () => {
   })
 
   it("lets the owner manage products with validation, and records an audit trail", async () => {
-    const cat = await makeCatalog(); const owner = await signUp("owner")
-    const body = { title: "New Gadget", slug: "new-gadget", sku: "NG-1", categoryId: cat.electronics.id, brandId: cat.acme.id, taxCategoryId: cat.tax18.id, pricePaise: 50000, status: "published", initialStock: 7 }
+    await makeCatalog(); const owner = await signUp("owner")
+    const body = { title: "New Gadget", slug: "new-gadget", sku: "NG-1", categorySlug: "electronics", brandName: "Acme", gstPercent: 18, pricePaise: 50000, status: "published", initialStock: 7 }
     const ok = await json(await createProd(req("/api/v1/admin/products", { method: "POST", cookie: owner.cookie, body })))
     expect(ok.status).toBe(201)
     expect(await stockOf(ok.body.data.id)).toMatchObject({ onHand: 7 })

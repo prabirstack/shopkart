@@ -3,20 +3,14 @@ import "server-only"
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
 
 import { db } from "../index"
-import { auditEvents, banners, brands, categories, coupons, orderItems, orders, productImages, products, returns, stockLevels, taxCategories, users } from "../schema"
-import { DomainError } from "./errors"
+import { auditEvents, banners, brands, categories, coupons, orderItems, orderNotes, orders, productImages, products, returns, stockLevels, stockMovements, taxCategories, users } from "../schema"
+import { DomainError, isInUse } from "./errors"
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`)
 const audit = (tx: Pick<typeof db, "insert">, actorId: string | null, action: string, entity: string, entityId: string, before: unknown, after: unknown) =>
   tx.insert(auditEvents).values({ actorId, action, entity, entityId, before: before as never, after: after as never })
 
 // ---------------------------------------------------------------- products
-export type ProductInput = {
-  title: string; slug: string; sku: string; description: string; categoryId: string; brandId: string; taxCategoryId: string
-  pricePaise: number; comparePaise?: number | null; badge?: string | null; status: "draft" | "published" | "archived"
-  seoTitle?: string; seoDescription?: string; images?: { url: string; alt?: string }[]; initialStock?: number; reorderAt?: number
-}
-
 export async function listProductsForAdmin(p: { q?: string; status?: string; page?: number; pageSize?: number }) {
   const pageSize = Math.min(Math.max(p.pageSize ?? 20, 1), 100), page = Math.max(p.page ?? 1, 1)
   const where = and(p.status ? eq(products.status, p.status as never) : undefined, p.q ? or(ilike(products.title, `%${escapeLike(p.q)}%`), ilike(products.sku, `%${escapeLike(p.q)}%`)) : undefined)
@@ -26,24 +20,68 @@ export async function listProductsForAdmin(p: { q?: string; status?: string; pag
   return { items, total, page, pages: Math.max(1, Math.ceil(total / pageSize)) }
 }
 
+/**
+ * What the admin product form sends. People think in "Electronics", "Philips" and "18%", not ids, so the
+ * category is a slug, the brand a name (created when new) and GST a rate; they are resolved here, once.
+ */
+export type ProductInput = {
+  title: string; slug: string; sku: string; description: string; categorySlug: string; brandName: string; gstPercent: number
+  pricePaise: number; comparePaise?: number | null; badge?: string | null; status: "draft" | "published" | "archived"
+  seoTitle?: string; seoDescription?: string; images?: { url: string; alt?: string }[]; initialStock?: number; reorderAt?: number
+}
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
+async function resolveRefs(tx: Tx, r: { categorySlug?: string; brandName?: string; gstPercent?: number }) {
+  const out: { categoryId?: string; brandId?: string; taxCategoryId?: string } = {}
+  if (r.categorySlug !== undefined) {
+    const [c] = await tx.select({ id: categories.id }).from(categories).where(eq(categories.slug, r.categorySlug))
+    if (!c) throw new DomainError("INVALID_CATEGORY", "That category doesn't exist.")
+    out.categoryId = c.id
+  }
+  if (r.brandName !== undefined) {
+    const name = r.brandName.trim()
+    const [existing] = await tx.select({ id: brands.id }).from(brands).where(sql`lower(${brands.name}) = ${name.toLowerCase()}`)
+    if (existing) out.brandId = existing.id
+    else {
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "brand"
+      const [created] = await tx.insert(brands).values({ name, slug }).onConflictDoNothing().returning({ id: brands.id })
+      if (created) out.brandId = created.id
+      else { const [again] = await tx.select({ id: brands.id }).from(brands).where(sql`lower(${brands.name}) = ${name.toLowerCase()} or ${brands.slug} = ${slug}`); out.brandId = again.id }
+    }
+  }
+  if (r.gstPercent !== undefined) {
+    const [t] = await tx.select({ id: taxCategories.id }).from(taxCategories).where(eq(taxCategories.ratePercent, r.gstPercent)).orderBy(asc(taxCategories.name)).limit(1)
+    if (!t) throw new DomainError("INVALID_TAX", "There is no GST category with that rate.")
+    out.taxCategoryId = t.id
+  }
+  return out
+}
+
 export async function createProduct(input: ProductInput, actorId: string | null) {
   return db.transaction(async (tx) => {
-    const { images, initialStock = 0, reorderAt = 10, ...values } = input
-    const [row] = await tx.insert(products).values({ ...values, comparePaise: values.comparePaise ?? null, badge: values.badge ?? null }).returning()
+    const { images, initialStock = 0, reorderAt = 10, categorySlug, brandName, gstPercent, ...values } = input
+    const refs = await resolveRefs(tx, { categorySlug, brandName, gstPercent })
+    const [row] = await tx.insert(products).values({ ...values, ...(refs as Required<typeof refs>), comparePaise: values.comparePaise ?? null, badge: values.badge ?? null }).returning()
     await tx.insert(stockLevels).values({ productId: row.id, onHand: initialStock, reorderAt })
+    if (initialStock > 0) await tx.insert(stockMovements).values({ productId: row.id, delta: initialStock, reason: "correction", note: "Opening balance", actorId, reference: `opening:${row.sku}` })
     if (images?.length) await tx.insert(productImages).values(images.map((i, position) => ({ productId: row.id, url: i.url, alt: i.alt ?? "", position })))
     await audit(tx, actorId, "product.create", "product", row.id, null, { sku: row.sku, title: row.title })
     return row
   })
 }
 
-export async function updateProduct(id: string, patch: Partial<Omit<ProductInput, "initialStock" | "images">> & { images?: ProductInput["images"] }, actorId: string | null) {
+export type ProductPatch = Partial<Omit<ProductInput, "initialStock" | "images">> & { images?: ProductInput["images"] }
+
+export async function updateProduct(id: string, patch: ProductPatch, actorId: string | null) {
   return db.transaction(async (tx) => {
     const [before] = await tx.select().from(products).where(eq(products.id, id)).for("update")
     if (!before) throw new DomainError("NOT_FOUND", "Product not found.")
-    const { images, ...values } = patch
-    const defined = Object.fromEntries(Object.entries(values).filter(([, v]) => v !== undefined))
+    const { images, categorySlug, brandName, gstPercent, reorderAt, ...rest } = patch
+    const refs = await resolveRefs(tx, { categorySlug, brandName, gstPercent })
+    const defined = Object.fromEntries(Object.entries({ ...rest, ...refs }).filter(([, v]) => v !== undefined))
     const [row] = Object.keys(defined).length ? await tx.update(products).set(defined).where(eq(products.id, id)).returning() : [before]
+    if (reorderAt !== undefined) await tx.update(stockLevels).set({ reorderAt }).where(eq(stockLevels.productId, id))
     if (images) {
       await tx.delete(productImages).where(eq(productImages.productId, id))
       if (images.length) await tx.insert(productImages).values(images.map((i, position) => ({ productId: id, url: i.url, alt: i.alt ?? "", position })))
@@ -58,6 +96,30 @@ export async function archiveProduct(id: string, actorId: string | null) {
   return updateProduct(id, { status: "archived" }, actorId)
 }
 
+export async function setProductsStatus(ids: string[], status: "draft" | "published" | "archived", actorId: string | null) {
+  if (ids.length === 0) return { updated: 0 }
+  return db.transaction(async (tx) => {
+    const rows = await tx.update(products).set({ status }).where(inArray(products.id, ids)).returning({ id: products.id })
+    await audit(tx, actorId, "product.bulk_status", "product", ids.join(",").slice(0, 200), null, { status, count: rows.length })
+    return { updated: rows.length }
+  })
+}
+
+/** Permanently removes products that were never ordered. Anything on a past order must be archived instead. */
+export async function deleteProducts(ids: string[], actorId: string | null) {
+  if (ids.length === 0) return { deleted: 0 }
+  try {
+    return await db.transaction(async (tx) => {
+      const rows = await tx.delete(products).where(inArray(products.id, ids)).returning({ id: products.id })
+      await audit(tx, actorId, "product.delete", "product", ids.join(",").slice(0, 200), null, { count: rows.length })
+      return { deleted: rows.length }
+    })
+  } catch (e) {
+    if (isInUse(e)) throw new DomainError("IN_USE", "Some of these products are on past orders, so they can't be deleted. Archive them instead.")
+    throw e
+  }
+}
+
 export async function listTaxCategories() { return db.select().from(taxCategories).orderBy(asc(taxCategories.ratePercent)) }
 
 // ---------------------------------------------------------------- orders
@@ -69,6 +131,14 @@ export async function listOrdersForAdmin(p: { status?: string; q?: string; page?
   const items = await db.select({ id: orders.id, number: orders.number, status: orders.status, totalPaise: orders.totalPaise, customerName: orders.customerName, customerEmail: orders.customerEmail, placedAt: orders.placedAt, itemCount: sql<number>`(select coalesce(sum(quantity), 0)::int from ${orderItems} where ${orderItems.orderId} = ${orders.id})` })
     .from(orders).where(where).orderBy(desc(orders.placedAt), asc(orders.id)).limit(pageSize).offset((page - 1) * pageSize)
   return { items, total, page, pages: Math.max(1, Math.ceil(total / pageSize)) }
+}
+
+/** A private staff note on an order. */
+export async function addOrderNote(number: string, body: string, actorId: string | null) {
+  const [o] = await db.select({ id: orders.id }).from(orders).where(eq(orders.number, number))
+  if (!o) throw new DomainError("NOT_FOUND", "Order not found.")
+  const [row] = await db.insert(orderNotes).values({ orderId: o.id, authorId: actorId, body: body.trim() }).returning()
+  return row
 }
 
 // ---------------------------------------------------------------- customers
@@ -97,6 +167,18 @@ export async function updateCoupon(id: string, patch: Partial<CouponInput>, acto
   if (!c) throw new DomainError("NOT_FOUND", "Coupon not found.")
   await audit(db, actorId, "coupon.update", "coupon", id, null, values)
   return c
+}
+
+/** Coupons that were ever redeemed can't be deleted (their history matters). Deactivate them instead. */
+export async function deleteCoupon(id: string, actorId: string | null) {
+  try {
+    const rows = await db.delete(coupons).where(eq(coupons.id, id)).returning({ id: coupons.id, code: coupons.code })
+    if (rows.length === 0) throw new DomainError("NOT_FOUND", "Coupon not found.")
+    await audit(db, actorId, "coupon.delete", "coupon", id, { code: rows[0].code }, null)
+  } catch (e) {
+    if (isInUse(e)) throw new DomainError("IN_USE", "This coupon has been used on orders. Deactivate it instead of deleting it.")
+    throw e
+  }
 }
 
 // ---------------------------------------------------------------- banners

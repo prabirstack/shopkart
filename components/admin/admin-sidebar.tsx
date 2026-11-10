@@ -8,23 +8,10 @@ import {
 } from "@/components/ui/sidebar"
 import { navFor } from "@/features/admin/access"
 import type { Role } from "@/lib/api/permissions"
-import { useAdminReady } from "@/features/admin/hooks"
-import { useAdmin } from "@/features/admin/store"
-import { useReviewStore } from "@/features/reviews/store"
+import type { AdminCounts } from "@/lib/db/queries/admin-views"
 
-export function AdminSidebar({ role }: { role: Role }) {
+export function AdminSidebar({ role, counts }: { role: Role; counts: AdminCounts }) {
   const pathname = usePathname()
-  const ready = useAdminReady()
-  const orders = useAdmin((s) => s.orders)
-  const products = useAdmin((s) => s.products)
-  const returns = useAdmin((s) => s.returns)
-  const userReviews = useReviewStore((s) => s.reviews)
-  const counts = {
-    orders: ready ? orders.filter((o) => o.status === "pending" || o.status === "paid").length : 0,
-    stock: ready ? products.filter((p) => p.status !== "archived" && p.stock - p.reserved <= p.reorderAt).length : 0,
-    returns: ready ? returns.filter((r) => r.status === "requested").length : 0,
-    reviews: ready ? userReviews.filter((r) => r.status === "pending").length : 0,
-  }
   const isActive = (href: string) => (href === "/admin" ? pathname === href : pathname.startsWith(href))
   return (
     <Sidebar collapsible="icon">

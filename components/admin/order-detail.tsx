@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { ArrowLeft, Check, CircleDot, Mail, MapPin, Phone, Printer, StickyNote, Undo2, XCircle } from "lucide-react"
 import { ConfirmDialog } from "./confirm-dialog"
@@ -7,30 +8,42 @@ import { NEXT_STEP } from "./orders-view"
 import { OrderStatusBadge, orderStatusMeta } from "./order-status-badge"
 import { PageHeader } from "./page-header"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import { fmtDateTime, money } from "@/features/admin/format"
-import { useAdminReady } from "@/features/admin/hooks"
-import { orderTotal, useAdmin } from "@/features/admin/store"
+import { adminApi, failureMessage } from "@/features/admin/api"
+import { orderTotal } from "@/features/admin/order-math"
+import type { AdminOrder, OrderStatus } from "@/features/admin/types"
 import { gstFromInclusive } from "@/lib/money"
 
-export function OrderDetail({ id }: { id: string }) {
-  const ready = useAdminReady()
-  const order = useAdmin((s) => s.orders.find((o) => o.id === id))
-  const setStatus = useAdmin((s) => s.setOrderStatus)
-  const addNote = useAdmin((s) => s.addOrderNote)
+export type OrderPerms = { fulfil: boolean; cancel: boolean; refund: boolean }
+
+/** `order` is null when the number matches nothing. What the person may do depends on their role (`perms`). */
+export function OrderDetail({ order, perms }: { order: AdminOrder | null; perms: OrderPerms }) {
+  const router = useRouter()
   const [confirm, setConfirm] = useState<"cancel" | "refund" | null>(null)
   const [note, setNote] = useState("")
-  if (!ready) return <Skeleton className="h-[32rem] rounded-2xl" />
+  const [error, setError] = useState("")
+  const [busy, setBusy] = useState(false)
+  // Every change is a permission-checked API call; the server enforces the allowed status flow.
+  const run = async (fn: () => Promise<unknown>) => {
+    setBusy(true); setError("")
+    try { await fn(); router.refresh() } catch (e) { setError(failureMessage(e)) } finally { setBusy(false) }
+  }
+  const setStatus = (to: OrderStatus) => {
+    if (!order) return Promise.resolve()
+    return run(() => to === "cancelled" ? adminApi(`admin/orders/${order.id}/cancel`, { method: "POST" }) : to === "refunded" ? adminApi(`admin/orders/${order.id}/refund`, { method: "POST" }) : adminApi(`admin/orders/${order.id}/advance`, { method: "POST", body: { to } }))
+  }
+  const addNote = (text: string) => order && run(() => adminApi(`admin/orders/${order.id}/notes`, { method: "POST", body: { body: text } }))
   if (!order) return <div className="grid justify-items-center gap-3 rounded-2xl border bg-card p-12 text-center"><p className="font-semibold">Order not found</p><Link href="/admin/orders" className="text-sm font-medium text-primary hover:underline">Back to orders</Link></div>
 
   const subtotal = order.lines.reduce((t, l) => t + l.pricePaise * l.quantity, 0)
   const gstTotal = order.lines.reduce((t, l) => t + gstFromInclusive(l.pricePaise * l.quantity, l.gstPercent), 0)
-  const next = NEXT_STEP[order.status]
-  const canCancel = order.status === "pending" || order.status === "paid" || order.status === "packed"
-  const canRefund = order.status === "delivered"
+  const next = perms.fulfil ? NEXT_STEP[order.status] : undefined
+  const canCancel = perms.cancel && (order.status === "pending" || order.status === "paid" || order.status === "packed")
+  const canRefund = perms.refund && order.status === "delivered"
 
   return (
     <>
+      {error && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-2 text-sm text-destructive">{error}</p>}
       <Link href="/admin/orders" className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> All orders</Link>
       <PageHeader title={`Order ${order.id}`} description={`Placed ${fmtDateTime(order.placed)} by ${order.customerName}`}>
         <div className="flex flex-wrap items-center gap-2">
@@ -38,7 +51,7 @@ export function OrderDetail({ id }: { id: string }) {
           <Button variant="outline" onClick={() => window.print()}><Printer aria-hidden="true" /> Print</Button>
           {canRefund && <Button variant="outline" onClick={() => setConfirm("refund")}><Undo2 aria-hidden="true" /> Refund</Button>}
           {canCancel && <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setConfirm("cancel")}><XCircle aria-hidden="true" /> Cancel order</Button>}
-          {next && <Button onClick={() => setStatus(order.id, next.to)}><Check aria-hidden="true" /> {next.label}</Button>}
+          {next && <Button disabled={busy} onClick={() => void setStatus(next.to)}><Check aria-hidden="true" /> {next.label}</Button>}
         </div>
       </PageHeader>
       {order.status === "pending" && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">Waiting for Razorpay to confirm payment. An order only moves to Paid when the signed confirmation arrives, never by hand.</p>}
@@ -80,17 +93,17 @@ export function OrderDetail({ id }: { id: string }) {
           </section>
           <section aria-labelledby="note-h" className="rounded-2xl border bg-card p-5 shadow-xs">
             <h2 id="note-h" className="mb-3 flex items-center gap-2 font-semibold"><StickyNote className="size-4" aria-hidden="true" /> Internal notes</h2>
-            <form onSubmit={(e) => { e.preventDefault(); if (note.trim()) { addNote(order.id, note.trim()); setNote("") } }} className="grid gap-2">
+            <form onSubmit={(e) => { e.preventDefault(); if (note.trim() && !busy) { void addNote(note.trim()); setNote("") } }} className="grid gap-2">
               <label htmlFor="note" className="sr-only">Add a note</label><textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Visible to staff only" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40" />
-              <div><Button type="submit" size="sm" disabled={!note.trim()}>Add note</Button></div>
+              <div><Button type="submit" size="sm" disabled={!note.trim() || busy}>Add note</Button></div>
             </form>
             <ul className="mt-3 grid gap-2">{order.notes.map((n, i) => <li key={i} className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-950">{n}</li>)}</ul>
           </section>
         </aside>
       </div>
       <ConfirmDialog open={confirm !== null} onOpenChange={(o) => !o && setConfirm(null)} destructive title={confirm === "refund" ? `Refund order ${order.id}?` : `Cancel order ${order.id}?`}
-        description={confirm === "refund" ? `${money(orderTotal(order))} goes back to ${order.customerName} on ${order.paymentMethod}. A GST credit note is issued for the refunded amount.` : `${order.customerName}'s order of ${money(orderTotal(order))} will be cancelled and any reserved stock released.`}
-        confirmLabel={confirm === "refund" ? "Issue refund" : "Cancel order"} onConfirm={() => setStatus(order.id, confirm === "refund" ? "refunded" : "cancelled", confirm === "refund" ? "Refund issued to original payment method" : "Cancelled by staff")} />
+        description={confirm === "refund" ? `${money(orderTotal(order))} goes back to ${order.customerName} on ${order.paymentMethod}. This records the refund on the order. Send the money back from the payment provider (not connected yet).` : `${order.customerName}'s order of ${money(orderTotal(order))} will be cancelled and any reserved stock released.`}
+        confirmLabel={confirm === "refund" ? "Issue refund" : "Cancel order"} onConfirm={() => void setStatus(confirm === "refund" ? "refunded" : "cancelled")} />
     </>
   )
 }

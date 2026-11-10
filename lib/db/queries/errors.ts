@@ -12,6 +12,8 @@ export function pgCode(err: unknown): string | undefined {
   return undefined
 }
 export const isUniqueViolation = (e: unknown) => pgCode(e) === "23505"
+/** A row can't be removed because other rows reference it: 23503 (foreign key) or 23001 (ON DELETE RESTRICT). */
+export const isInUse = (e: unknown) => pgCode(e) === "23503" || pgCode(e) === "23001"
 export const isCheckViolation = (e: unknown) => pgCode(e) === "23514"
 
 /** Name of the constraint a Postgres error came from (for example "coupon_redemptions_user_idx"). */

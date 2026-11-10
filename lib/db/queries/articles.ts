@@ -59,3 +59,7 @@ export async function saveArticle(input: SaveArticleInput): Promise<string> {
 export async function setArticleStatus(id: string, status: "draft" | "published") {
   await db.update(articles).set({ status, publishedAt: status === "published" ? new Date() : null }).where(eq(articles.id, id))
 }
+
+export async function deleteArticle(id: string) {
+  await db.delete(articles).where(eq(articles.id, id))
+}

@@ -7,9 +7,9 @@ import { AdminTopbar } from "@/components/admin/admin-topbar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ROLE_LABELS } from "@/features/admin/access"
-import { AdminHydrator } from "@/features/admin/hooks"
+import { loadAdminCounts } from "@/lib/db/queries"
 import { auth } from "@/lib/auth"
-import { isStaff, type Role } from "@/lib/api/permissions"
+import { can, isStaff, type Role } from "@/lib/api/permissions"
 
 /**
  * Shell for the admin console. It runs on a full page load, so it only decides what the shell looks like:
@@ -24,14 +24,16 @@ export async function AdminGate({ children }: { children: ReactNode }) {
   const role = ((session.user as { role?: string }).role ?? "customer") as Role
   const user = { name: session.user.name, email: session.user.email, role, roleLabel: ROLE_LABELS[role] }
 
+  // Badge counts, computed only for the sections this role may open.
+  const counts = isStaff(role) ? await loadAdminCounts({ orders: can(role, "orders:read"), stock: can(role, "inventory:read"), returns: can(role, "returns:manage"), reviews: can(role, "reviews:moderate") }) : null
+
   return (
     <TooltipProvider>
-      <AdminHydrator />
       <SidebarProvider>
-        {isStaff(role) && <AdminSidebar role={role} />}
+        {counts && <AdminSidebar role={role} counts={counts} />}
         <SidebarInset className="min-w-0 bg-background">
-          {isStaff(role) && <AdminTopbar user={user} />}
-          {isStaff(role) && <p role="note" className="border-b border-amber-200 bg-amber-50 px-4 py-1.5 text-center text-xs text-amber-900">Signed in as {user.name} ({user.roleLabel}). The records shown here are still sample data kept in this browser, so changes are not saved to the database yet.</p>}
+          {counts && <AdminTopbar user={user} counts={counts} />}
+          {isStaff(role) && <p className="border-b bg-muted/40 px-4 py-1.5 text-center text-xs text-muted-foreground">Signed in as <span className="font-medium text-foreground">{user.name}</span> ({user.roleLabel}). Changes here are saved to the database.</p>}
           <main className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-6 p-4 md:p-6">{isStaff(role) ? children : <AccessDenied role={role} staff={false} />}</main>
         </SidebarInset>
       </SidebarProvider>

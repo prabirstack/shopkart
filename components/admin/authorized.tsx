@@ -33,3 +33,9 @@ export async function requireAdminUser(section: string) {
   if (!canViewRoute(role, section)) return null
   return { userId: session.user.id, name: session.user.name, role }
 }
+
+/** The signed-in person's role. Call it from inside <Authorized> to tailor a screen (for example hide actions the role lacks). */
+export async function currentAdminRole(): Promise<Role> {
+  const session = await auth.api.getSession({ headers: await headers() })
+  return ((session?.user as { role?: string } | undefined)?.role ?? "customer") as Role
+}

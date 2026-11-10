@@ -3,7 +3,7 @@ import "server-only"
 import { randomUUID } from "node:crypto"
 import { ZodError, type ZodType } from "zod"
 
-import { DomainError, pgCode } from "@/lib/db/queries/errors"
+import { DomainError, pgCode, pgConstraint } from "@/lib/db/queries/errors"
 import { rateLimit, type Limit } from "./rate-limit"
 import { getSession, type Session } from "./session"
 import { can, type Permission } from "./permissions"
@@ -25,7 +25,18 @@ const DOMAIN_STATUS: Record<string, number> = {
   NOT_FOUND: 404, PAYMENT_NOT_FOUND: 404,
   INVALID_REVIEW: 422, INVALID_QUANTITY: 422, NOTE_REQUIRED: 422, EMPTY_CART: 422, QUANTITY_LIMIT: 422,
   ALREADY_REVIEWED: 409, OUT_OF_STOCK: 409, INSUFFICIENT_STOCK: 409, PRODUCT_UNAVAILABLE: 409, COUPON_INVALID: 409,
-  INVALID_TRANSITION: 409, ORDER_NOT_PAYABLE: 409, AMOUNT_MISMATCH: 409, CONFLICT: 409,
+  INVALID_TRANSITION: 409, IN_USE: 409, INVALID_CATEGORY: 422, INVALID_TAX: 422, ORDER_NOT_PAYABLE: 409, AMOUNT_MISMATCH: 409, CONFLICT: 409,
+}
+
+/** Which field a unique-index violation belongs to, so forms can show the message beside it. */
+const UNIQUE_FIELD: Record<string, { path: string; message: string }> = {
+  products_slug_idx: { path: "slug", message: "Another product already uses this URL slug." },
+  products_sku_idx: { path: "sku", message: "Another product already uses this SKU." },
+  coupons_code_idx: { path: "code", message: "A coupon with this code already exists." },
+  articles_slug_idx: { path: "slug", message: "Another article already uses this URL slug." },
+  users_email_lower_idx: { path: "email", message: "An account with this email already exists." },
+  users_phone_idx: { path: "phone", message: "That mobile number is already linked to an account." },
+  brands_name_idx: { path: "brandName", message: "A brand with this name already exists." },
 }
 
 export type Ctx<P = Record<string, string>> = {
@@ -94,8 +105,11 @@ function errorResponse(err: unknown, requestId: string): Response {
   if (err instanceof ZodError) return body(422, "VALIDATION_FAILED", "Some fields are invalid.", err.issues.map((i) => ({ path: i.path.join("."), message: i.message })))
   if (err instanceof DomainError) return body(DOMAIN_STATUS[err.code] ?? 400, err.code, err.message)
   const pg = pgCode(err)
-  if (pg === "23505") return body(409, "CONFLICT", "That value is already in use.")
-  if (pg === "23503") return body(409, "IN_USE", "This record is referenced by other data and can't be removed.")
+  if (pg === "23505") {
+    const hit = UNIQUE_FIELD[pgConstraint(err) ?? ""]
+    return body(409, "CONFLICT", hit?.message ?? "That value is already in use.", hit ? [{ path: hit.path, message: hit.message }] : undefined)
+  }
+  if (pg === "23503" || pg === "23001") return body(409, "IN_USE", "This record is referenced by other data and can't be removed.")
   if (pg === "23514") return body(422, "CONSTRAINT_FAILED", "That value is not allowed.")
   if (pg === "22P02") return body(400, "INVALID_ID", "Malformed identifier.")
   // Unknown failure: log the real error with the request id, tell the client only the id.

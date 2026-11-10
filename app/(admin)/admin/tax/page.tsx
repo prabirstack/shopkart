@@ -1,13 +1,17 @@
 import { Authorized } from "@/components/admin/authorized"
-import { DemoNotice } from "@/components/admin/demo-notice"
 import { PageHeader } from "@/components/admin/page-header"
 import { SimpleTable } from "@/components/admin/simple-table"
-import { taxCategories } from "@/features/admin/demo"
+import { loadAdminTaxCategories } from "@/lib/db/queries/admin-views-extra"
 import { formatMoney, gstFromInclusive } from "@/lib/money"
+
+// Every admin page is personal (it reads the session and the database on each request), so there is nothing to
+// prerender: allow a blocking route instead of a static shell.
+export const instant = false
 
 const rupees = (p: number) => formatMoney(p, undefined, undefined, { hideZeroDecimals: true })
 
-function TaxContent() {
+async function TaxContent() {
+  const taxCategories = await loadAdminTaxCategories()
   // Worked example with a tax-inclusive price of ₹1,180 at 18% GST.
   const price = 118000
   const rate = 18
@@ -15,7 +19,6 @@ function TaxContent() {
   return (
     <>
       <PageHeader title="Tax (GST)" description="Every product points to one tax category. Prices shown to customers include GST." />
-      <DemoNotice />
       <section aria-labelledby="example" className="rounded-xl border bg-card p-4">
         <h2 id="example" className="font-semibold">Worked example</h2>
         <p className="mt-1 text-sm text-muted-foreground">A tax-inclusive price of {rupees(price)} at {rate}% GST splits like this:</p>
@@ -25,7 +28,7 @@ function TaxContent() {
           <dt className="font-semibold">Customer pays</dt><dd className="text-right font-semibold">{rupees(price)}</dd>
         </dl>
       </section>
-      <SimpleTable rows={taxCategories} rowKey={(t) => t.id} caption="GST categories. Rates are examples; confirm real rates with your accountant." empty="No tax categories."
+      <SimpleTable rows={taxCategories} rowKey={(t) => t.id} caption="GST categories. Confirm real rates with your accountant." empty="No tax categories."
         columns={[
           { header: "Category", cell: (t) => t.name, className: "min-w-52 font-medium" },
           { header: "HSN", cell: (t) => <span className="font-mono text-xs">{t.hsn}</span> },

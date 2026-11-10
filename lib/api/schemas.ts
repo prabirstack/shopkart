@@ -44,7 +44,7 @@ export const verifyPaymentBody = z.object({ razorpay_order_id: z.string().max(80
 
 const productShape = z.object({
   title: text(3, 140), slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Lowercase letters, numbers and hyphens only.").max(100),
-  sku: text(2, 40), description: z.string().trim().max(5000).default(""), categoryId: uuid, brandId: uuid, taxCategoryId: uuid,
+  sku: text(2, 40), description: z.string().trim().max(5000).default(""), categorySlug: text(1, 60), brandName: text(2, 60), gstPercent: z.number().refine((n) => [0, 5, 12, 18, 28].includes(n), "Use a real GST rate."),
   pricePaise: paiseAmount, comparePaise: paiseAmount.nullish(), badge: text(1, 24).nullish(), status: z.enum(["draft", "published", "archived"]),
   seoTitle: z.string().trim().max(70).default(""), seoDescription: z.string().trim().max(160).default(""),
   images: z.array(z.object({ url: z.string().trim().max(500).regex(/^(\/|https:\/\/)/, "Use a site path or an https URL."), alt: z.string().max(160).default("") })).max(12).optional(),
@@ -77,3 +77,14 @@ export const bannerPatch = z.object({ title: text(2, 80), slot: z.enum(["home_he
 export const returnStatusBody = z.object({ status: z.enum(["approved", "received", "refunded", "rejected"]) })
 export const advanceBody = z.object({ to: z.enum(["packed", "shipped", "delivered"]) })
 export const settingsBody = z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9_.]{0,59}$/), z.unknown()).refine((v) => Object.keys(v).length <= 50, "Too many settings.")
+
+export const bulkProductsBody = z.object({ ids: z.array(uuid).min(1).max(100), action: z.enum(["publish", "unpublish", "archive", "delete"]) })
+export const orderNoteBody = z.object({ body: text(1, 1000) })
+
+/** The store settings screen. Strict: unknown keys are rejected so nothing unexpected can be stored. */
+export const storeSettingsBody = z.object({
+  storeName: text(2, 80), supportEmail: email, phone: text(3, 30), gstin: z.string().trim().toUpperCase().regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, "A GSTIN has 15 characters, like 29ABCDE1234F1Z5."),
+  freeDeliveryAboveRupees: z.number().int().min(0).max(1_000_000), shippingFeeRupees: z.number().int().min(0).max(10_000), returnDays: z.number().int().min(1, "Between 1 and 60 days.").max(60, "Between 1 and 60 days."),
+  razorpayMode: z.enum(["test", "live"]), lowStockDefault: z.number().int().min(0).max(100_000),
+  notifyNewOrder: z.boolean(), notifyLowStock: z.boolean(), notifyReturn: z.boolean(),
+}).strict()

@@ -10,5 +10,5 @@ const dateTime = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "shor
 export const fmtDate = (iso: string) => date.format(new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso))
 export const fmtDateTime = (iso: string) => dateTime.format(new Date(iso))
 
-/** "Today" for the demo, so dates in sample data stay meaningful. */
-export const DEMO_TODAY = "2026-11-10"
+/** Today's date in India (YYYY-MM-DD). Call it on the server and pass it down; see features/admin/today.tsx. */
+export const istToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date())

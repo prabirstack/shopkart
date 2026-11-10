@@ -42,7 +42,7 @@ const demoDate = (t: string) => { const d = new Date(`${t} 00:00 UTC`); return N
 
 async function main() {
   await db.transaction(async (tx) => {
-    await tx.execute(sql`TRUNCATE TABLE verifications, accounts, audit_events, settings, wishlist_items, reviews, article_products, articles, banners, coupon_redemptions, webhook_events, payments, order_events, order_items, returns, orders, coupons, stock_movements, stock_levels, product_images, products, tax_categories, categories, brands, sessions, addresses, users RESTART IDENTITY CASCADE`)
+    await tx.execute(sql`TRUNCATE TABLE order_notes, verifications, accounts, audit_events, settings, wishlist_items, reviews, article_products, articles, banners, coupon_redemptions, webhook_events, payments, order_events, order_items, returns, orders, coupons, stock_movements, stock_levels, product_images, products, tax_categories, categories, brands, sessions, addresses, users RESTART IDENTITY CASCADE`)
 
     // ---- Catalog lookups
     const taxRows = await tx.insert(s.taxCategories).values([
@@ -85,6 +85,12 @@ async function main() {
     const staff = await tx.insert(s.users).values((["owner", "catalog_editor", "warehouse", "support", "finance"] as const).map((role) => ({
       email: `${role.replace("_", "-")}@shopkart.local`, name: role === "owner" ? "Admin" : role.replace("_", " ").replace(/^./, (c) => c.toUpperCase()), role, emailVerified: true,
     }))).returning()
+    // Optional extra owner for local development, taken from .env so no password lives in the repository.
+    const ownerEmail = process.env.SEED_OWNER_EMAIL?.trim().toLowerCase(), ownerPassword = process.env.SEED_OWNER_PASSWORD
+    if (ownerEmail && ownerPassword) {
+      const [extra] = await tx.insert(s.users).values({ email: ownerEmail, name: "Admin", role: "owner", emailVerified: true }).returning()
+      await tx.insert(s.accounts).values({ userId: extra.id, accountId: extra.id, providerId: "credential", password: await argon2.hash(ownerPassword) })
+    }
     const customerRows = await tx.insert(s.users).values(customers.map((c) => ({
       email: c.email, name: c.name, phone: c.phone, role: "customer" as const,
       emailVerified: c.verified, createdAt: new Date(`${c.joined}T10:00:00Z`),
@@ -107,6 +113,7 @@ async function main() {
         shipTo: { name: o.customerName, phone: o.phone, line1: o.addressLine, city: o.city, state: STATE_BY_CITY[o.city] ?? "Karnataka", pincode: o.pincode }, placedAt: new Date(o.placed), createdAt: new Date(o.placed),
       }).returning()
       await tx.insert(s.orderItems).values(o.lines.map((l) => { const p = productByDemoId.get(l.productId)!; return { orderId: order.id, productId: p.id, title: l.title, sku: p.sku, quantity: l.quantity, unitPricePaise: l.pricePaise, gstPercent: l.gstPercent } }))
+      if (o.notes.length) await tx.insert(s.orderNotes).values(o.notes.map((body) => ({ orderId: order.id, body })))
       await tx.insert(s.orderEvents).values(o.timeline.map((t) => ({ orderId: order.id, status: t.status, actorLabel: t.by, note: t.note ?? null, createdAt: new Date(t.at) })))
       const captured = !["pending", "cancelled"].includes(o.status)
       await tx.insert(s.payments).values({ orderId: order.id, providerOrderId: `order_demo_${o.id.slice(3)}`, providerPaymentId: captured ? o.paymentId : null, amountPaise: order.totalPaise, status: o.status === "refunded" ? "refunded" : captured ? "captured" : "created", method: o.paymentMethod, signatureVerifiedAt: captured ? new Date(o.placed) : null })
