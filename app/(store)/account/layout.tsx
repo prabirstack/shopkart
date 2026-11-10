@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { Headphones, LogOut } from "lucide-react"
+import { Headphones } from "lucide-react"
+import { SignOutButton } from "@/components/auth/sign-out-button"
 import { AccountNav } from "@/components/account/account-nav"
 import { demoUser } from "@/features/account/demo"
 
@@ -23,13 +24,13 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
           <div className="hidden lg:block"><AccountNav /></div>
           <div className="hidden border-t p-2 lg:block">
             <Link href="/help" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground/80 hover:bg-muted"><span className="grid size-8 place-items-center rounded-lg bg-muted"><Headphones className="size-4" aria-hidden="true" /></span>Help &amp; support</Link>
-            <Link href="/login" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground/80 hover:bg-muted"><span className="grid size-8 place-items-center rounded-lg bg-muted"><LogOut className="size-4" aria-hidden="true" /></span>Sign out</Link>
+            <SignOutButton className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-foreground/80 hover:bg-muted" />
           </div>
         </div>
         <div className="lg:hidden"><AccountNav /></div>
       </aside>
       <main className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-6">
-        <p role="note" className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2 text-xs text-amber-900">Demo account with sample data. Sign-in and real order history arrive in the identity chapters.</p>
+        <p role="note" className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2 text-xs text-amber-900">You're signed in. The profile and order history shown here are still sample data until the pages move to the database.</p>
         {children}
       </main>
     </div>
