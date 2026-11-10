@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "drizzle": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "--no-install",
+        "drizzle-kit",
+        "mcp"
+      ],
+      "env": {}
+    }
+  }
+}
