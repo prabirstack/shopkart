@@ -47,17 +47,17 @@ function timelineFor(status: OrderStatus, placed: string): TimelineEvent[] {
   const events: TimelineEvent[] = [{ status: "pending", at: placed, by: "Customer", note: "Order placed" }]
   const target = status === "cancelled" ? 0 : status === "refunded" ? 4 : flow.indexOf(status)
   for (let i = 1; i <= target; i++) {
-    const at = new Date(new Date(placed).getTime() + i * 9 * 3600_000).toISOString()
+    const at = new Date(new Date(placed).getTime() + i * 1.5 * 3600_000).toISOString()
     events.push({ status: flow[i], at, by: i === 1 ? "Razorpay" : "Staff" })
   }
-  if (status === "cancelled") events.push({ status: "cancelled", at: new Date(new Date(placed).getTime() + 3 * 3600_000).toISOString(), by: "Customer", note: "Cancelled before packing" })
+  if (status === "cancelled") events.push({ status: "cancelled", at: new Date(new Date(placed).getTime() + 1 * 3600_000).toISOString(), by: "Customer", note: "Cancelled before packing" })
   if (status === "refunded") events.push({ status: "refunded", at: new Date(new Date(placed).getTime() + 4 * 86400_000).toISOString(), by: "Finance", note: "Refund issued to original payment method" })
   return events
 }
 
 export const initialOrders: AdminOrder[] = seeds.map((s) => {
   const c = customers[s.cust]
-  const placed = iso(s.day, 9 + (s.n % 10))
+  const placed = iso(s.day, 4 + (s.n % 6))
   const lines = s.lines.map(([id, quantity]) => { const p = productById(id)!; return { productId: id, title: p.title, quantity, pricePaise: p.pricePaise, gstPercent: p.gstPercent } })
   const subtotal = lines.reduce((t, l) => t + l.pricePaise * l.quantity, 0)
   return {
