@@ -1,4 +1,5 @@
 "use client"
+import { AccountTitle } from "@/components/account/account-title"
 import Link from "next/link"
 import { Heart } from "lucide-react"
 import { ProductCard } from "@/components/store/product-card"
@@ -15,7 +16,7 @@ export default function AccountWishlistPage() {
   const items = ids.flatMap((id) => { const p = productById(id); return p ? [p] : [] })
   return (
     <>
-      <h1 className="store-title !text-3xl">Wishlist{hydrated && items.length > 0 && <span className="ml-2 text-lg font-medium text-muted-foreground">({items.length})</span>}</h1>
+      <AccountTitle title="Wishlist" description={hydrated && items.length > 0 ? `${items.length} saved ${items.length === 1 ? "item" : "items"}` : "Products you have saved for later."} />
       {!hydrated ? <Skeleton className="h-64 w-full rounded-xl" /> : items.length === 0 ? (
         <Empty className="rounded-xl border">
           <EmptyHeader><EmptyMedia variant="icon"><Heart aria-hidden="true" /></EmptyMedia><EmptyTitle>Your wishlist is empty</EmptyTitle><EmptyDescription>Tap the heart on any product to save it here for later.</EmptyDescription></EmptyHeader>

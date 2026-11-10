@@ -1,6 +1,6 @@
-import { BadgeCheck } from "lucide-react"
 import { distributionFor, reviewsFor } from "@/features/reviews/demo"
 import type { Product } from "@/features/catalog/demo"
+import { ReviewsCarousel } from "./reviews-carousel"
 import { Stars } from "./stars"
 
 export function ReviewsSection({ product }: { product: Product }) {
@@ -26,24 +26,7 @@ export function ReviewsSection({ product }: { product: Product }) {
             ))}
           </ul>
         </div>
-        <ul className="grid gap-4">
-          {reviews.map((r) => (
-            <li key={r.id} className="rounded-xl border bg-card p-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-3">
-                  <span aria-hidden="true" className="grid size-9 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">{r.name[0]}</span>
-                  <div>
-                    <p className="text-sm font-semibold">{r.name}</p>
-                    {r.verified && <p className="flex items-center gap-1 text-xs text-emerald-700"><BadgeCheck className="size-3.5" aria-hidden="true" /> Verified purchase</p>}
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">{r.date}</p>
-              </div>
-              <div className="mt-3 flex items-center gap-2"><Stars value={r.rating} /><h3 className="text-sm font-semibold">{r.title}</h3></div>
-              <p className="mt-2 text-sm text-muted-foreground">{r.body}</p>
-            </li>
-          ))}
-        </ul>
+        <ReviewsCarousel reviews={reviews} />
       </div>
     </section>
   )

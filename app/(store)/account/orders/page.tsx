@@ -1,6 +1,9 @@
 import Link from "next/link"
 import { Suspense } from "react"
 import { PackageOpen } from "lucide-react"
+import { AccountTitle } from "@/components/account/account-title"
+import { OrderProgress } from "@/components/account/order-progress"
+import { OrderThumbs } from "@/components/account/order-thumbs"
 import { OrderStatusPill } from "@/components/account/status-pill"
 import { buttonVariants } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -33,7 +36,7 @@ async function OrderList({ searchParams }: { searchParams: PageProps<"/account/o
       ) : (
         <ul className="grid gap-4">
           {list.map((o) => (
-            <li key={o.number} className="rounded-xl border bg-card">
+            <li key={o.number} className="overflow-hidden rounded-2xl border bg-card shadow-xs">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-5 py-3 text-sm">
                 <div className="flex flex-wrap gap-x-8 gap-y-1">
                   <p><span className="block text-xs text-muted-foreground">Order placed</span>{o.placed}</p>
@@ -42,14 +45,18 @@ async function OrderList({ searchParams }: { searchParams: PageProps<"/account/o
                 </div>
                 <OrderStatusPill status={o.status} />
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
-                <ul className="grid gap-1 text-sm">
-                  {o.lines.map((l) => <li key={l.productId}>{l.title} <span className="text-muted-foreground">× {l.quantity}</span></li>)}
-                </ul>
-                <div className="flex flex-wrap gap-2">
-                  <Link href={`/account/orders/${o.number}`} className={buttonVariants({ variant: "outline" })}>View details</Link>
-                  <Link href={`/account/billing/${o.invoiceNumber}`} className={buttonVariants({ variant: "outline" })}>Invoice</Link>
+              <div className="grid gap-4 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <OrderThumbs productIds={o.lines.map((l) => l.productId)} size="size-14" />
+                    <ul className="grid min-w-0 gap-0.5 text-sm">{o.lines.map((l) => <li key={l.productId} className="truncate">{l.title} <span className="text-muted-foreground">× {l.quantity}</span></li>)}</ul>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/account/orders/${o.number}`} className={buttonVariants({ variant: "outline" })}>View details</Link>
+                    <Link href={`/account/billing/${o.invoiceNumber}`} className={buttonVariants({ variant: "outline" })}>Invoice</Link>
+                  </div>
                 </div>
+                {(o.status === "processing" || o.status === "shipped") && <OrderProgress status={o.status} />}
               </div>
             </li>
           ))}
@@ -62,7 +69,7 @@ async function OrderList({ searchParams }: { searchParams: PageProps<"/account/o
 export default function AccountOrdersPage({ searchParams }: PageProps<"/account/orders">) {
   return (
     <>
-      <h1 className="store-title !text-3xl">Order history</h1>
+      <AccountTitle title="Order history" description="Everything you have bought, newest first." />
       <Suspense fallback={<Skeleton className="h-80 w-full rounded-xl" />}><OrderList searchParams={searchParams} /></Suspense>
     </>
   )

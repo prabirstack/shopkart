@@ -1,7 +1,8 @@
 "use client"
 import Link from "next/link"
 import { useEffect, useRef } from "react"
-import { Heart, Minus, Plus, ShoppingCart, Trash2, Truck } from "lucide-react"
+import { FileText, Heart, Lock, Minus, Plus, RotateCcw, ShoppingCart, Trash2, Truck } from "lucide-react"
+import { CheckoutSteps } from "@/components/store/checkout-steps"
 import { SummaryRows } from "@/components/store/order-summary"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { Price } from "@/components/price"
@@ -14,7 +15,10 @@ import { MAX_QUANTITY, useCart } from "@/features/cart/store"
 import { useCartSummary } from "@/features/cart/use-cart-summary"
 import { useWishlist } from "@/features/wishlist/store"
 import { formatMoney } from "@/lib/money"
-import { FREE_DELIVERY_ABOVE_PAISE } from "@/lib/store-config"
+import { FREE_DELIVERY_ABOVE_PAISE, RETURN_WINDOW_DAYS } from "@/lib/store-config"
+import { ProductRow } from "@/components/store/product-row"
+import { SectionHeader } from "@/components/store/section-header"
+import { topSelling } from "@/features/catalog/demo"
 
 export default function CartPage() {
   const { hydrated, items, quote, coupon, couponCode, couponProblem, count } = useCartSummary()
@@ -30,6 +34,7 @@ export default function CartPage() {
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-6 py-6">
       <StoreBreadcrumbs trail={[{ label: "Cart" }]} />
+      <CheckoutSteps current={0} />
       <h1 className="store-title !text-3xl">Your cart{hydrated && count > 0 && <span className="ml-2 text-lg font-medium text-muted-foreground">({count} {count === 1 ? "item" : "items"})</span>}</h1>
       {!hydrated ? <Skeleton className="h-72 w-full rounded-xl" /> : items.length === 0 ? (
         <Empty className="rounded-xl border">
@@ -43,17 +48,20 @@ export default function CartPage() {
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <section aria-label="Cart items" className="grid min-w-0 gap-3">
-            <p className="flex items-center gap-2 rounded-lg bg-muted px-4 py-3 text-sm">
-              <Truck className="size-4 text-primary" aria-hidden="true" />
-              {toFree === 0 ? "You've unlocked free delivery." : `Add ${formatMoney(toFree, undefined, undefined, { hideZeroDecimals: true })} more for free delivery.`}
-            </p>
+            <div className={`grid gap-2 rounded-2xl border p-4 text-sm ${toFree === 0 ? "border-emerald-200 bg-emerald-50" : "bg-card"}`}>
+              <p className="flex items-center gap-2 font-medium"><Truck className={`size-4 ${toFree === 0 ? "text-emerald-700" : "text-primary"}`} aria-hidden="true" />
+                {toFree === 0 ? "You've unlocked free delivery." : `Add ${formatMoney(toFree, undefined, undefined, { hideZeroDecimals: true })} more for free delivery.`}</p>
+              <div role="progressbar" aria-label="Progress to free delivery" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, (quote.subtotalPaise - quote.discountPaise) / FREE_DELIVERY_ABOVE_PAISE) * 100)} className="h-2 overflow-hidden rounded-full bg-muted">
+                <span className={`block h-full rounded-full transition-all ${toFree === 0 ? "bg-emerald-600" : "bg-primary"}`} style={{ width: `${Math.min(1, (quote.subtotalPaise - quote.discountPaise) / FREE_DELIVERY_ABOVE_PAISE) * 100}%` }} />
+              </div>
+            </div>
             <ul className="grid gap-3">
               {items.map(({ product, quantity }) => {
                 const Icon = product.icon
                 const atMax = quantity >= Math.min(MAX_QUANTITY, product.stock)
                 return (
-                  <li key={product.id} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 rounded-xl border bg-card p-4 sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
-                    <Link href={`/products/${product.slug}`} className="grid aspect-square place-items-center rounded-lg bg-neutral-100">
+                  <li key={product.id} className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4 rounded-2xl border bg-card p-4 shadow-xs sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
+                    <Link href={`/products/${product.slug}`} className="grid aspect-square place-items-center rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80">
                       <Icon className="size-1/2 text-neutral-700" strokeWidth={1.25} aria-hidden="true" />
                       <span className="sr-only">{product.title}</span>
                     </Link>
@@ -82,15 +90,26 @@ export default function CartPage() {
               })}
             </ul>
           </section>
-          <aside aria-label="Order summary" className="grid gap-4 rounded-xl border bg-card p-5 lg:sticky lg:top-4">
+          <aside aria-label="Order summary" className="grid gap-4 rounded-2xl border bg-card p-5 shadow-sm lg:sticky lg:top-4">
             <h2 className="font-semibold">Order summary</h2>
             <CouponBox subtotalPaise={quote.subtotalPaise} appliedCode={couponCode} appliedOk={coupon !== null} />
             <SummaryRows q={quote} couponCode={coupon?.code} />
             {couponProblem && couponCode && <p className="sr-only">{couponProblem}</p>}
             <Link href="/checkout" className={buttonVariants({ size: "lg" }) + " h-11 w-full"}>Proceed to checkout</Link>
             <Link href="/products" className="text-center text-sm font-medium text-primary hover:underline">Continue shopping</Link>
+            <ul className="grid gap-2 border-t pt-4 text-xs text-muted-foreground">
+              <li className="flex items-center gap-2"><Lock className="size-3.5" aria-hidden="true" /> Secure, encrypted checkout</li>
+              <li className="flex items-center gap-2"><RotateCcw className="size-3.5" aria-hidden="true" /> {RETURN_WINDOW_DAYS}-day easy returns</li>
+              <li className="flex items-center gap-2"><FileText className="size-3.5" aria-hidden="true" /> GST invoice with every order</li>
+            </ul>
           </aside>
         </div>
+      )}
+      {hydrated && items.length > 0 && (
+        <section aria-labelledby="cart-reco">
+          <SectionHeader id="cart-reco" title="You may also like" href="/bestsellers" linkLabel="See bestsellers" />
+          <ProductRow products={topSelling.filter((p) => !items.some((l) => l.product.id === p.id))} label="Recommended products" />
+        </section>
       )}
     </main>
   )

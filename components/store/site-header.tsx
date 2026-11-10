@@ -17,7 +17,7 @@ const actions = [
 
 export function SiteHeader() {
   return (
-    <header className="bg-background">
+    <header className="bg-card shadow-sm">
       <UtilityBar />
       <div className="border-b">
         <div className="store-container grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 py-3 lg:gap-x-8">

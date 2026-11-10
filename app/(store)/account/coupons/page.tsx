@@ -1,3 +1,4 @@
+import { AccountTitle } from "@/components/account/account-title"
 import Link from "next/link"
 import { StatusBadge } from "@/components/admin/status-badge"
 import { CopyCodeButton } from "@/components/account/copy-code-button"
@@ -15,7 +16,7 @@ export default function AccountCouponsPage() {
   ]
   return (
     <>
-      <h1 className="store-title !text-3xl">My coupons</h1>
+      <AccountTitle title="My coupons" description="Codes you can use now, and ones that have ended." />
       {groups.map(({ title, list }) => (
         <section key={title} aria-labelledby={`g-${title}`} className="grid gap-3">
           <h2 id={`g-${title}`} className="section-title">{title}</h2>

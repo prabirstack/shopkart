@@ -7,6 +7,7 @@ import { CheckCircle2, Mail, PackageCheck, Truck } from "lucide-react"
 import { PurchaseEvent } from "@/features/analytics/purchase-event"
 import { buttonVariants } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { CheckoutSteps } from "@/components/store/checkout-steps"
 import { SummaryRows } from "@/components/store/order-summary"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { orderNumber, readOrder, type PaidOrder } from "@/features/orders/token"
@@ -85,6 +86,7 @@ export default function CheckoutSuccessPage() {
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-6 py-6">
       <StoreBreadcrumbs trail={[{ label: "Checkout", href: "/checkout" }, { label: "Order confirmed" }]} />
+      <CheckoutSteps current={3} />
       <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}><Confirmation /></Suspense>
     </main>
   )

@@ -1,3 +1,4 @@
+import { AccountTitle } from "@/components/account/account-title"
 import { MapPin, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { addresses } from "@/features/account/demo"
@@ -5,10 +6,7 @@ import { addresses } from "@/features/account/demo"
 export default function AccountAddressesPage() {
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="store-title !text-3xl">Saved addresses</h1>
-        <Button disabled title="Address management arrives with the account chapter"><Plus aria-hidden="true" /> Add address</Button>
-      </div>
+      <AccountTitle title="Saved addresses" description="Where we deliver your orders."><Button disabled title="Address management arrives with the account chapter"><Plus aria-hidden="true" /> Add address</Button></AccountTitle>
       <ul className="grid gap-4 md:grid-cols-2">
         {addresses.map((a) => (
           <li key={a.id} className={`rounded-xl border bg-card p-5 ${a.isDefault ? "ring-2 ring-primary/40" : ""}`}>

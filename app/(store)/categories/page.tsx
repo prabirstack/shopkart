@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { PageBanner } from "@/components/store/page-banner"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { catalog, categories } from "@/features/catalog/demo"
 
@@ -9,7 +10,7 @@ export default function CategoriesPage() {
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-4 py-6">
       <StoreBreadcrumbs trail={[{ label: "All categories" }]} />
-      <h1 className="store-title !text-3xl">All categories</h1>
+      <PageBanner title="All categories" intro="Everything we sell, grouped the way you shop." />
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {categories.map((c) => {
           const count = catalog.filter((p) => p.category === c.slug).length

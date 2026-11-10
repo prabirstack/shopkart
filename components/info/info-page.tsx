@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
+import { PageBanner } from "@/components/store/page-banner"
 
 /** Shared frame for help, company and legal pages: breadcrumbs, title, readable width. */
 export function InfoPage({ title, intro, trail, children, wide = false }: {
@@ -8,10 +9,7 @@ export function InfoPage({ title, intro, trail, children, wide = false }: {
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-6 py-6">
       <StoreBreadcrumbs trail={[...(trail ?? []), { label: title }]} />
-      <header className="grid max-w-3xl gap-2">
-        <h1 className="store-title !text-3xl">{title}</h1>
-        {intro && <p className="text-muted-foreground">{intro}</p>}
-      </header>
+      <PageBanner title={title} intro={intro} />
       <div className={`grid min-w-0 gap-6 ${wide ? "" : "max-w-3xl"}`}>{children}</div>
     </main>
   )

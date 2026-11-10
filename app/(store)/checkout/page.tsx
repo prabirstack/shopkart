@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { CreditCard, Info, Lock, ShoppingCart } from "lucide-react"
 import { Price } from "@/components/price"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
+import { CheckoutSteps } from "@/components/store/checkout-steps"
 import { SummaryRows } from "@/components/store/order-summary"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -75,6 +76,7 @@ export default function CheckoutPage() {
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-6 py-6">
       <StoreBreadcrumbs trail={[{ label: "Cart", href: "/cart" }, { label: "Checkout" }]} />
+      <CheckoutSteps current={1} />
       <h1 className="store-title !text-3xl">Checkout</h1>
       {!hydrated ? <Skeleton className="h-96 w-full rounded-xl" /> : items.length === 0 ? (
         <Empty className="rounded-xl border">

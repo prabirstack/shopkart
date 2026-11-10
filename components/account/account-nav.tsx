@@ -16,13 +16,13 @@ const items = [
 export function AccountNav() {
   const pathname = usePathname()
   return (
-    <nav aria-label="Account" className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:overflow-visible lg:px-0">
+    <nav aria-label="Account" className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:gap-1 lg:overflow-visible lg:px-3 lg:pb-3 lg:pt-4">
       {items.map(({ href, label, icon: Icon }) => {
         const active = href === "/account" ? pathname === href : pathname.startsWith(href)
         return (
           <Link key={href} href={href} aria-current={active ? "page" : undefined}
-            className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium ${active ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
-            <Icon className="size-4" aria-hidden="true" /> {label}
+            className={`group flex items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-primary/10 text-primary" : "text-foreground/80 hover:bg-muted hover:text-foreground"}`}>
+            <span className={`grid size-8 place-items-center rounded-lg ${active ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted group-hover:bg-background"}`}><Icon className="size-4" aria-hidden="true" /></span>{label}
           </Link>
         )
       })}

@@ -9,7 +9,7 @@ export function ProductCard({ product }: { product: Product }) {
   const off = discountPercent(product)
   const Icon = product.icon
   return (
-    <article className="relative flex h-full flex-col rounded-xl border bg-card p-3 transition-shadow hover:shadow-md">
+    <article className="group/card relative flex h-full flex-col rounded-2xl border bg-card p-3 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
       {off > 0 && (
         <span className="absolute left-3 top-3 z-10 rounded-md bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">
           -{off}%
@@ -22,8 +22,8 @@ export function ProductCard({ product }: { product: Product }) {
       )}
       <div className="absolute right-3 top-3 z-10"><WishlistButton productId={product.id} title={product.title} /></div>
       <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col gap-2 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
-        <div className={`grid aspect-square place-items-center rounded-lg ${product.tint} ${product.stock === 0 ? "opacity-50" : ""}`}>
-          <Icon className="size-1/3 text-neutral-700" strokeWidth={1.25} aria-hidden="true" />
+        <div className={`grid aspect-square place-items-center rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80 ${product.stock === 0 ? "opacity-50" : ""}`}>
+          <Icon className="size-1/3 text-neutral-700 transition-transform duration-300 group-hover/card:scale-110" strokeWidth={1.25} aria-hidden="true" />
         </div>
         <p className="text-xs font-medium text-muted-foreground">{product.brand}</p>
         <h3 className="product-title -mt-1 line-clamp-2 min-h-[2.8em]">{product.title}</h3>

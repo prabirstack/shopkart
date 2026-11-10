@@ -1,5 +1,7 @@
 import Link from "next/link"
-import { Download, Info } from "lucide-react"
+import { CreditCard, Download, FileText, Info, RotateCcw } from "lucide-react"
+import { AccountTitle } from "@/components/account/account-title"
+import { StatTile } from "@/components/account/stat-tile"
 import { StatusBadge } from "@/components/admin/status-badge"
 import { SimpleTable } from "@/components/admin/simple-table"
 import { buttonVariants } from "@/components/ui/button"
@@ -13,11 +15,11 @@ export default function BillingHistoryPage() {
   const refunded = orders.filter((o) => o.status === "refunded").reduce((s, o) => s + o.totals.totalPaise, 0)
   return (
     <>
-      <h1 className="store-title !text-3xl">Billing history</h1>
+      <AccountTitle title="Billing history" description="Payments, refunds and GST tax invoices." />
       <ul className="grid gap-3 sm:grid-cols-3">
-        {[["Total paid", rupees(paid)], ["Refunded", rupees(refunded)], ["Invoices", String(orders.length)]].map(([l, v]) => (
-          <li key={l} className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">{l}</p><p className="price mt-1 text-2xl font-bold">{v}</p></li>
-        ))}
+        <li><StatTile label="Total paid" value={rupees(paid)} icon={CreditCard} tone="green" /></li>
+        <li><StatTile label="Refunded" value={rupees(refunded)} icon={RotateCcw} tone="rose" /></li>
+        <li><StatTile label="Invoices" value={String(orders.length)} icon={FileText} tone="blue" /></li>
       </ul>
       <SimpleTable rows={orders} rowKey={(o) => o.invoiceNumber} caption="Tax invoices and payments, newest first." empty="No invoices yet."
         columns={[

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { PageBanner } from "@/components/store/page-banner"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { collections } from "@/features/catalog/demo"
 
@@ -9,7 +10,7 @@ export default function CollectionsPage() {
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-4 py-6">
       <StoreBreadcrumbs trail={[{ label: "Collections" }]} />
-      <h1 className="store-title !text-3xl">Buyer&apos;s Choice collections</h1>
+      <PageBanner title="Buyer's Choice collections" intro="Handpicked favourites loved by our customers." />
       <ul className="grid gap-3 sm:grid-cols-2">
         {collections.map(({ title, note, href, icon: Icon, tint }) => (
           <li key={title}>

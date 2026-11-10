@@ -20,10 +20,10 @@ const dates = ["02 Nov 2026", "28 Oct 2026", "19 Oct 2026", "07 Oct 2026", "30 S
 /** Deterministic sample reviews so server and client always render the same text. */
 export function reviewsFor(productId: string, ratingAvg = 4.5): Review[] {
   const seed = [...productId].reduce((s, c) => s + c.charCodeAt(0), 0)
-  return Array.from({ length: 4 }, (_, i) => {
+  return Array.from({ length: 6 }, (_, i) => {
     const k = (seed + i * 3) % 6
     const rating = i === 2 ? 4 : ratingAvg >= 4.5 || i < 2 ? 5 : 4
-    return { id: `${productId}-r${i}`, name: people[(seed + i) % people.length], rating, title: titles[k], body: bodies[(k + i) % bodies.length], date: dates[(k + i) % dates.length], verified: i !== 3 }
+    return { id: `${productId}-r${i}`, name: people[(seed + i) % people.length], rating, title: titles[k], body: bodies[(k + i) % bodies.length], date: dates[(k + i) % dates.length], verified: i % 3 !== 2 }
   })
 }
 
@@ -40,4 +40,7 @@ export const testimonials: Testimonial[] = [
   { id: "tm1", name: "Priya Sharma", city: "Mumbai", rating: 5, quote: "Ordered on Monday evening and had it by Wednesday. The packaging was neat and the invoice made my GST claim easy." },
   { id: "tm2", name: "Rahul Verma", city: "Bengaluru", rating: 5, quote: "Prices were better than the other sites I compared, and the return process was exactly as described. No arguments." },
   { id: "tm3", name: "Sneha Kulkarni", city: "Pune", rating: 4, quote: "Clean site, clear delivery dates and quick support replies. I now buy all my kitchen appliances here." },
+  { id: "tm4", name: "Arjun Nair", city: "Kochi", rating: 5, quote: "The earbuds arrived well packed, and the coupon applied exactly as promised. Checkout took under two minutes." },
+  { id: "tm5", name: "Kavya Reddy", city: "Hyderabad", rating: 5, quote: "I liked seeing the GST split on the invoice. Returns were simple when I needed a different size." },
+  { id: "tm6", name: "Imran Sheikh", city: "Delhi", rating: 4, quote: "Good prices and honest delivery dates. Support answered my question on the same day." }
 ]
