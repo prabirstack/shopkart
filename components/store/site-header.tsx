@@ -4,6 +4,7 @@ import { CartCount } from "@/features/cart/cart-count"
 import { WishlistCount } from "@/features/wishlist/wishlist-count"
 import { MobileNavigation } from "./mobile-navigation"
 import { SearchBox } from "./search-box"
+import { StickyHeader } from "./sticky-header"
 import { UtilityBar } from "./utility-bar"
 
 const navLinks = [["New Arrivals", "/new-arrivals"], ["Bestsellers", "/bestsellers"], ["Top Selling", "/top-selling"], ["Brands", "/brands"], ["Gift Cards", "/gift-cards"], ["Sell on ShopKart", "/sell"]]
@@ -17,6 +18,7 @@ const actions = [
 
 export function SiteHeader() {
   return (
+    <StickyHeader>
     <header className="bg-card shadow-sm">
       <UtilityBar />
       <div className="border-b">
@@ -67,5 +69,6 @@ export function SiteHeader() {
         </div>
       </nav>
     </header>
+    </StickyHeader>
   )
 }
