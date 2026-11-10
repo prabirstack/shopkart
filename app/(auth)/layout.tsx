@@ -10,15 +10,15 @@ const facts = [
 ] as const
 
 /**
- * Sign-in, sign-up and password pages: a quiet two-column screen. A dark brand panel with a hairline grid on the
+ * Sign-in, sign-up and password pages: a quiet two-column screen. A dark brand panel with diagonal hairlines on the
  * left (hidden on small screens), the form on the right. No storefront header, menus, cart or footer.
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-neutral-950 p-10 text-neutral-300 lg:flex">
-        {/* Hairline grid, fading out toward the bottom. Pure CSS lines: no blur, no gradient fills. */}
-        <span aria-hidden="true" className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgb(255_255_255/0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.06)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+        {/* Diagonal hairlines at 45 degrees, fading out toward the bottom. Pure CSS lines: no blur, no gradient fills. */}
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 [background-image:repeating-linear-gradient(45deg,rgb(255_255_255/0.07)_0,rgb(255_255_255/0.07)_1px,transparent_1px,transparent_18px)] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
         <Link href="/" className="relative flex w-fit items-center gap-2.5 text-white focus-visible:ring-[3px] focus-visible:ring-white/40" aria-label={`${SITE_NAME} home`}>
           <span className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground"><ShoppingBag className="size-4" aria-hidden="true" /></span>
           <span className="text-lg font-semibold tracking-tight">{SITE_NAME}</span>
