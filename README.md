@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ShopKart
 
-## Getting Started
+An e-commerce app built with Next.js, Drizzle ORM and Postgres.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, Turbopack) and React 19
+- Tailwind CSS 4 and shadcn/ui
+- Drizzle ORM with PostgreSQL (`pg`)
+- Razorpay for payments
+
+## Getting started
+
+Requires Node.js, pnpm and Docker.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+
+# 1. Start Postgres (host port 5433)
+docker compose up -d --wait
+
+# 2. Configure the environment
+echo 'DATABASE_URL=postgres://shopkart:shopkart@localhost:5433/shopkart' > .env
+
+# 3. Create the tables and load sample data
+pnpm db:migrate
+pnpm db:seed
+
+# 4. Run the app
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app runs at http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The seed script adds 4 categories, 10 products and a local admin user
+(`admin@shopkart.local`, password `admin12345`, or set `SEED_ADMIN_PASSWORD`).
+It is safe to re-run and refuses to run when `NODE_ENV=production`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Command            | What it does                                |
+| ------------------ | ------------------------------------------- |
+| `pnpm dev`         | Start the dev server                        |
+| `pnpm build`       | Build for production                        |
+| `pnpm start`       | Run the production build                    |
+| `pnpm lint`        | Run ESLint                                  |
+| `pnpm typecheck`   | Generate Next types and run `tsc`           |
+| `pnpm test`        | Run unit tests (Vitest)                     |
+| `pnpm test:e2e`    | Run end-to-end tests (Playwright)           |
+| `pnpm db:generate` | Generate a SQL migration from the schema    |
+| `pnpm db:migrate`  | Apply migrations to the database            |
+| `pnpm db:studio`   | Open Drizzle Studio                         |
+| `pnpm db:seed`     | Load sample data                            |
 
-To learn more about Next.js, take a look at the following resources:
+## Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Schema: `lib/db/schema.ts` (users, categories, products, orders, order_items)
+- Client: `lib/db/index.ts` (server-only)
+- Migrations: `drizzle/`
+- Money is stored as integer paise (₹499 is `49900`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+After changing the schema, run `pnpm db:generate` then `pnpm db:migrate`, and
+commit the new files in `drizzle/`.
