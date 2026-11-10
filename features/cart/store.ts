@@ -1,6 +1,7 @@
 "use client"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
+import { MAX_QUANTITY } from "@/lib/store-config"
 
 type CartState = {
   /** productId -> quantity. Only IDs and counts live in the browser, never prices. */
@@ -14,7 +15,7 @@ type CartState = {
   setCoupon: (code: string | null) => void
 }
 
-export const MAX_QUANTITY = 10
+export { MAX_QUANTITY }
 
 export const useCart = create<CartState>()(
   persist(

@@ -22,8 +22,8 @@ export function SimpleTable<T>({ rows, columns, caption, empty, rowKey }: {
         <TableCaption>{caption}</TableCaption>
         <TableHeader>
           <TableRow>
-            {columns.map((c) => (
-              <TableHead key={c.header} className={c.align === "right" ? "text-right" : undefined}>{c.header}</TableHead>
+            {columns.map((c, i) => (
+              <TableHead key={`${i}-${c.header}`} className={c.align === "right" ? "text-right" : undefined}>{c.header}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -32,8 +32,8 @@ export function SimpleTable<T>({ rows, columns, caption, empty, rowKey }: {
             <TableRow><TableCell colSpan={columns.length} className="py-10 text-center">{empty}</TableCell></TableRow>
           ) : rows.map((row) => (
             <TableRow key={rowKey(row)}>
-              {columns.map((c) => (
-                <TableCell key={c.header} className={`${c.align === "right" ? "price text-right" : ""} ${c.className ?? ""}`}>{c.cell(row)}</TableCell>
+              {columns.map((c, i) => (
+                <TableCell key={`${i}-${c.header}`} className={`${c.align === "right" ? "price text-right" : ""} ${c.className ?? ""}`}>{c.cell(row)}</TableCell>
               ))}
             </TableRow>
           ))}

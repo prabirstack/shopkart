@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation"
 import { categories } from "@/features/catalog/demo"
 
+export const instant = false
+
 export function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }))
 }

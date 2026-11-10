@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { Suspense } from "react"
 import { Check, RotateCcw, ShieldCheck, Truck } from "lucide-react"
 import { Price } from "@/components/price"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
@@ -8,7 +7,6 @@ import { ReviewsSection } from "@/components/store/reviews-section"
 import { ShareButtons } from "@/components/store/share-buttons"
 import { Stars } from "@/components/store/stars"
 import { ProductCard } from "@/components/store/product-card"
-import { Skeleton } from "@/components/ui/skeleton"
 import { PurchasePanel } from "@/features/cart/purchase-panel"
 import { ProductGallery } from "@/features/catalog/product-gallery"
 import { WishlistButton } from "@/features/wishlist/wishlist-button"
@@ -25,9 +23,7 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
   return { title: product ? `${product.title} | ShopKart` : "Product not found" }
 }
 
-async function ProductDetail({ params }: { params: PageProps<"/products/[slug]">["params"] }) {
-  const product = productBySlug((await params).slug)
-  if (!product) notFound()
+function ProductDetail({ product }: { product: NonNullable<ReturnType<typeof productBySlug>> }) {
   const category = bySlug(product.category)
   const off = discountPercent(product)
   const related = catalog.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
@@ -104,10 +100,11 @@ async function ProductDetail({ params }: { params: PageProps<"/products/[slug]">
   )
 }
 
-export default function ProductPage({ params }: PageProps<"/products/[slug]">) {
-  return (
-    <Suspense fallback={<main className="store-container py-6"><Skeleton className="h-[40rem] w-full rounded-2xl" /></main>}>
-      <ProductDetail params={params} />
-    </Suspense>
-  )
+// Allowed to block so unknown slugs return a real 404 (good for SEO) instead of a streamed 200.
+export const instant = false
+
+export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
+  const product = productBySlug((await params).slug)
+  if (!product) notFound()
+  return <ProductDetail product={product} />
 }
