@@ -1,18 +1,16 @@
 "use client"
 import { useState } from "react"
 import { Check, GitCompareArrows } from "lucide-react"
-import { productById } from "@/features/catalog/demo"
 import { track } from "@/features/analytics/track"
 import { useCompareHydrated } from "./hooks"
 import { MAX_COMPARE, useCompare } from "./store"
 
 /** Adds or removes a product from the compare list. Max four, with a clear message when full. */
-export function CompareToggle({ productId, variant = "icon" }: { productId: string; variant?: "icon" | "button" }) {
+export function CompareToggle({ productId, title = "product", variant = "icon" }: { productId: string; /** Product name, used in the button label for screen readers. */ title?: string; variant?: "icon" | "button" }) {
   const ids = useCompare((s) => s.ids)
   const toggle = useCompare((s) => s.toggle)
   const hydrated = useCompareHydrated()
   const [note, setNote] = useState("")
-  const title = productById(productId)?.title ?? "product"
   const on = hydrated && ids.includes(productId)
   const onClick = () => {
     const result = toggle(productId)

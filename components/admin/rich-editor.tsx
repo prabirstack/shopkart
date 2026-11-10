@@ -4,7 +4,6 @@ import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/r
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import { Bold, Heading2, Heading3, Italic, Link2, List, ListOrdered, Minus, Quote, Redo2, Strikethrough, Undo2, Unlink } from "lucide-react"
-import { catalog } from "@/features/catalog/demo"
 import type { DocNode } from "@/features/articles/types"
 
 const SAFE_LINK = /^(\/(?!\/)|#|https?:\/\/|mailto:|tel:)/i
@@ -22,7 +21,7 @@ function Btn({ label, active, disabled, onClick, children }: { label: string; ac
  * its own renderer, so no raw HTML is ever stored or injected. The editor shares the
  * `.article-body` styles with the storefront, so what you see is what readers get.
  */
-export function RichEditor({ value, onChange, invalid }: { value: DocNode; onChange: (doc: DocNode) => void; invalid?: boolean }) {
+export function RichEditor({ value, onChange, invalid, products }: { value: DocNode; onChange: (doc: DocNode) => void; invalid?: boolean; /** Products the "Link a product" picker offers. */ products: { slug: string; title: string }[] }) {
   const editor = useEditor({
     immediatelyRender: false, // avoids a server/client mismatch in Next.js
     extensions: [
@@ -35,10 +34,10 @@ export function RichEditor({ value, onChange, invalid }: { value: DocNode; onCha
   })
 
   if (!editor) return <div className="h-[28rem] animate-pulse rounded-xl border bg-muted/40" aria-busy="true" aria-label="Loading editor" />
-  return <EditorShell editor={editor} invalid={invalid} />
+  return <EditorShell products={products} editor={editor} invalid={invalid} />
 }
 
-function EditorShell({ editor, invalid }: { editor: Editor; invalid?: boolean }) {
+function EditorShell({ editor, invalid, products }: { editor: Editor; invalid?: boolean; products: { slug: string; title: string }[] }) {
   const [linkOpen, setLinkOpen] = useState(false)
   const [href, setHref] = useState("")
   const [linkError, setLinkError] = useState("")
@@ -83,9 +82,9 @@ function EditorShell({ editor, invalid }: { editor: Editor; invalid?: boolean })
         <Btn label="Remove link" disabled={!s.link} onClick={() => run.extendMarkRange("link").unsetLink().run()}><Unlink className="size-4" aria-hidden="true" /></Btn>
         <label className="ml-auto flex items-center gap-2 pl-2 text-xs text-muted-foreground">
           <span className="sr-only sm:not-sr-only">Link a product</span>
-          <select aria-label="Link a product" value="" onChange={(e) => { const p = catalog.find((x) => x.slug === e.target.value); if (!p) return; const mark = { type: "link", attrs: { href: `/products/${p.slug}` } }
+          <select aria-label="Link a product" value="" onChange={(e) => { const p = products.find((x) => x.slug === e.target.value); if (!p) return; const mark = { type: "link", attrs: { href: `/products/${p.slug}` } }
             if (s.selectionEmpty) editor.chain().focus().insertContent({ type: "text", text: p.title, marks: [mark] }).run(); else editor.chain().focus().extendMarkRange("link").setLink({ href: `/products/${p.slug}` }).run() }}
-            className="h-8 max-w-44 rounded-md border bg-background px-2 text-xs"><option value="">Choose…</option>{catalog.map((p) => <option key={p.id} value={p.slug}>{p.title}</option>)}</select>
+            className="h-8 max-w-44 rounded-md border bg-background px-2 text-xs"><option value="">Choose…</option>{products.map((p) => <option key={p.slug} value={p.slug}>{p.title}</option>)}</select>
         </label>
       </div>
       {linkOpen && (

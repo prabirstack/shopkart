@@ -3,13 +3,11 @@ import Link from "next/link"
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { SectionHeader } from "@/components/store/section-header"
-import { usePublishedArticles } from "@/features/articles/store"
 import { ARTICLE_CATEGORIES, type Article, type ArticleCategory } from "@/features/articles/types"
 import { ArticleCard } from "./article-card"
 
-/** Full listing with category filters. `initial` is the server-rendered list shown before saved data loads. */
-export function ArticleList({ initial }: { initial: Article[] }) {
-  const all = usePublishedArticles(initial)
+/** Full listing with category filters. Receives the published articles from the server. */
+export function ArticleList({ articles: all }: { articles: Article[] }) {
   const [category, setCategory] = useState<"all" | ArticleCategory>("all")
   const list = all.filter((a) => category === "all" || a.category === category)
   const [first, ...rest] = list
@@ -34,8 +32,8 @@ export function ArticleList({ initial }: { initial: Article[] }) {
 }
 
 /** Compact strip for the homepage. */
-export function LatestGuides({ initial, limit = 3 }: { initial: Article[]; limit?: number }) {
-  const list = usePublishedArticles(initial).slice(0, limit)
+export function LatestGuides({ initial, limit = 3 }: { /** The published articles, newest first. */ initial: Article[]; limit?: number }) {
+  const list = initial.slice(0, limit)
   return (
     <section aria-labelledby="guides-heading">
       <SectionHeader id="guides-heading" title="Buying guides & reviews" href="/news" linkLabel="All articles" />
@@ -45,8 +43,8 @@ export function LatestGuides({ initial, limit = 3 }: { initial: Article[]; limit
 }
 
 /** Articles that feature a product, for the product page. Renders nothing when there are none. */
-export function RelatedArticles({ productId, initial }: { productId: string; initial: Article[] }) {
-  const list = usePublishedArticles(initial).filter((a) => a.productIds.includes(productId)).slice(0, 3)
+export function RelatedArticles({ productId, articles }: { productId: string; articles: Article[] }) {
+  const list = articles.filter((a) => a.productIds.includes(productId)).slice(0, 3)
   if (list.length === 0) return null
   return (
     <section aria-labelledby="rel-articles">

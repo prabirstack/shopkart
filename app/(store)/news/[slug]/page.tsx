@@ -1,30 +1,30 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 import { ArticleView } from "@/components/articles/article-view"
 import { JsonLd } from "@/components/json-ld"
-import { publishedSeed, seedBySlug } from "@/features/articles/seed"
+import { getArticle, getPublishedArticles } from "@/features/articles/data"
+import { getProductsByIds } from "@/features/catalog/data"
 import { absoluteUrl, SITE_NAME } from "@/lib/site"
 
-// Articles created in the admin only exist in the browser, so unknown slugs are resolved on the client.
+// Allowed to block so an unknown or unpublished slug returns a real 404 instead of a streamed 200.
 export const instant = false
 
-export function generateStaticParams() {
-  return publishedSeed.map((a) => ({ slug: a.slug }))
-}
-
 export async function generateMetadata({ params }: PageProps<"/news/[slug]">): Promise<Metadata> {
-  const a = seedBySlug((await params).slug)
-  if (!a || a.status !== "published") return { title: "Article", robots: { index: false } }
+  const a = await getArticle((await params).slug)
+  if (!a) return { title: "Article", robots: { index: false } }
   return { title: a.seoTitle || a.title, description: a.seoDescription || a.excerpt, alternates: { canonical: `/news/${a.slug}` }, openGraph: { type: "article", title: a.title, description: a.excerpt, publishedTime: a.publishedAt, modifiedTime: a.updatedAt, authors: [a.author] } }
 }
 
 export default async function ArticlePage({ params }: PageProps<"/news/[slug]">) {
-  const { slug } = await params
-  const a = seedBySlug(slug)
-  const initial = a && a.status === "published" ? a : null
+  const article = await getArticle((await params).slug)
+  if (!article) notFound()
+  const [all, found] = await Promise.all([getPublishedArticles(), article.productIds.length ? getProductsByIds(article.productIds) : Promise.resolve([])])
+  const products = article.productIds.flatMap((id) => found.find((p) => p.id === id) ?? []) // keep the order the editor chose
+  const related = all.filter((a) => a.id !== article.id && (a.category === article.category || a.productIds.some((id) => article.productIds.includes(id)))).slice(0, 3)
   return (
     <>
-      {initial && <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: initial.title, description: initial.excerpt, datePublished: initial.publishedAt, dateModified: initial.updatedAt, author: { "@type": "Organization", name: initial.author }, publisher: { "@type": "Organization", name: SITE_NAME }, mainEntityOfPage: absoluteUrl(`/news/${initial.slug}`) }} />}
-      <ArticleView slug={slug} initial={initial} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: article.title, description: article.excerpt, datePublished: article.publishedAt, dateModified: article.updatedAt, author: { "@type": "Organization", name: article.author }, publisher: { "@type": "Organization", name: SITE_NAME }, mainEntityOfPage: absoluteUrl(`/news/${article.slug}`) }} />
+      <ArticleView article={article} products={products} related={related} />
     </>
   )
 }

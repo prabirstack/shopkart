@@ -1,15 +1,13 @@
 import { ImageResponse } from "next/og"
-import { catalog, productBySlug } from "@/features/catalog/demo"
+import { getProduct } from "@/features/catalog/data"
 import { formatMoney } from "@/lib/money"
 
 /**
  * Stable image URL (/og/product/<slug>) used by both Open Graph tags and JSON-LD.
  * File-based opengraph-image routes get a hashed URL we can't reference elsewhere.
  */
-export function generateStaticParams() { return catalog.map((p) => ({ slug: p.slug })) }
-
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const p = productBySlug((await params).slug)
+  const p = await getProduct((await params).slug)
   if (!p) return new Response("Not found", { status: 404 })
   return new ImageResponse(
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, background: "#f5f5f5", color: "#111827" }}>

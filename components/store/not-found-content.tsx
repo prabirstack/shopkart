@@ -1,9 +1,10 @@
 import Link from "next/link"
 import { ArrowRight, Search } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
-import { categories } from "@/features/catalog/demo"
+import { getCategories } from "@/features/catalog/data"
 
-export function NotFoundContent() {
+export async function NotFoundContent() {
+  const categories = (await getCategories()).filter((c) => c.count > 0)
   return (
     <main className="relative isolate grid place-items-center overflow-hidden px-4 py-16 sm:py-24">
       <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-60 [background-image:radial-gradient(circle_at_1px_1px,oklch(0.528_0.202_21.4/0.16)_1px,transparent_0)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />

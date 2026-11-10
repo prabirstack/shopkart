@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next"
-import { publishedSeed } from "@/features/articles/seed"
-import { catalog, categories } from "@/features/catalog/demo"
+import { getPublishedArticles } from "@/features/articles/data"
+import { getCategories, getSitemapProducts } from "@/features/catalog/data"
 import { CONTENT_UPDATED, absoluteUrl } from "@/lib/site"
 
 /** Only pages worth indexing: no cart, checkout, account, admin, login or filtered URLs. */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [products, categories, articles] = await Promise.all([getSitemapProducts(), getCategories(), getPublishedArticles()])
   const page = (path: string, priority: number, changeFrequency: "daily" | "weekly" | "monthly") =>
     ({ url: absoluteUrl(path), lastModified: CONTENT_UPDATED, changeFrequency, priority })
   return [
@@ -32,9 +33,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/terms", 0.2, "monthly"),
     page("/privacy", 0.2, "monthly"),
     page("/news", 0.7, "weekly"),
-    ...publishedSeed.map((a) => page(`/news/${a.slug}`, 0.6, "monthly")),
+    ...articles.map((a) => ({ url: absoluteUrl(`/news/${a.slug}`), lastModified: a.updatedAt, changeFrequency: "monthly" as const, priority: 0.6 })),
     page("/cookies", 0.2, "monthly"),
     ...categories.map((c) => page(`/products?category=${c.slug}`, 0.8, "weekly")),
-    ...catalog.map((p) => page(`/products/${p.slug}`, 0.8, "weekly")),
+    ...products.map((p) => ({ url: absoluteUrl(`/products/${p.slug}`), lastModified: p.updatedAt, changeFrequency: "weekly" as const, priority: 0.8 })),
   ]
 }

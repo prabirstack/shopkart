@@ -3,13 +3,13 @@ import { Countdown } from "@/components/store/countdown"
 import { PageBanner } from "@/components/store/page-banner"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { ProductCard } from "@/components/store/product-card"
-import { catalog, discountPercent } from "@/features/catalog/demo"
+import { getDeals } from "@/features/catalog/data"
 import { DEALS_END_AT } from "@/features/promotions/demo"
 
 export const metadata: Metadata = { title: "Today's deals", description: "Today's biggest discounts on electronics, fashion and home essentials. Limited-time offers with free delivery above ₹699.", alternates: { canonical: "/deals" } }
 
-export default function DealsPage() {
-  const deals = catalog.filter((p) => discountPercent(p) > 0).sort((a, b) => discountPercent(b) - discountPercent(a))
+export default async function DealsPage() {
+  const deals = await getDeals(24) // already biggest discount first
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-4 py-6">
       <StoreBreadcrumbs trail={[{ label: "Today's deals" }]} />

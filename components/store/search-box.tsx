@@ -1,10 +1,10 @@
 "use client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useId, useMemo, useRef, useState } from "react"
+import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { Clock, Search, Tag, TrendingUp } from "lucide-react"
 import { trackSearch } from "@/features/analytics/events"
-import { suggest } from "@/features/catalog/search"
+import type { Product } from "@/features/catalog/types"
 import { formatMoney } from "@/lib/money"
 
 const RECENT_KEY = "shopkart-recent-searches"
@@ -14,6 +14,9 @@ const readRecents = (): string[] => {
 const saveRecent = (q: string) => {
   try { localStorage.setItem(RECENT_KEY, JSON.stringify([q, ...readRecents().filter((r) => r !== q)].slice(0, 5))) } catch { /* storage blocked */ }
 }
+
+type Suggestions = { products: Product[]; categories: { slug: string; name: string }[]; brands: string[] }
+const NONE: Suggestions = { products: [], categories: [], brands: [] }
 
 type Option = { id: string; href: string; label: string; hint?: string; kind: "recent" | "product" | "category" | "brand" | "query" }
 const iconFor = { recent: Clock, product: Search, category: Tag, brand: TrendingUp, query: Search } as const
@@ -27,17 +30,33 @@ export function SearchBox() {
   const [active, setActive] = useState(-1)
   const [recents, setRecents] = useState<string[]>([])
 
+  const [found, setFound] = useState<Suggestions>(NONE)
+  const term = value.trim()
+
+  // Autocomplete from the API: wait for a pause in typing, and cancel the request when the text changes again.
+  useEffect(() => {
+    if (term.length < 2) return
+    const ctrl = new AbortController()
+    const timer = window.setTimeout(() => {
+      fetch(`/api/v1/search/suggest?q=${encodeURIComponent(term)}`, { signal: ctrl.signal })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((body: { data?: Suggestions } | null) => { if (body?.data) setFound(body.data) })
+        .catch(() => undefined) // aborted or offline: keep what is showing
+    }, 200)
+    return () => { window.clearTimeout(timer); ctrl.abort() }
+  }, [term])
+
   const options: Option[] = useMemo(() => {
-    const q = value.trim()
+    const q = term
     if (q === "") return recents.map((r) => ({ id: `r-${r}`, href: `/products?q=${encodeURIComponent(r)}`, label: r, kind: "recent" as const }))
-    const s = suggest(q)
+    const s = q.length < 2 ? NONE : found
     return [
       ...s.products.map((p) => ({ id: `p-${p.id}`, href: `/products/${p.slug}`, label: p.title, hint: formatMoney(p.pricePaise, undefined, undefined, { hideZeroDecimals: true }), kind: "product" as const })),
       ...s.categories.map((c) => ({ id: `c-${c.slug}`, href: `/products?category=${c.slug}`, label: c.name, hint: "Category", kind: "category" as const })),
       ...s.brands.map((b) => ({ id: `b-${b}`, href: `/products?brand=${encodeURIComponent(b)}`, label: b, hint: "Brand", kind: "brand" as const })),
       { id: "q", href: `/products?q=${encodeURIComponent(q)}`, label: `Search for “${q}”`, kind: "query" as const },
     ]
-  }, [value, recents])
+  }, [term, found, recents])
 
   const go = (o: Option) => {
     if (o.kind === "recent" || o.kind === "query") { const term = o.kind === "query" ? value.trim() : o.label; saveRecent(term); trackSearch(term) }

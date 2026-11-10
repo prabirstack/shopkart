@@ -1,6 +1,7 @@
 "use client"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
+import { isUuid } from "@/features/catalog/types"
 import { MAX_QUANTITY } from "@/lib/store-config"
 
 type CartState = {
@@ -36,7 +37,14 @@ export const useCart = create<CartState>()(
       clear: () => set({ lines: {}, coupon: null }),
     }),
     // skipHydration: server HTML and first client render must match; we rehydrate after mount.
-    { name: "shopkart-cart", storage: createJSONStorage(() => localStorage), skipHydration: true },
+    {
+      name: "shopkart-cart", storage: createJSONStorage(() => localStorage), skipHydration: true, version: 2,
+      // Version 1 held the old sample catalog's ids ("d1", "t2"...). Real products have uuid ids, so drop anything else.
+      migrate: (state) => {
+        const s = (state ?? {}) as { lines?: Record<string, number>; coupon?: string | null }
+        return { lines: Object.fromEntries(Object.entries(s.lines ?? {}).filter(([id]) => isUuid(id))), coupon: s.coupon ?? null } as never
+      },
+    },
   ),
 )
 

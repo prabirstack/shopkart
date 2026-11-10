@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { Suspense } from "react"
 import { BadgeCheck, Check, CreditCard, FileText, RotateCcw, ShieldCheck, Truck } from "lucide-react"
 import { FaqAccordion } from "@/components/info/faq-accordion"
 import { RelatedArticles } from "@/components/articles/article-list"
-import { publishedSeed } from "@/features/articles/seed"
+import { getPublishedArticles } from "@/features/articles/data"
+import type { Article } from "@/features/articles/types"
 import { JsonLd } from "@/components/json-ld"
 import { Price } from "@/components/price"
 import { OffersBox } from "@/components/store/offers-box"
@@ -14,9 +16,11 @@ import { ShareButtons } from "@/components/store/share-buttons"
 import { Stars } from "@/components/store/stars"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RecentlyViewedTracker } from "@/features/catalog/recently-viewed"
 import { ViewItemEvent } from "@/features/analytics/view-events"
 import { PurchasePanel } from "@/features/cart/purchase-panel"
-import { bySlug, catalog, discountPercent, productBySlug, topSelling, type Product } from "@/features/catalog/demo"
+import { getCategories, getProduct, getRelated } from "@/features/catalog/data"
+import { discountPercent, type Product } from "@/features/catalog/types"
 import { PincodeCheck } from "@/features/catalog/pincode-check"
 import { ProductGallery } from "@/features/catalog/product-gallery"
 import { faqsFor, highlightsFor, specGroups, warrantyFor } from "@/features/catalog/specs"
@@ -28,12 +32,8 @@ import { FREE_DELIVERY_ABOVE_PAISE, RETURN_WINDOW_DAYS } from "@/lib/store-confi
 
 const rupees = (p: number) => formatMoney(p, undefined, undefined, { hideZeroDecimals: true })
 
-export function generateStaticParams() {
-  return catalog.map((p) => ({ slug: p.slug }))
-}
-
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
-  const product = productBySlug((await params).slug)
+  const product = await getProduct((await params).slug)
   if (!product) return { title: "Product not found" }
   const description = `${product.description} Buy ${product.brand} ${product.title} at ${rupees(product.pricePaise)} with free delivery above ${rupees(FREE_DELIVERY_ABOVE_PAISE)}.`
   return {
@@ -48,13 +48,9 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
 const sections = [["#details", "Product details"], ["#reviews", "Reviews"], ["#faq", "Questions"]]
 const tabTrigger = "h-auto flex-none rounded-none border-0 px-5 py-3.5 text-[0.95rem] text-muted-foreground hover:text-foreground data-active:bg-transparent data-active:font-semibold data-active:text-primary data-active:shadow-none after:!bottom-0 after:h-[3px] after:rounded-full after:bg-primary"
 
-function ProductDetail({ product }: { product: Product }) {
-  const category = bySlug(product.category)
+function ProductDetail({ product, related, articles, category }: { product: Product; related: Product[]; articles: Article[]; category: { slug: string; name: string } }) {
   const off = discountPercent(product)
   const saving = product.comparePaise ? product.comparePaise - product.pricePaise : 0
-  // Same category first, then top sellers, so the row is never half empty.
-  const sameCategory = catalog.filter((p) => p.category === product.category && p.id !== product.id)
-  const related = [...sameCategory, ...topSelling.filter((p) => p.id !== product.id && !sameCategory.includes(p))].slice(0, 5)
   const faqs = faqsFor(product)
   const stockNote = product.stock === 0 ? { text: "Out of stock", cls: "text-destructive" }
     : product.stock <= 10 ? { text: `Only ${product.stock} left in stock`, cls: "text-amber-700" }
@@ -71,11 +67,12 @@ function ProductDetail({ product }: { product: Product }) {
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-8 py-6">
       <JsonLd data={[productLd(product), faqLd, breadcrumbLd([{ name: "Home", path: "/" }, { name: "Shop", path: "/products" }, { name: category.name, path: `/products?category=${category.slug}` }, { name: product.title, path: `/products/${product.slug}` }])]} />
       <ViewItemEvent productId={product.id} />
+      <RecentlyViewedTracker productId={product.id} />
       <StoreBreadcrumbs trail={[{ label: "Shop", href: "/products" }, { label: category.name, href: `/products?category=${category.slug}` }, { label: product.title }]} />
 
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="grid min-w-0 content-start gap-5">
-          <ProductGallery productId={product.id} badge={off > 0 ? `-${off}%` : undefined} />
+          <ProductGallery slug={product.slug} title={product.title} category={product.category} badge={off > 0 ? `-${off}%` : undefined} />
           <section aria-labelledby="highlights" className="rounded-xl border bg-card p-5">
             <h2 id="highlights" className="mb-3 font-semibold">Highlights</h2>
             <ul className="grid gap-2 text-sm">
@@ -84,8 +81,8 @@ function ProductDetail({ product }: { product: Product }) {
               ))}
             </ul>
           </section>
-          <OffersBox />
-          <ShareButtons title={product.title} productId={product.id} />
+          <Suspense fallback={null}><OffersBox /></Suspense>
+          <ShareButtons title={product.title} product={product} />
         </div>
         <div className="grid min-w-0 content-start gap-5">
           <div>
@@ -106,8 +103,8 @@ function ProductDetail({ product }: { product: Product }) {
               <p className="text-xs text-muted-foreground">Inclusive of all taxes (GST {product.gstPercent}%)</p>
             </div>
             <p className={`flex items-center gap-2 text-sm font-medium ${stockNote.cls}`}><span aria-hidden="true" className="size-2 rounded-full bg-current" />{stockNote.text}</p>
-            <PurchasePanel productId={product.id} stock={product.stock} />
-            <div className="grid gap-2 sm:grid-cols-2"><WishlistButton productId={product.id} title={product.title} variant="full" /><CompareToggle productId={product.id} variant="button" /></div>
+            <PurchasePanel productId={product.id} stock={product.stock} product={product} />
+            <div className="grid gap-2 sm:grid-cols-2"><WishlistButton productId={product.id} title={product.title} product={product} variant="full" /><CompareToggle productId={product.id} title={product.title} variant="button" /></div>
           </section>
           <PincodeCheck />
           <ProductPromoBanner />
@@ -183,7 +180,7 @@ function ProductDetail({ product }: { product: Product }) {
             </Tabs>
           </section>
 
-          <ReviewsSection product={product} />
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-muted" aria-hidden="true" />}><ReviewsSection product={product} /></Suspense>
 
           <section id="faq" aria-labelledby="faq-heading" className="grid scroll-mt-16 gap-3">
             <h2 id="faq-heading" className="section-title">Questions about this product</h2>
@@ -194,7 +191,7 @@ function ProductDetail({ product }: { product: Product }) {
         <ProductAside />
       </div>
 
-      <RelatedArticles productId={product.id} initial={publishedSeed} />
+      <RelatedArticles productId={product.id} articles={articles} />
 
       {related.length > 0 && (
         <section aria-labelledby="related">
@@ -212,7 +209,10 @@ function ProductDetail({ product }: { product: Product }) {
 export const instant = false
 
 export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
-  const product = productBySlug((await params).slug)
+  const product = await getProduct((await params).slug)
   if (!product) notFound()
-  return <ProductDetail product={product} />
+  const [related, categories, published] = await Promise.all([getRelated(product.id), getCategories(), getPublishedArticles()])
+  const category = categories.find((c) => c.slug === product.category) ?? { slug: product.category, name: product.category }
+  const articles = published.filter((a) => a.productIds.includes(product.id)).slice(0, 3)
+  return <ProductDetail product={product} related={related} articles={articles} category={category} />
 }

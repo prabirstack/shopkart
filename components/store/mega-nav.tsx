@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import { ChevronDown, Flame, LayoutGrid } from "lucide-react"
+import type { MenuData } from "@/features/catalog/menu"
 import { MegaPanel, type MenuId } from "./mega-panels"
 
 const OPEN_DELAY = 90 // ms the pointer must rest before a panel opens, so sweeping across the bar doesn't flash panels
@@ -30,7 +31,7 @@ const entries: Entry[] = [
  * - Esc closes and returns focus; ArrowDown on a chevron opens and moves into the panel; Left/Right move along the bar.
  * - Tabbing out, clicking the backdrop or following a link closes it.
  */
-export function MegaNav() {
+export function MegaNav({ menu }: { menu: MenuData }) {
   const [open, setOpen] = useState<MenuId | null>(null)
   const root = useRef<HTMLDivElement>(null)
   const panel = useRef<HTMLDivElement>(null)
@@ -113,7 +114,7 @@ export function MegaNav() {
               <div ref={panel} id={`mega-${open}`} role="region" aria-label={`${menus.find((m) => m.id === open)!.label} menu`}
                 onClick={(e) => { if ((e.target as HTMLElement).closest("a")) close() }}
                 className="rounded-b-2xl border border-t-0 bg-card p-6 shadow-2xl animate-in fade-in-0 slide-in-from-top-2 duration-200 motion-reduce:animate-none">
-                <MegaPanel id={open} />
+                <MegaPanel id={open} menu={menu} />
               </div>
             </div>
           </div>

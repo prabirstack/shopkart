@@ -9,9 +9,9 @@ import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { buttonVariants } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
-import { categories } from "@/features/catalog/demo"
-import { didYouMean } from "@/features/catalog/search"
-import { PAGE_SIZE, SORTS, parseShopParams, runShopQuery, shopHref, type ShopParams } from "@/features/catalog/query"
+import { categoryMeta } from "@/features/catalog/category-meta"
+import { getCategories, getDidYouMean, getShopResults } from "@/features/catalog/data"
+import { PAGE_SIZE, SORTS, parseShopParams, shopHref, type ShopParams } from "@/features/catalog/query"
 import { formatMoney } from "@/lib/money"
 import { absoluteUrl } from "@/lib/site"
 import { FREE_DELIVERY_ABOVE_PAISE } from "@/lib/store-config"
@@ -20,10 +20,10 @@ export const metadata: Metadata = { title: "Shop all products", description: "Br
 
 const rupees = (p: number) => formatMoney(p, undefined, undefined, { hideZeroDecimals: true })
 
-function activeChips(p: ShopParams) {
+function activeChips(p: ShopParams, categoryName?: string) {
   const chips: { label: string; href: string }[] = []
   if (p.q) chips.push({ label: `“${p.q}”`, href: shopHref({ ...p, q: "", page: 1 }) })
-  if (p.category) chips.push({ label: categories.find((c) => c.slug === p.category)?.name ?? p.category, href: shopHref({ ...p, category: "", page: 1 }) })
+  if (p.category) chips.push({ label: categoryName ?? p.category, href: shopHref({ ...p, category: "", page: 1 }) })
   p.brands.forEach((b) => chips.push({ label: b, href: shopHref({ ...p, brands: p.brands.filter((x) => x !== b), page: 1 }) }))
   if (p.minPaise != null) chips.push({ label: `Min ${rupees(p.minPaise)}`, href: shopHref({ ...p, minPaise: null, page: 1 }) })
   if (p.maxPaise != null) chips.push({ label: `Max ${rupees(p.maxPaise)}`, href: shopHref({ ...p, maxPaise: null, page: 1 }) })
@@ -35,11 +35,12 @@ function activeChips(p: ShopParams) {
 
 async function ShopResults({ searchParams }: { searchParams: PageProps<"/products">["searchParams"] }) {
   const params = parseShopParams(await searchParams)
-  const { items, total, pages, page } = runShopQuery(params)
-  const chips = activeChips(params)
-  const suggestion = params.q && total === 0 ? didYouMean(params.q) : null
+  const [{ items, total, pages, page }, categories] = await Promise.all([getShopResults(params, PAGE_SIZE), getCategories()])
+  const suggestion = params.q && total === 0 ? await getDidYouMean(params.q) : null
   const category = categories.find((c) => c.slug === params.category)
   const categoryName = category?.name
+  const chips = activeChips(params, categoryName)
+  const look = category ? categoryMeta(category.slug) : null
   const title = params.q ? `Results for “${params.q}”` : categoryName ?? "All products"
   const first = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
   const last = Math.min(page * PAGE_SIZE, total)
@@ -57,9 +58,9 @@ async function ShopResults({ searchParams }: { searchParams: PageProps<"/product
           <div className="sticky top-4 rounded-xl border bg-card p-4"><ShopFilters params={params} idPrefix="d" /></div>
         </aside>
         <div className="grid min-w-0 content-start gap-4">
-          {category && (
-            <div className={`flex items-center gap-4 rounded-2xl p-5 ${category.tint}`}>
-              <category.icon className={`size-12 shrink-0 ${category.iconColor}`} strokeWidth={1.2} aria-hidden="true" />
+          {category && look && (
+            <div className={`flex items-center gap-4 rounded-2xl p-5 ${look.tint}`}>
+              <look.icon className={`size-12 shrink-0 ${look.iconColor}`} strokeWidth={1.2} aria-hidden="true" />
               <p className="text-sm">Browse our {category.name.toLowerCase()} range. Free delivery above {rupees(FREE_DELIVERY_ABOVE_PAISE)}.</p>
             </div>
           )}

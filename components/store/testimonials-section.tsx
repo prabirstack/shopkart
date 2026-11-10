@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel"
-import { testimonials } from "@/features/reviews/demo"
+import { testimonials } from "./testimonials-data"
 import { SectionHeader } from "./section-header"
 import { Stars } from "./stars"
 

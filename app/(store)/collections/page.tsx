@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { PageBanner } from "@/components/store/page-banner"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
-import { collections } from "@/features/catalog/demo"
+import { collections } from "@/features/catalog/collections"
 
 export const metadata: Metadata = { title: "Collections", description: "Handpicked collections: work from home, fitness at home, smart kitchen and travel essentials.", alternates: { canonical: "/collections" } }
 

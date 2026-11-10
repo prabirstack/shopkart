@@ -1,13 +1,13 @@
 "use client"
 import { useState, useSyncExternalStore } from "react"
 import { trackShare } from "@/features/analytics/events"
-import { productById } from "@/features/catalog/demo"
+import type { Product } from "@/features/catalog/types"
 import { Check, Link2, Mail, MessageCircle, Send, Share2 } from "lucide-react"
 
 const noop = () => () => {}
 
-export function ShareButtons({ title, productId }: { title: string; productId?: string }) {
-  const share = (method: string) => { const p = productId ? productById(productId) : undefined; if (p) trackShare(method, p) }
+export function ShareButtons({ title, product }: { title: string; /** Product pages pass this so shares are tracked. */ product?: Product }) {
+  const share = (method: string) => { if (product) trackShare(method, product) }
   // Real page address, read on the client only so server and client markup match.
   const url = useSyncExternalStore(noop, () => window.location.href, () => "")
   const [copied, setCopied] = useState(false)

@@ -3,8 +3,9 @@ import Link from "next/link"
 import { ArrowRight, Sparkles, Star, Store, ThumbsUp } from "lucide-react"
 import { Price } from "@/components/price"
 import { ProductArt } from "./product-art"
-import { discountPercent, type Product } from "@/features/catalog/demo"
-import { bestsellerCategories, brandIndex, brandStats, justIn, menuTotals, newArrivalCategories, topRated, type CountedCategory } from "@/features/catalog/menu"
+import { categoryMeta } from "@/features/catalog/category-meta"
+import { brandIndex, type MenuCategory, type MenuData } from "@/features/catalog/menu"
+import { discountPercent, type Product } from "@/features/catalog/types"
 
 export type MenuId = "new" | "best" | "brands"
 
@@ -12,12 +13,14 @@ function Heading({ children }: { children: React.ReactNode }) {
   return <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{children}</h3>
 }
 
-function CategoryList({ items, label }: { items: CountedCategory[]; label: string }) {
+function CategoryList({ items, label }: { items: MenuCategory[]; label: string }) {
   return (
     <nav aria-label={label}>
       <Heading>{label}</Heading>
       <ul className="grid gap-0.5">
-        {items.map(({ slug, name, icon: Icon, count, tint, iconColor }) => (
+        {items.map(({ slug, name, count }) => {
+          const { icon: Icon, tint, iconColor } = categoryMeta(slug)
+          return (
           <li key={slug}>
             <Link href={`/products?category=${slug}`} className="group flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">
               <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${tint}`}><Icon className={`size-4 ${iconColor}`} aria-hidden="true" /></span>
@@ -25,7 +28,8 @@ function CategoryList({ items, label }: { items: CountedCategory[]; label: strin
               <span className="price rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground group-hover:bg-background">{count}</span>
             </Link>
           </li>
-        ))}
+          )
+        })}
       </ul>
     </nav>
   )
@@ -36,7 +40,7 @@ function MiniProduct({ p, rank }: { p: Product; rank?: number }) {
   return (
     <Link href={`/products/${p.slug}`} className="group grid gap-3 rounded-xl border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
       <span className="relative block aspect-square overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200/80">
-        <span className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"><ProductArt slug={p.slug} title="" icon={p.icon} sizes="180px" /></span>
+        <span className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"><ProductArt slug={p.slug} title="" category={p.category} sizes="180px" /></span>
         {rank && <span className="absolute left-2 top-2 grid size-7 place-items-center rounded-full bg-foreground text-xs font-bold text-background">{rank}</span>}
         {!rank && off > 0 && <span className="absolute left-2 top-2 rounded-md bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">-{off}%</span>}
       </span>
@@ -71,22 +75,23 @@ function Footer({ href, label, note }: { href: string; label: string; note: stri
   )
 }
 
-export function MegaPanel({ id }: { id: MenuId }) {
+export function MegaPanel({ id, menu }: { id: MenuId; menu: MenuData }) {
+  const { newCategories, bestCategories, justIn, topRated, brands, totals } = menu
   const grid = "grid gap-x-8 gap-y-5 lg:grid-cols-[13rem_minmax(0,1fr)_16rem] xl:grid-cols-[15rem_minmax(0,1fr)_18rem]"
   if (id === "new") return (
     <div className={grid}>
-      <CategoryList items={newArrivalCategories} label="New in categories" />
+      <CategoryList items={newCategories} label="New in categories" />
       <section aria-label="Just in"><Heading>Just in</Heading><ul className="grid grid-cols-3 gap-3">{justIn.map((p) => <li key={p.id}><MiniProduct p={p} /></li>)}</ul></section>
       <Promo tone="bg-gradient-to-br from-neutral-900 via-red-950 to-primary" icon={Sparkles} eyebrow="Fresh this week" title="New arrivals, every week" text="Be first to the latest gadgets, home and style picks." href="/new-arrivals" cta="Shop new arrivals" />
-      <Footer href="/new-arrivals" label={`View all ${menuTotals.newArrivals} new arrivals`} note="Updated weekly. Free delivery on orders above ₹699." />
+      <Footer href="/new-arrivals" label={`View all ${totals.newArrivals} new arrivals`} note="Updated weekly. Free delivery on orders above ₹699." />
     </div>
   )
   if (id === "best") return (
     <div className={grid}>
-      <CategoryList items={bestsellerCategories} label="Bestsellers by category" />
+      <CategoryList items={bestCategories} label="Bestsellers by category" />
       <section aria-label="Customer favourites"><Heading>Customer favourites</Heading><ul className="grid grid-cols-3 gap-3">{topRated.map((p, i) => <li key={p.id}><MiniProduct p={p} rank={i + 1} /></li>)}</ul></section>
       <Promo tone="bg-gradient-to-br from-amber-500 via-orange-600 to-red-700" icon={ThumbsUp} eyebrow="Loved by shoppers" title="Rated 4.5★ and above" text="The products people rate highest and keep re-ordering." href="/products?rating=4.5&sort=rating" cta="Shop top rated" />
-      <Footer href="/bestsellers" label={`View all ${menuTotals.bestsellers} bestsellers`} note="Ranked by rating, then by number of reviews." />
+      <Footer href="/bestsellers" label={`View all ${totals.bestsellers} bestsellers`} note="Ranked by rating, then by number of reviews." />
     </div>
   )
   return (
@@ -94,11 +99,11 @@ export function MegaPanel({ id }: { id: MenuId }) {
       <section aria-label="Popular brands">
         <Heading>Popular brands</Heading>
         <ul className="grid grid-cols-2 gap-2 xl:grid-cols-4">
-          {brandStats.map((b) => (
+          {brands.slice(0, 12).map((b) => (
             <li key={b.name}>
               <Link href={`/products?brand=${encodeURIComponent(b.name)}`} className="group grid h-[4.5rem] place-content-center rounded-xl border bg-card px-3 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50">
                 <span className="text-sm font-bold tracking-wide group-hover:text-primary">{b.name}</span>
-                <span className="text-xs text-muted-foreground">{b.count} {b.count === 1 ? "product" : "products"}{b.topCategory && ` · ${b.topCategory}`}</span>
+                <span className="text-xs text-muted-foreground">{b.count} {b.count === 1 ? "product" : "products"}</span>
               </Link>
             </li>
           ))}
@@ -107,16 +112,16 @@ export function MegaPanel({ id }: { id: MenuId }) {
       <nav aria-label="Brands A to Z">
         <Heading>Brands A to Z</Heading>
         <dl className="grid gap-2 text-sm">
-          {brandIndex.map(({ letter, brands }) => (
+          {brandIndex(brands).map(({ letter, brands: list }) => (
             <div key={letter} className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-baseline gap-2">
               <dt className="font-bold text-primary">{letter}</dt>
-              <dd className="flex flex-wrap gap-x-3 gap-y-1">{brands.map((b) => <Link key={b.name} href={`/products?brand=${encodeURIComponent(b.name)}`} className="hover:text-primary hover:underline">{b.name}</Link>)}</dd>
+              <dd className="flex flex-wrap gap-x-3 gap-y-1">{list.map((b) => <Link key={b.name} href={`/products?brand=${encodeURIComponent(b.name)}`} className="hover:text-primary hover:underline">{b.name}</Link>)}</dd>
             </div>
           ))}
         </dl>
       </nav>
       <Promo tone="bg-gradient-to-br from-slate-800 via-slate-900 to-black" icon={Store} eyebrow="Brand stores" title="Shop your favourite brands" text="Genuine products with brand warranty and a GST invoice." href="/brands" cta="Browse all brands" />
-      <Footer href="/brands" label={`View all ${menuTotals.brands} brands`} note="Every brand product ships with a GST invoice and manufacturer warranty." />
+      <Footer href="/brands" label={`View all ${totals.brands} brands`} note="Every brand product ships with a GST invoice and manufacturer warranty." />
     </div>
   )
 }

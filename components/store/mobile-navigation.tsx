@@ -6,11 +6,12 @@ import { buttonVariants } from "@/components/ui/button"
 import {
   Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet"
-import { categories } from "@/features/catalog/demo"
-import { bestsellerCategories, brandStats, newArrivalCategories } from "@/features/catalog/menu"
+import { categoryIcon } from "@/features/catalog/category-meta"
+import type { MenuData } from "@/features/catalog/menu"
+import type { StoreCategory } from "@/features/catalog/types"
 import { ChevronDown } from "lucide-react"
 
-export function MobileNavigation() {
+export function MobileNavigation({ categories, menu }: { categories: Pick<StoreCategory, "slug" | "name">[]; menu: MenuData }) {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
   return (
@@ -27,9 +28,9 @@ export function MobileNavigation() {
         <nav aria-label="Mobile navigation" className="grid gap-1 px-4 pb-6 text-sm">
           <Link href="/deals" onClick={close} className="rounded-md px-2 py-2 font-medium hover:bg-muted">Deals</Link>
           {[
-            { label: "New Arrivals", href: "/new-arrivals", items: newArrivalCategories.map((c) => ({ label: `${c.name} (${c.count})`, href: `/products?category=${c.slug}` })) },
-            { label: "Bestsellers", href: "/bestsellers", items: bestsellerCategories.map((c) => ({ label: `${c.name} (${c.count})`, href: `/products?category=${c.slug}` })) },
-            { label: "Brands", href: "/brands", items: brandStats.map((b) => ({ label: b.name, href: `/products?brand=${encodeURIComponent(b.name)}` })) },
+            { label: "New Arrivals", href: "/new-arrivals", items: menu.newCategories.map((c) => ({ label: `${c.name} (${c.count})`, href: `/products?category=${c.slug}` })) },
+            { label: "Bestsellers", href: "/bestsellers", items: menu.bestCategories.map((c) => ({ label: `${c.name} (${c.count})`, href: `/products?category=${c.slug}` })) },
+            { label: "Brands", href: "/brands", items: menu.brands.map((b) => ({ label: b.name, href: `/products?brand=${encodeURIComponent(b.name)}` })) },
           ].map((g) => (
             <details key={g.label} className="group rounded-md">
               <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-2 font-medium hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">{g.label}<ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" /></summary>
@@ -43,12 +44,15 @@ export function MobileNavigation() {
             <Link key={label} href={href} onClick={close} className="rounded-md px-2 py-2 font-medium hover:bg-muted">{label}</Link>
           ))}
           <p className="mt-4 px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>
-          {categories.map(({ slug, name, icon: Icon }) => (
+          {categories.map(({ slug, name }) => {
+            const Icon = categoryIcon(slug)
+            return (
             <Link key={slug} href={`/categories/${slug}`} onClick={close}
               className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted">
               <Icon className="size-4 text-muted-foreground" aria-hidden="true" /> {name}
             </Link>
-          ))}
+            )
+          })}
         </nav>
       </SheetContent>
     </Sheet>

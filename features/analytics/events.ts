@@ -1,17 +1,18 @@
 "use client"
-import type { Product } from "@/features/catalog/demo"
-import { bySlug } from "@/features/catalog/demo"
+import type { Product } from "@/features/catalog/types"
 import { track } from "./track"
 
 const CURRENCY = "INR"
 const rupees = (paise: number) => paise / 100
 
 /** GA4 ecommerce item. Prices are in rupees, not paise, as GA expects decimal amounts. */
-export const toItem = (p: Pick<Product, "id" | "title" | "brand" | "category" | "pricePaise">, quantity = 1) => ({
-  item_id: p.id, item_name: p.title, item_brand: p.brand, item_category: bySlug(p.category).name, price: rupees(p.pricePaise), quantity,
+export type AnalyticsProduct = Pick<Product, "id" | "title" | "pricePaise"> & Partial<Pick<Product, "brand" | "category">>
+
+export const toItem = (p: AnalyticsProduct, quantity = 1) => ({
+  item_id: p.id, item_name: p.title, ...(p.brand && { item_brand: p.brand }), ...(p.category && { item_category: p.category }), price: rupees(p.pricePaise), quantity,
 })
 
-type Line = { product: Pick<Product, "id" | "title" | "brand" | "category" | "pricePaise">; quantity: number }
+type Line = { product: AnalyticsProduct; quantity: number }
 
 export const trackViewItem = (p: Product) => track("view_item", { currency: CURRENCY, value: rupees(p.pricePaise), items: [toItem(p)] })
 export const trackViewItemList = (listName: string, products: Product[]) => track("view_item_list", { item_list_name: listName, items: products.map((p, i) => ({ ...toItem(p), index: i })) })

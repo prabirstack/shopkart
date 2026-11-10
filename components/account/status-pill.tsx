@@ -1,13 +1,6 @@
 import { StatusBadge } from "@/components/admin/status-badge"
-import type { OrderStatus } from "@/features/account/demo"
-
-const map: Record<OrderStatus, { label: string; tone: "info" | "warn" | "good" | "muted" }> = {
-  processing: { label: "Processing", tone: "warn" },
-  shipped: { label: "Shipped", tone: "info" },
-  delivered: { label: "Delivered", tone: "good" },
-  refunded: { label: "Refunded", tone: "muted" },
-}
+import { STATUS_LABEL, STATUS_TONE, type OrderStatus } from "@/features/account/orders"
 
 export function OrderStatusPill({ status }: { status: OrderStatus }) {
-  return <StatusBadge tone={map[status].tone}>{map[status].label}</StatusBadge>
+  return <StatusBadge tone={STATUS_TONE[status]}>{STATUS_LABEL[status]}</StatusBadge>
 }

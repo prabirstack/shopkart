@@ -1,39 +1,16 @@
-"use client"
 import Link from "next/link"
 import { Clock, GitCompareArrows, ListTree } from "lucide-react"
 import { ProductCard } from "@/components/store/product-card"
 import { ShareButtons } from "@/components/store/share-buttons"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
-import { Skeleton } from "@/components/ui/skeleton"
-import { buttonVariants } from "@/components/ui/button"
 import { RenderDoc, readMinutes, tocOf } from "@/features/articles/render"
-import { useArticleStore, useArticlesReady } from "@/features/articles/store"
 import type { Article } from "@/features/articles/types"
-import { productById } from "@/features/catalog/demo"
+import type { Product } from "@/features/catalog/types"
 import { ArticleCard, ArticleCover, categoryStyle, formatArticleDate } from "./article-card"
 
-/**
- * `initial` is the server-rendered article (good for search engines). After the saved data loads,
- * an edited or newly created version from the admin editor replaces it.
- */
-export function ArticleView({ slug, initial }: { slug: string; initial: Article | null }) {
-  const ready = useArticlesReady()
-  const all = useArticleStore((s) => s.articles)
-  const stored = all.find((a) => a.slug === slug)
-  const article = ready ? stored : initial ?? undefined
-
-  if (!ready && !initial) return <main className="store-container py-8"><Skeleton className="h-96 rounded-2xl" /></main>
-  if (!article || (ready && article.status !== "published")) return (
-    <main className="store-container grid place-items-center gap-3 py-20 text-center">
-      <h1 className="store-title !text-2xl">This article isn&apos;t available</h1>
-      <p className="text-muted-foreground">It may have been unpublished or moved.</p>
-      <Link href="/news" className={buttonVariants()}>Browse all articles</Link>
-    </main>
-  )
-
+/** A published article with the products it features and a few related articles. All data comes from the server. */
+export function ArticleView({ article, products, related }: { article: Article; products: Product[]; related: Article[] }) {
   const toc = tocOf(article.doc)
-  const products = article.productIds.flatMap((id) => { const p = productById(id); return p ? [p] : [] })
-  const related = all.filter((a) => a.status === "published" && a.id !== article.id && (a.category === article.category || a.productIds.some((id) => article.productIds.includes(id)))).slice(0, 3)
   const style = categoryStyle[article.category]
 
   return (

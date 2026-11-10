@@ -2,41 +2,46 @@
 import { useState } from "react"
 import { Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { orders } from "@/features/account/demo"
-import { useReviewStore } from "@/features/reviews/store"
 import { track } from "@/features/analytics/track"
 
 const input = "h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive"
 const LABELS = ["", "Poor", "Fair", "Good", "Very good", "Excellent"]
-/** Review IDs are made on submit, never during render. */
-const newId = () => `ur${Date.now()}`
 
-/** "Write a review" form. Reviews are held for moderation before they appear to other shoppers. */
-export function ReviewForm({ productId, productTitle, onSubmitted }: { productId: string; productTitle: string; onSubmitted?: () => void }) {
-  const submit = useReviewStore((s) => s.submit)
+/** "Write a review" form. Posts to the reviews API; reviews are held for moderation before they appear to other shoppers. */
+export function ReviewForm({ productSlug, productId, productTitle, authorName, onSubmitted }: { productSlug: string; productId: string; productTitle: string; authorName: string; onSubmitted?: () => void }) {
   const [rating, setRating] = useState(0)
   const [hover, setHover] = useState(0)
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
-  const [name, setName] = useState("")
   const [errs, setErrs] = useState<Record<string, string>>({})
+  const [busy, setBusy] = useState(false)
 
   const clear = (k: string) => setErrs((e) => ({ ...e, [k]: "" }))
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const er: Record<string, string> = {}
     if (rating < 1) er.rating = "Choose a star rating."
     if (title.trim().length < 3) er.title = "Add a short headline (at least 3 characters)."
     if (body.trim().length < 20) er.body = "Tell others a little more (at least 20 characters)."
     if (body.length > 1500) er.body = "Please keep it under 1500 characters."
-    if (name.trim().length < 2) er.name = "Enter the name to show with your review."
     setErrs(er)
     if (Object.keys(er).length) return
-    const verified = orders.some((o) => o.lines.some((l) => l.productId === productId)) // demo: a past order of this product
-    const result = submit({ productId, name: name.trim(), rating, title: title.trim(), body: body.trim(), verified }, newId(), new Date().toISOString().slice(0, 10))
-    if (result) { setErrs({ form: result }); return }
-    track("submit_review", { item_id: productId, rating })
-    onSubmitted?.()
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/v1/products/${encodeURIComponent(productSlug)}/reviews`, {
+        method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ rating, title: title.trim(), body: body.trim() }),
+      })
+      if (res.ok) { track("submit_review", { item_id: productId, rating }); onSubmitted?.(); return }
+      const err = (await res.json().catch(() => null))?.error as { code?: string; message?: string; details?: { path: string; message: string }[] } | undefined
+      if (res.status === 401) setErrs({ form: "Your session has ended. Please sign in again to post a review." })
+      else if (err?.details?.length) {
+        const next: Record<string, string> = {}
+        for (const d of err.details) next[d.path === "rating" || d.path === "title" || d.path === "body" ? d.path : "form"] = d.message
+        setErrs(next)
+      } else setErrs({ form: err?.message ?? "We couldn't send your review. Please try again." })
+    } catch {
+      setErrs({ form: "We couldn't reach the server. Check your connection and try again." })
+    } finally { setBusy(false) }
   }
 
   const shown = hover || rating
@@ -61,9 +66,9 @@ export function ReviewForm({ productId, productTitle, onSubmitted }: { productId
       </fieldset>
       <div className="grid gap-1.5"><label htmlFor="rv-title" className="text-sm font-medium">Headline</label><input id="rv-title" value={title} onChange={(e) => { setTitle(e.target.value); clear("title") }} maxLength={80} aria-invalid={errs.title ? true : undefined} className={input} />{errs.title && <p role="alert" className="text-xs text-destructive">{errs.title}</p>}</div>
       <div className="grid gap-1.5"><label htmlFor="rv-body" className="text-sm font-medium">Your review</label><textarea id="rv-body" value={body} onChange={(e) => { setBody(e.target.value); clear("body") }} rows={5} maxLength={1500} aria-invalid={errs.body ? true : undefined} className={`${input} h-auto py-2`} /><p className="text-xs text-muted-foreground">{body.length} / 1500</p>{errs.body && <p role="alert" className="text-xs text-destructive">{errs.body}</p>}</div>
-      <div className="grid gap-1.5 sm:max-w-xs"><label htmlFor="rv-name" className="text-sm font-medium">Name shown</label><input id="rv-name" value={name} onChange={(e) => { setName(e.target.value); clear("name") }} autoComplete="given-name" maxLength={40} aria-invalid={errs.name ? true : undefined} className={input} />{errs.name && <p role="alert" className="text-xs text-destructive">{errs.name}</p>}</div>
+      <p className="text-xs text-muted-foreground">Posted as <strong className="text-foreground">{authorName || "you"}</strong>, with the name on your account.</p>
       {errs.form && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">{errs.form}</p>}
-      <div><Button type="submit">Submit review</Button></div>
+      <div><Button type="submit" disabled={busy}>{busy ? "Sending..." : "Submit review"}</Button></div>
     </form>
   )
 }

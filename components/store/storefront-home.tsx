@@ -11,14 +11,16 @@ import { PromotionGrid } from "./promotion-grid"
 import { SectionHeader } from "./section-header"
 import { ShopByCategory } from "./shop-by-category"
 import { LatestGuides } from "@/components/articles/article-list"
-import { publishedSeed } from "@/features/articles/seed"
+import { getPublishedArticles } from "@/features/articles/data"
 import { TestimonialsSection } from "./testimonials-section"
 import { TrustStrip } from "./trust-strip"
 import { Crown } from "lucide-react"
-import { dealProducts, recentlyViewed, topSelling } from "@/features/catalog/demo"
+import { getDeals, getTopSelling } from "@/features/catalog/data"
+import { RecentlyViewedRow } from "@/features/catalog/recently-viewed"
 import { DEALS_END_AT, heroSlides } from "@/features/promotions/demo"
 
-export function StorefrontHome() {
+export async function StorefrontHome() {
+  const [dealProducts, topSelling, guides] = await Promise.all([getDeals(5), getTopSelling(5), getPublishedArticles()])
   return (
     <main className="store-container grid grid-cols-[minmax(0,1fr)] gap-8 py-4">
       <h1 className="sr-only">ShopKart online store</h1>
@@ -38,18 +40,15 @@ export function StorefrontHome() {
         <ProductRow products={dealProducts} label="Today's deals" />
       </section>
       <section aria-labelledby="top-heading">
-        <SectionHeader id="top-heading" title={<><Crown className="size-6 text-amber-500" aria-hidden="true" /> Top Selling Products</>} href="/products?sort=top" linkLabel="View All" />
+        <SectionHeader id="top-heading" title={<><Crown className="size-6 text-amber-500" aria-hidden="true" /> Top Selling Products</>} href="/top-selling" linkLabel="View All" />
         <ProductRow products={topSelling} label="Top selling products" />
       </section>
       <CollectionsSection />
       <ShopByCategory />
       <BrandsSection />
       <BenefitsStrip />
-      <section aria-labelledby="recent-heading">
-        <SectionHeader id="recent-heading" title="Recently Viewed" />
-        <ProductRow products={recentlyViewed} label="Recently viewed products" />
-      </section>
-      <LatestGuides initial={publishedSeed} />
+      <RecentlyViewedRow />
+      <LatestGuides initial={guides} />
       <TestimonialsSection />
       <NewsletterForm variant="band" />
     </main>

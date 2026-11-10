@@ -13,7 +13,7 @@ import { adminApi, ApiFailure, failureMessage } from "@/features/admin/api"
 
 const input = "h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive"
 const CATEGORY_KEY: Record<ArticleCategory, string> = { "Buying guide": "buying_guide", "Product review": "product_review", Comparison: "comparison", News: "news" }
-type Choice = { id: string; title: string }
+type Choice = { id: string; title: string; slug: string }
 
 function Field({ id, label, error, hint, children }: { id: string; label: string; error?: string; hint?: string; children: React.ReactNode }) {
   return <div className="grid gap-1.5"><label htmlFor={id} className="text-sm font-medium">{label}</label>{children}{error ? <p id={`${id}-error`} role="alert" className="text-xs text-destructive">{error}</p> : hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}</div>
@@ -90,7 +90,7 @@ function Editor({ article, products, onDone }: { article?: Article; products: Ch
             <Field id="title" label="Title" error={errs.title}><input id="title" value={f.title} onChange={(e) => { set("title", e.target.value); if (!slugTouched) setF((p) => ({ ...p, slug: slugify(e.target.value) })) }} aria-invalid={errs.title ? true : undefined} className={input} /></Field>
             <Field id="excerpt" label="Summary" error={errs.excerpt} hint={`${f.excerpt.length} / 200. Shown on cards and in search results.`}><textarea id="excerpt" value={f.excerpt} onChange={(e) => set("excerpt", e.target.value)} rows={2} aria-invalid={errs.excerpt ? true : undefined} className={`${input} h-auto py-2`} /></Field>
           </div>
-          <section aria-labelledby="body-h" className="grid gap-2"><h2 id="body-h" className="text-sm font-semibold">Article body</h2><RichEditor value={doc} onChange={(d) => { setDoc(d); setErrs((e) => ({ ...e, body: "" })); setSaved(false) }} invalid={!!errs.body} />{errs.body && <p role="alert" className="text-xs text-destructive">{errs.body}</p>}</section>
+          <section aria-labelledby="body-h" className="grid gap-2"><h2 id="body-h" className="text-sm font-semibold">Article body</h2><RichEditor products={products} value={doc} onChange={(d) => { setDoc(d); setErrs((e) => ({ ...e, body: "" })); setSaved(false) }} invalid={!!errs.body} />{errs.body && <p role="alert" className="text-xs text-destructive">{errs.body}</p>}</section>
         </div>
         <aside className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-5 [&>section]:grid-cols-[minmax(0,1fr)]">
           <section aria-labelledby="meta-h" className="grid gap-4 rounded-2xl border bg-card p-5 shadow-xs"><h2 id="meta-h" className="font-semibold">Details</h2>

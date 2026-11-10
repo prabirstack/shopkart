@@ -1,10 +1,17 @@
-import type { Product } from "./demo"
-import { bySlug } from "./demo"
+import type { Product } from "./types"
 import { formatMoney } from "@/lib/money"
 import { FREE_DELIVERY_ABOVE_PAISE, RETURN_WINDOW_DAYS } from "@/lib/store-config"
 
 // Sample specification and FAQ text for the demo store. Real products store these
 // as structured fields set by the merchant in the dashboard.
+
+const CATEGORY_NAMES: Record<string, string> = {
+  electronics: "Electronics", mobiles: "Mobiles & Tablets", laptops: "Laptops", fashion: "Fashion", "home-living": "Home & Living", "kitchen-dining": "Kitchen & Dining",
+  beauty: "Beauty & Personal Care", sports: "Sports & Outdoors", toys: "Toys & Games", books: "Books & Stationery", automotive: "Automotive", gaming: "Gaming", fitness: "Sports & Fitness",
+}
+/** Display name for a category slug, with a readable fallback for categories added later. */
+const categoryName = (slug: string) => CATEGORY_NAMES[slug] ?? slug.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase())
+const skuFor = (p: Product) => `SK-${p.id.slice(0, 8).toUpperCase()}`
 
 const electronic = new Set(["electronics", "mobiles", "laptops", "gaming", "fitness"])
 
@@ -27,11 +34,11 @@ export function specsFor(p: Product): [string, string][] {
   return [
     ["Brand", p.brand],
     ["Model", p.slug.toUpperCase().replace(/-/g, " ")],
-    ["Category", bySlug(p.category).name],
+    ["Category", categoryName(p.category)],
     ...(extra[p.category] ?? []),
     ["Warranty", warrantyFor(p)],
     ["GST rate", `${p.gstPercent}%`],
-    ["SKU", `${p.id.toUpperCase()}-${p.slug.slice(0, 6).toUpperCase()}`],
+    ["SKU", skuFor(p)],
   ]
 }
 
@@ -40,7 +47,7 @@ export type SpecGroup = { title: string; rows: [string, string][] }
 /** Specifications grouped for the tabbed layout. */
 export function specGroups(p: Product): SpecGroup[] {
   return [
-    { title: "General", rows: [["Brand", p.brand], ["Model", p.slug.toUpperCase().replace(/-/g, " ")], ["Category", bySlug(p.category).name], ["SKU", `${p.id.toUpperCase()}-${p.slug.slice(0, 6).toUpperCase()}`]] },
+    { title: "General", rows: [["Brand", p.brand], ["Model", p.slug.toUpperCase().replace(/-/g, " ")], ["Category", categoryName(p.category)], ["SKU", skuFor(p)]] },
     ...(extra[p.category] ? [{ title: "Features", rows: extra[p.category] }] : []),
     { title: "Warranty & tax", rows: [["Warranty", warrantyFor(p)], ["GST rate", `${p.gstPercent}%`], ["Returns", `${RETURN_WINDOW_DAYS} days from delivery`]] },
   ]

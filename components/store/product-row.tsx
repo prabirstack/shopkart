@@ -1,5 +1,5 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import type { Product } from "@/features/catalog/demo"
+import type { Product } from "@/features/catalog/types"
 import { ProductCard } from "./product-card"
 
 const arrow = "z-10 size-9 border-0 bg-background shadow-md hover:bg-muted"

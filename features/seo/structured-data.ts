@@ -1,4 +1,4 @@
-import type { Product } from "@/features/catalog/demo"
+import type { Product } from "@/features/catalog/types"
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site"
 
 export const organizationLd = {
@@ -30,9 +30,8 @@ export function breadcrumbLd(trail: { name: string; path: string }[]) {
 }
 
 /**
- * Product markup uses only facts we hold: price, stock, brand and SKU. It leaves out
- * aggregateRating and review on purpose: the demo reviews are sample data, and marking
- * up reviews that aren't real customer feedback breaks search engine guidelines.
+ * Product markup uses facts we hold: price, stock, brand and SKU, plus the star rating and review count
+ * when the product has approved customer reviews (never for a product without any).
  */
 export function productLd(p: Product) {
   return {
@@ -40,10 +39,11 @@ export function productLd(p: Product) {
     "@type": "Product",
     name: p.title,
     description: p.description,
-    sku: p.id.toUpperCase(),
+    sku: `SK-${p.id.slice(0, 8).toUpperCase()}`,
     brand: { "@type": "Brand", name: p.brand },
     image: [absoluteUrl(`/og/product/${p.slug}`)],
     url: absoluteUrl(`/products/${p.slug}`),
+    ...(p.rating && p.ratingCount > 0 ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.ratingCount, bestRating: 5, worstRating: 1 } } : {}),
     offers: {
       "@type": "Offer",
       url: absoluteUrl(`/products/${p.slug}`),

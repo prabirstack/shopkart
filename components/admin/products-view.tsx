@@ -2,14 +2,13 @@
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useMemo, useState } from "react"
-import { Archive, Copy, Eye, MoreHorizontal, Package, PackagePlus, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
+import { Archive, Copy, Eye, MoreHorizontal, PackagePlus, Pencil, RotateCcw, Search, Trash2 } from "lucide-react"
 import { ConfirmDialog } from "./confirm-dialog"
 import { PageHeader } from "./page-header"
 import { StatusBadge } from "./status-badge"
 import { ProductArt } from "@/components/store/product-art"
 import { buttonVariants } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { productBySlug } from "@/features/catalog/demo"
 import { adminApi, failureMessage } from "@/features/admin/api"
 import { money } from "@/features/admin/format"
 import type { AdminProduct, ProductStatus } from "@/features/admin/types"
@@ -19,8 +18,7 @@ const tone = { published: "good", draft: "warn", archived: "muted" } as const
 const field = "h-9 rounded-lg border bg-card px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
 
 function Thumb({ p }: { p: AdminProduct }) {
-  const demo = productBySlug(p.slug)
-  return <span className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200">{demo ? <ProductArt slug={p.slug} title="" icon={demo.icon} sizes="44px" imageClassName="object-contain p-1" iconClassName="size-1/2 text-neutral-700" /> : <Package className="size-5 text-neutral-500" aria-hidden="true" />}</span>
+  return <span className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200"><ProductArt slug={p.slug} title="" category={p.category} sizes="44px" imageClassName="object-contain p-1" iconClassName="size-1/2 text-neutral-700" /></span>
 }
 
 export function ProductsView({ products, categories }: { products: AdminProduct[]; categories: { slug: string; name: string }[] }) {

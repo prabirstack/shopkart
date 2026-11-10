@@ -1,20 +1,27 @@
+import { Suspense } from "react"
 import { AccountTitle } from "@/components/account/account-title"
-import { Button } from "@/components/ui/button"
-import { demoUser } from "@/features/account/demo"
+import { PasswordForm, ProfileForm } from "@/components/account/profile-forms"
+import { Skeleton } from "@/components/ui/skeleton"
+import { requireUser } from "@/features/account/session"
+import { getProfile } from "@/lib/db/queries"
 
-const input = "h-10 w-full rounded-lg border bg-muted/40 px-3 text-sm"
+export const instant = false
+
+async function Profile() {
+  const user = await requireUser("/account/profile")
+  const profile = await getProfile(user.id)
+  return <ProfileForm name={profile?.name ?? user.name} email={user.email} phone={profile?.phone ?? ""} />
+}
 
 export default function AccountProfilePage() {
   return (
     <>
       <AccountTitle title="Profile" description="Your name and contact details." />
-      <form className="grid max-w-xl gap-4 rounded-xl border bg-card p-5" aria-describedby="profile-note">
-        {[["name", "Full name", demoUser.name], ["email", "Email", demoUser.email], ["phone", "Mobile number", demoUser.phone]].map(([id, label, value]) => (
-          <div key={id} className="grid gap-1.5"><label htmlFor={id} className="text-sm font-medium">{label}</label><input id={id} defaultValue={value} readOnly className={input} /></div>
-        ))}
-        <p id="profile-note" className="text-xs text-muted-foreground">Editing your profile, changing your password and managing sign-in methods arrive in the identity chapters.</p>
-        <div><Button type="button" disabled>Save changes</Button></div>
-      </form>
+      <Suspense fallback={<Skeleton className="h-72 max-w-xl rounded-xl" />}><Profile /></Suspense>
+      <section aria-labelledby="security" className="grid gap-3">
+        <h2 id="security" className="section-title">Password</h2>
+        <PasswordForm />
+      </section>
     </>
   )
 }

@@ -1,16 +1,53 @@
 "use client"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import { BadgeCheck, ChevronLeft, ChevronRight, ThumbsUp } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel"
-import type { Review } from "@/features/reviews/demo"
-import { useReviewStore } from "@/features/reviews/store"
+import type { ReviewView } from "@/features/reviews/data"
 import { Stars } from "./stars"
 
-/** Customer reviews as swipeable cards with arrows and dots. */
-export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
-  const voted = useReviewStore((s) => s.voted)
-  const helpful = useReviewStore((s) => s.helpful)
-  const vote = useReviewStore((s) => s.vote)
+const date = (iso: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`))
+
+/**
+ * Customer reviews as swipeable cards with arrows and dots. "Helpful" is saved on the server per signed-in customer;
+ * the button updates at once and goes back if the server says no.
+ */
+export function ReviewsCarousel({ reviews, signedIn, signInHref }: { reviews: ReviewView[]; signedIn: boolean; signInHref: string }) {
+  // Per review: what the server last told us, so the count stays right after a toggle.
+  const [counts, setCounts] = useState<Record<string, number>>({})
+  const [voted, setVoted] = useState<string[]>([])
+  const [notice, setNotice] = useState<{ id: string; text: string; signIn?: boolean } | null>(null)
+  const idsKey = reviews.map((r) => r.id).join(",")
+  useEffect(() => {
+    if (!signedIn || !idsKey) return
+    let live = true
+    void fetch(`/api/v1/reviews/voted?ids=${idsKey}`, { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { data?: { voted: string[]; counts: Record<string, number> } } | null) => { if (live && j?.data) { setVoted(j.data.voted); setCounts(j.data.counts) } })
+      .catch(() => {})
+    return () => { live = false }
+  }, [signedIn, idsKey])
+
+  const vote = async (id: string) => {
+    if (!signedIn) { setNotice({ id, text: "Sign in to mark reviews helpful.", signIn: true }); return }
+    const was = voted.includes(id)
+    const base = counts[id] ?? reviews.find((r) => r.id === id)?.helpful ?? 0
+    setNotice(null)
+    setVoted((v) => (was ? v.filter((x) => x !== id) : [...v, id]))
+    setCounts((c) => ({ ...c, [id]: Math.max(0, base + (was ? -1 : 1)) }))
+    try {
+      const res = await fetch(`/api/v1/reviews/${id}/helpful`, { method: "POST", credentials: "same-origin" })
+      if (res.ok) {
+        const out = (await res.json()).data as { helpful: boolean; count: number }
+        setVoted((v) => (out.helpful ? [...new Set([...v, id])] : v.filter((x) => x !== id)))
+        setCounts((c) => ({ ...c, [id]: out.count }))
+        return
+      }
+      setNotice(res.status === 401 ? { id, text: "Sign in to mark reviews helpful.", signIn: true } : { id, text: res.status === 403 ? "You can't vote on your own review." : "Could not save your vote. Try again." })
+    } catch { setNotice({ id, text: "Could not save your vote. Try again." }) }
+    setVoted((v) => (was ? [...new Set([...v, id])] : v.filter((x) => x !== id)))
+    setCounts((c) => ({ ...c, [id]: base }))
+  }
   const [api, setApi] = useState<CarouselApi>()
   const [selected, setSelected] = useState(0)
   const [snaps, setSnaps] = useState(0)
@@ -40,13 +77,13 @@ export function ReviewsCarousel({ reviews }: { reviews: Review[] }) {
                       {r.verified && <p className="flex items-center gap-1 text-xs text-emerald-700"><BadgeCheck className="size-3.5" aria-hidden="true" /> Verified purchase</p>}
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">{r.date}</p>
+                  <p className="text-xs text-muted-foreground">{date(r.date)}</p>
                 </div>
                 <div className="flex items-center gap-2"><Stars value={r.rating} /><h3 className="text-sm font-semibold">{r.title}</h3></div>
                 <p className="flex-1 text-sm leading-relaxed text-muted-foreground">{r.body}</p>
                 <div className="flex items-center justify-between gap-2 pt-1">
-                  {r.source === "shopper" ? <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Shopper review</span> : <span />}
-                  <button type="button" onClick={() => vote(r.id)} aria-pressed={voted.includes(r.id)} disabled={voted.includes(r.id)} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted disabled:cursor-default disabled:bg-primary/5 disabled:text-primary"><ThumbsUp className="size-3.5" aria-hidden="true" /> Helpful{(helpful[r.id] ?? 0) > 0 && ` (${helpful[r.id]})`}</button>
+                  <span className="min-w-0 text-xs text-muted-foreground" role="status">{notice?.id === r.id && (notice.signIn ? <Link href={signInHref} className="font-medium text-primary hover:underline">{notice.text}</Link> : notice.text)}</span>
+                  <button type="button" onClick={() => void vote(r.id)} aria-pressed={voted.includes(r.id)} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium hover:bg-muted ${voted.includes(r.id) ? "border-primary/40 bg-primary/5 text-primary" : ""}`}><ThumbsUp className={`size-3.5 ${voted.includes(r.id) ? "fill-primary/20" : ""}`} aria-hidden="true" /> Helpful{(counts[r.id] ?? r.helpful) > 0 && ` (${counts[r.id] ?? r.helpful})`}</button>
                 </div>
               </article>
             </CarouselItem>

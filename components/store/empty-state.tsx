@@ -1,7 +1,8 @@
+"use client"
 import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
 import { ArrowRight } from "lucide-react"
-import { categories } from "@/features/catalog/demo"
+import { useCategories } from "@/features/catalog/use-categories"
 
 /**
  * Friendly empty state for cart, checkout and similar dead ends: an icon on a soft glow, a clear message,
@@ -10,6 +11,7 @@ import { categories } from "@/features/catalog/demo"
 export function StoreEmptyState({ icon: Icon, title, text, primary, secondary, suggest = true }: {
   icon: LucideIcon; title: string; text: string; primary: { href: string; label: string }; secondary?: { href: string; label: string }; suggest?: boolean
 }) {
+  const categories = useCategories()
   return (
     <section aria-labelledby="empty-title" className="relative isolate grid justify-items-center gap-5 overflow-hidden rounded-3xl border bg-card px-5 py-14 text-center shadow-sm sm:py-20">
       <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-60 [background-image:radial-gradient(circle_at_1px_1px,oklch(0.528_0.202_21.4/0.16)_1px,transparent_0)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
@@ -23,7 +25,7 @@ export function StoreEmptyState({ icon: Icon, title, text, primary, secondary, s
         <Link href={primary.href} className="group inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/25 transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">{primary.label}<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" /></Link>
         {secondary && <Link href={secondary.href} className="inline-flex h-11 items-center rounded-xl border bg-background px-6 text-sm font-semibold transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">{secondary.label}</Link>}
       </div>
-      {suggest && (
+      {suggest && categories.length > 0 && (
         <div className="mt-2 grid justify-items-center gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Popular right now</p>
           <ul className="flex flex-wrap justify-center gap-2">

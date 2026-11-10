@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { ArrowRight, Heart } from "lucide-react"
 import { SectionHeader } from "./section-header"
-import { collections } from "@/features/catalog/demo"
+import { collections } from "@/features/catalog/collections"
 
 export function CollectionsSection() {
   return (

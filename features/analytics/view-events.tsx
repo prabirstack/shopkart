@@ -1,16 +1,18 @@
 "use client"
 import { useEffect, useRef } from "react"
-import { productById } from "@/features/catalog/demo"
+import type { Product } from "@/features/catalog/types"
+import { useProducts } from "@/features/catalog/use-products"
 import { trackViewItem } from "./events"
 
-/** Fires view_item once per product page view. Renders nothing. */
-export function ViewItemEvent({ productId }: { productId: string }) {
+/** Fires view_item once per product page view. Renders nothing. Pass `product` when you have it; otherwise it is looked up by id. */
+export function ViewItemEvent({ productId, product }: { productId: string; product?: Product }) {
   const sent = useRef<string | null>(null)
+  const lookup = useProducts(product ? [] : [productId])
+  const p = product ?? lookup.products[0]
   useEffect(() => {
-    if (sent.current === productId) return
+    if (!p || sent.current === productId) return
     sent.current = productId
-    const p = productById(productId)
-    if (p) trackViewItem(p)
-  }, [productId])
+    trackViewItem(p)
+  }, [productId, p])
   return null
 }

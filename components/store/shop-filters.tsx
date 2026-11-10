@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { brands, categories } from "@/features/catalog/demo"
-import { facetCounts, shopHref, type ShopParams } from "@/features/catalog/query"
+import { getBrands, getCategories, getShopFacets } from "@/features/catalog/data"
+import { shopHref, type ShopParams } from "@/features/catalog/query"
 import { ChevronDown, Star } from "lucide-react"
 
 /** Collapsible filter section. Native <details>, so it works without JavaScript. */
@@ -19,8 +19,9 @@ function FilterGroup({ title, open = true, children }: { title: string; open?: b
 const field = "h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
 
 /** A plain GET form: filters live in the URL and work before any JavaScript loads. */
-export function ShopFilters({ params, idPrefix }: { params: ShopParams; idPrefix: string }) {
-  const facets = facetCounts(params)
+export async function ShopFilters({ params, idPrefix }: { params: ShopParams; idPrefix: string }) {
+  const [facets, categories, allBrands] = await Promise.all([getShopFacets(params), getCategories(), getBrands()])
+  const brands = allBrands.map((b) => b.name)
   return (
     <form action="/products" method="get" className="grid gap-4">
       {params.q && <input type="hidden" name="q" value={params.q} />}
@@ -29,18 +30,18 @@ export function ShopFilters({ params, idPrefix }: { params: ShopParams; idPrefix
         <label className="flex items-center gap-2 text-sm">
           <input type="radio" name="category" value="" defaultChecked={params.category === ""} className="accent-primary" /> All categories
         </label>
-        {categories.filter((c) => (facets.categories.get(c.slug) ?? 0) > 0 || params.category === c.slug).map((c) => (
+        {categories.filter((c) => (facets.categories[c.slug] ?? 0) > 0 || params.category === c.slug).map((c) => (
           <label key={c.slug} className="flex items-center gap-2 text-sm">
             <input type="radio" name="category" value={c.slug} defaultChecked={params.category === c.slug} className="accent-primary" />
-            <span className="flex-1">{c.name}</span><span className="text-xs text-muted-foreground">{facets.categories.get(c.slug) ?? 0}</span>
+            <span className="flex-1">{c.name}</span><span className="text-xs text-muted-foreground">{facets.categories[c.slug] ?? 0}</span>
           </label>
         ))}
       </FilterGroup>
       <FilterGroup title="Brand">
-        {brands.filter((b) => (facets.brands.get(b) ?? 0) > 0 || params.brands.includes(b)).map((b) => (
+        {brands.filter((b) => (facets.brands[b] ?? 0) > 0 || params.brands.includes(b)).map((b) => (
           <label key={b} className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="brand" value={b} defaultChecked={params.brands.includes(b)} className="accent-primary" />
-            <span className="flex-1">{b}</span><span className="text-xs text-muted-foreground">{facets.brands.get(b) ?? 0}</span>
+            <span className="flex-1">{b}</span><span className="text-xs text-muted-foreground">{facets.brands[b] ?? 0}</span>
           </label>
         ))}
       </FilterGroup>

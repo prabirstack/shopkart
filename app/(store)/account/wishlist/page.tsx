@@ -7,17 +7,18 @@ import { buttonVariants } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useHydrated } from "@/features/cart/hooks"
-import { productById } from "@/features/catalog/demo"
+import { useProducts } from "@/features/catalog/use-products"
 import { useWishlist } from "@/features/wishlist/store"
 
 export default function AccountWishlistPage() {
   const ids = useWishlist((s) => s.ids)
   const hydrated = useHydrated()
-  const items = ids.flatMap((id) => { const p = productById(id); return p ? [p] : [] })
+  const { products: items, loading } = useProducts(ids)
+  const waiting = !hydrated || (ids.length > 0 && loading)
   return (
     <>
-      <AccountTitle title="Wishlist" description={hydrated && items.length > 0 ? `${items.length} saved ${items.length === 1 ? "item" : "items"}` : "Products you have saved for later."} />
-      {!hydrated ? <Skeleton className="h-64 w-full rounded-xl" /> : items.length === 0 ? (
+      <AccountTitle title="Wishlist" description={!waiting && items.length > 0 ? `${items.length} saved ${items.length === 1 ? "item" : "items"}` : "Products you have saved for later."} />
+      {waiting ? <Skeleton className="h-64 w-full rounded-xl" /> : items.length === 0 ? (
         <Empty className="rounded-xl border">
           <EmptyHeader><EmptyMedia variant="icon"><Heart aria-hidden="true" /></EmptyMedia><EmptyTitle>Your wishlist is empty</EmptyTitle><EmptyDescription>Tap the heart on any product to save it here for later.</EmptyDescription></EmptyHeader>
           <EmptyContent><Link href="/products" className={buttonVariants()}>Discover products</Link></EmptyContent>

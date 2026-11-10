@@ -2,7 +2,7 @@ import Link from "next/link"
 import { ProductCard } from "@/components/store/product-card"
 import { StoreBreadcrumbs } from "@/components/store/breadcrumbs"
 import { PageBanner } from "@/components/store/page-banner"
-import type { Product } from "@/features/catalog/demo"
+import type { Product } from "@/features/catalog/types"
 
 export function ProductListPage({ title, intro, products, moreHref = "/products", moreLabel = "Browse the full shop" }: {
   title: string; intro: string; products: Product[]; moreHref?: string; moreLabel?: string

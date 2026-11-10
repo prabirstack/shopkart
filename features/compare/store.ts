@@ -1,6 +1,7 @@
 "use client"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
+import { isUuid } from "@/features/catalog/types"
 
 export const MAX_COMPARE = 4
 
@@ -27,6 +28,6 @@ export const useCompare = create<CompareState>()(
       setIds: (ids) => set({ ids: [...new Set(ids)].slice(0, MAX_COMPARE) }),
       clear: () => set({ ids: [] }),
     }),
-    { name: "shopkart-compare", storage: createJSONStorage(() => localStorage), skipHydration: true },
+    { name: "shopkart-compare", storage: createJSONStorage(() => localStorage), skipHydration: true, version: 2, migrate: (state) => ({ ids: (((state ?? {}) as { ids?: string[] }).ids ?? []).filter(isUuid) }) as never },
   ),
 )

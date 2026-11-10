@@ -2,7 +2,7 @@
 import { useRef, useState } from "react"
 import { ChevronLeft, ChevronRight, Maximize2, ZoomIn } from "lucide-react"
 import Image from "next/image"
-import { productById } from "./demo"
+import { categoryMeta } from "./category-meta"
 import { productImages } from "./images"
 import { ImageLightbox } from "./image-lightbox"
 
@@ -14,10 +14,10 @@ const HOVER_ZOOM = 2.2
  * phones). Hover zooms in place, click or the Enlarge button opens the full-screen viewer.
  * The placeholder icons swap for next/image photos later without changing any behaviour.
  */
-export function ProductGallery({ productId, badge }: { productId: string; badge?: string }) {
-  // Icons are functions and cannot cross the server/client boundary, so look the product up here.
-  const product = productById(productId)!
-  const Icon = product.icon
+export function ProductGallery({ slug, title, category, badge }: { slug: string; title: string; category: string; badge?: string }) {
+  // Icons are functions and cannot cross the server/client boundary, so pick the placeholder from the category here.
+  const product = { slug, title }
+  const { icon: Icon } = categoryMeta(category)
   // Real photos when they exist (main image first); otherwise five placeholder views.
   const photos = productImages(product.slug)
   const views = photos.length > 0 ? photos.map((_, i) => PLACEHOLDER_VIEWS[i] ?? `View ${i + 1}`) : PLACEHOLDER_VIEWS

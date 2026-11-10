@@ -3,7 +3,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { AuthCard } from "@/components/info/auth-card"
 import { AuthForm } from "@/components/auth/auth-form"
-import { authClient } from "@/lib/auth-client"
+import { authClient, safeNext } from "@/lib/auth-client"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -25,7 +25,7 @@ export default function RegisterPage() {
             if (error.code === "FAILED_TO_CREATE_USER" && phone) return "We couldn't create your account. That mobile number may already be linked to another account."
             return error.message ?? "We couldn't create your account."
           }
-          router.push("/account"); router.refresh()
+          router.push(safeNext(new URLSearchParams(window.location.search).get("next"))); router.refresh()
         }} />
       <p className="text-sm text-muted-foreground">Already have an account? <Link href="/login" className="font-medium text-primary hover:underline">Sign in</Link></p>
     </AuthCard>
