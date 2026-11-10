@@ -1,14 +1,7 @@
-import { DemoNotice } from "@/components/admin/demo-notice"
-import { OrderTable } from "@/components/admin/order-table"
-import { PageHeader } from "@/components/admin/page-header"
-import { recentOrders } from "@/features/admin/demo"
+import { Suspense } from "react"
+import { OrdersView } from "@/components/admin/orders-view"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function AdminOrdersPage() {
-  return (
-    <>
-      <PageHeader title="Orders" description="Every order and where it is in fulfillment." />
-      <DemoNotice />
-      <OrderTable rows={recentOrders} caption="Orders, newest first." />
-    </>
-  )
+  return <Suspense fallback={<Skeleton className="h-[32rem] rounded-2xl" />}><OrdersView /></Suspense>
 }

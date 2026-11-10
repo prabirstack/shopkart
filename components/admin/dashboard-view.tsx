@@ -8,21 +8,13 @@ import { OrderStatusBadge, orderStatusMeta } from "./order-status-badge"
 import { PageHeader } from "./page-header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { delta, formatShortDate, previousSlice, rangeSlice, sum, topCategories, trafficSources, type Range } from "@/features/admin/analytics"
+import { downloadCsv } from "@/features/admin/csv"
 import { fmtDateTime, money, moneyCompact, number } from "@/features/admin/format"
 import { useAdminReady } from "@/features/admin/hooks"
 import { orderTotal, useAdmin } from "@/features/admin/store"
 import type { OrderStatus } from "@/features/admin/types"
 
 const RANGES: { value: Range; label: string }[] = [{ value: 7, label: "7 days" }, { value: 30, label: "30 days" }, { value: 90, label: "90 days" }]
-
-function downloadCsv(name: string, rows: (string | number)[][]) {
-  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n")
-  const a = document.createElement("a")
-  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }))
-  a.download = name
-  a.click()
-  URL.revokeObjectURL(a.href)
-}
 
 export function DashboardView() {
   const ready = useAdminReady()
