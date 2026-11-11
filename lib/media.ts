@@ -28,7 +28,7 @@ export const ACCEPT_ATTR = ACCEPTED_TYPES.join(",")
 
 /** Recommended artwork size per banner placement, shown in the banner form. */
 export const BANNER_SIZES = {
-  home_hero: { width: 1600, height: 600, note: "Keep the headline area clear: the title and button are drawn over the left side." },
+  home_hero: { width: 1800, height: 600, note: "Keep the headline area clear: the title and button are drawn over the left side." },
   home_promo_grid: { width: 800, height: 800, note: "Square tiles." },
   category_banner: { width: 1600, height: 400, note: "Wide and short." },
   cart_banner: { width: 1200, height: 300, note: "Wide and short." },

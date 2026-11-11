@@ -15,20 +15,20 @@ const SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
  * zooms (or swaps to the second photo when there is one), a "Quick view" pill slides up and
  * the title takes the brand colour.
  */
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
   const off = discountPercent(product)
   const second = productPhotos(product.slug, product.images)[1]?.url
   const badge = off > 0 ? `-${off}%` : product.badge
   return (
-    <article className="group/card relative flex h-full flex-col rounded-2xl border bg-card p-3 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-within:border-primary/30 focus-within:shadow-xl">
+    <article data-compact={compact || undefined} className="product-card group/card relative flex h-full flex-col rounded-2xl border bg-card p-3 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-within:border-primary/30 focus-within:shadow-xl">
       {badge && (
         <span className="absolute left-3 top-3 z-10 origin-top-left rounded-md bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground transition-transform duration-300 group-hover/card:scale-110">
           {badge}
         </span>
       )}
-      <div className="absolute right-3 top-3 z-10 grid gap-1.5 transition-transform duration-300"><WishlistButton productId={product.id} title={product.title} product={product} /><CompareToggle productId={product.id} title={product.title} /></div>
+      <div className="absolute right-3 top-3 z-10 grid gap-1.5 transition-transform duration-300"><WishlistButton productId={product.id} title={product.title} product={product} />{!compact && <CompareToggle productId={product.id} title={product.title} />}</div>
       <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col gap-2 rounded-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
-        <div className={`relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80 ${product.stock === 0 ? "opacity-50" : ""}`}>
+        <div className={`product-card-art relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-200/80 ${product.stock === 0 ? "opacity-50" : ""}`}>
           <div className={`absolute inset-0 transition-all duration-500 ease-out group-hover/card:scale-110 ${second ? "group-hover/card:opacity-0" : ""}`}>
             <ProductArt slug={product.slug} title={product.title} category={product.category} images={product.images} sizes={SIZES} />
           </div>
@@ -41,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
             <Eye className="size-3.5" /> Quick view
           </span>
         </div>
-        <p className="text-xs font-medium text-muted-foreground">{product.brand}</p>
+        {!compact && <p className="text-xs font-medium text-muted-foreground">{product.brand}</p>}
         <h3 className="product-title -mt-1 line-clamp-2 min-h-[2.8em] transition-colors duration-200 group-hover/card:text-primary">{product.title}</h3>
         {product.rating && (
           <p className="flex items-center gap-1 text-xs text-muted-foreground">

@@ -5,6 +5,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { Pencil, Pause, Play, Plus, Trash2 } from "lucide-react"
 import { BannerImageField } from "./banner-image-field"
+import { StorefrontArtwork } from "./storefront-artwork"
 import { ConfirmDialog } from "./confirm-dialog"
 import { PageHeader } from "./page-header"
 import { StatusBadge } from "./status-badge"
@@ -104,7 +105,7 @@ export function BannersView({ banners }: { banners: AdminBanner[] }) {
       {banners.length > 0 && (
         <ul aria-busy={busy} className={`grid gap-3 transition-opacity md:grid-cols-2 ${busy ? "opacity-70" : ""}`}>{sorted.map((b) => { const st = status(b, today); return (
           <li key={b.id} className="grid gap-3 rounded-2xl border bg-card p-5 shadow-xs">
-            {b.image && <div className="relative aspect-[8/3] overflow-hidden rounded-lg border bg-muted"><Image src={b.image.url} alt={b.image.alt || `${b.title} banner`} fill sizes="(max-width: 768px) 90vw, 420px" className="object-cover" /></div>}
+            {b.image && <div className="relative aspect-[3/1] overflow-hidden rounded-lg border bg-muted"><Image src={b.image.url} alt={b.image.alt || `${b.title} banner`} fill sizes="(max-width: 768px) 90vw, 420px" className="object-contain" /></div>}
             <div className="flex items-start justify-between gap-3"><div><p className="font-semibold">{b.title}</p><p className="text-sm text-muted-foreground">{b.slot} · links to <Link href={b.href} className="text-primary hover:underline">{b.href}</Link></p></div><StatusBadge tone={tone[st]}>{st}</StatusBadge></div>
             <p className="text-sm text-muted-foreground">{fmtDate(b.starts)} to {fmtDate(b.ends)}</p>
             <div className="flex gap-2">
@@ -113,6 +114,7 @@ export function BannersView({ banners }: { banners: AdminBanner[] }) {
               <button onClick={() => setRemoving(b)} className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/5"><Trash2 className="size-3.5" aria-hidden="true" /> Delete</button>
             </div>
           </li>) })}</ul>)}
+      <StorefrontArtwork />
       {creating && <BannerDialog onClose={() => setCreating(false)} onSaved={() => router.refresh()} />}
       {editing && <BannerDialog key={editing.id} banner={editing} onClose={() => setEditing(null)} onSaved={() => router.refresh()} />}
       <ConfirmDialog open={removing !== null} onOpenChange={(o) => !o && setRemoving(null)} title={`Delete "${removing?.title}"?`} description={`This removes the ${removing?.slot} campaign scheduled ${removing ? fmtDate(removing.starts) : ""} to ${removing ? fmtDate(removing.ends) : ""}.`} confirmLabel="Delete banner" onConfirm={() => { if (removing) void del(removing.id) }} />

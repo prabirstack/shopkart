@@ -1,0 +1,50 @@
+[
+  {
+    "brand": "Lenovo",
+    "page": "https://brandworld.lenovo.com/visual-identity/logo/",
+    "asset": "https://media.lenovobrandworld.fiestic.com/2022/06/08010946/LenovoLogo_POS-Red-H.png",
+    "retrieved": "2026-11-11"
+  },
+  {
+    "brand": "Philips",
+    "page": "https://www.philips.com/a-w/about/news/media-library/2024-Philips-Wordmark.html",
+    "asset": "https://images.philips.com/is/image/PhilipsConsumer/Philips_Wordmark-ALI-global",
+    "retrieved": "2026-11-11"
+  },
+  {
+    "brand": "Samsung",
+    "page": "https://www.samsung.com/us/about-us/brand-identity/logo/",
+    "asset": "https://images.samsung.com/is/content/samsung/assets/global/about-us/resource/Samsung_lettermark.zip",
+    "retrieved": "2026-11-11"
+  },
+  {
+    "brand": "Tefal",
+    "page": "https://tefal.in",
+    "asset": "https://tefal.in/public/assets/frontend/images/common/Tefal-default-logo.png",
+    "retrieved": "2026-11-11"
+  },
+  {
+    "brand": "Nike",
+    "page": "https://www.nike.com/",
+    "asset": "https://prod-assets.nike.in/NIKE/nes-nike-reloaded-svc/static/assets/images/nike-logo-192x192.svg",
+    "retrieved": "2026-11-11"
+  },
+  {
+    "brand": "Apple",
+    "page": "https://www.apple.com/",
+    "asset": "Inline header SVG from official website",
+    "retrieved": "2026-11-11"
+  },
+  {
+    "brand": "Adidas",
+    "page": "https://commons.wikimedia.org/wiki/File:Adidas_2022_logo.svg",
+    "asset": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Adidas_2022_logo.svg",
+    "retrieved": "2026-11-11"
+  },
+  {
+    "brand": "Amazon Basics",
+    "page": "https://press.aboutamazon.com/logos?p=2",
+    "asset": "https://assets.aboutamazon.com/6a/6b/19eba4524108a29b6952f041db35/amazon-basics-logo-cd84f7c9.png",
+    "retrieved": "2026-11-11"
+  }
+]

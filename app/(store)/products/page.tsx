@@ -59,9 +59,21 @@ async function ShopResults({ searchParams }: { searchParams: PageProps<"/product
         </aside>
         <div className="grid min-w-0 content-start gap-4">
           {category && look && (
-            <div className={`flex items-center gap-4 rounded-2xl p-5 ${look.tint}`}>
-              <look.icon className={`size-12 shrink-0 ${look.iconColor}`} strokeWidth={1.2} aria-hidden="true" />
-              <p className="text-sm">Browse our {category.name.toLowerCase()} range. Free delivery above {rupees(FREE_DELIVERY_ABOVE_PAISE)}.</p>
+            <div className={`group relative isolate flex min-h-32 items-center justify-between gap-5 overflow-hidden rounded-2xl border border-black/5 p-5 shadow-sm sm:px-7 ${look.tint}`}>
+              <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-16 -z-10 size-56 rounded-full border-[28px] border-white/30 transition-transform duration-500 group-hover:scale-110" />
+              <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+                <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/80 shadow-sm ring-1 ring-black/5 sm:size-16">
+                  <look.icon className={`size-8 ${look.iconColor}`} strokeWidth={1.6} aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-foreground/55">Explore the collection</p>
+                  <p className="mt-1 text-pretty text-base font-semibold leading-snug text-foreground sm:text-lg">Browse our {category.name.toLowerCase()} range</p>
+                  <p className="mt-1 text-xs text-foreground/65 sm:text-sm">Curated picks for everyday living.</p>
+                </div>
+              </div>
+              <span className="hidden shrink-0 items-center gap-2 rounded-full border border-white/70 bg-white/75 px-4 py-2 text-xs font-semibold text-foreground shadow-sm sm:inline-flex">
+                <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />Free delivery above {rupees(FREE_DELIVERY_ABOVE_PAISE)}
+              </span>
             </div>
           )}
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -111,10 +123,18 @@ async function ShopResults({ searchParams }: { searchParams: PageProps<"/product
             </ul>
           )}
           {pages > 1 && (
-            <nav aria-label="Pagination" className="mt-2 flex items-center justify-center gap-3 text-sm">
-              {page > 1 ? <Link href={shopHref({ ...params, page: page - 1 })} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 hover:bg-muted"><ChevronLeft className="size-4" aria-hidden="true" /> Previous</Link> : <span />}
-              <span className="text-muted-foreground">Page {page} of {pages}</span>
-              {page < pages ? <Link href={shopHref({ ...params, page: page + 1 })} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 hover:bg-muted">Next <ChevronRight className="size-4" aria-hidden="true" /></Link> : <span />}
+            <nav aria-label="Pagination" className="mt-3 flex flex-wrap items-center justify-center gap-2 border-t pt-5 text-sm">
+              {page > 1 && <Link href={shopHref({ ...params, page: page - 1 })} rel="prev" className="inline-flex h-10 items-center gap-1 rounded-full border bg-background px-4 font-medium transition hover:border-primary hover:text-primary"><ChevronLeft className="size-4" aria-hidden="true" /> Previous</Link>}
+              <div className="flex items-center gap-1" aria-label={`Page ${page} of ${pages}`}>
+                {Array.from({ length: pages }, (_, i) => i + 1).filter((n) => n === 1 || n === pages || Math.abs(n - page) <= 1).map((n, i, visible) => (
+                  <span key={n} className="contents">
+                    {i > 0 && n - visible[i - 1] > 1 && <span aria-hidden="true" className="px-1 text-muted-foreground">…</span>}
+                    <Link href={shopHref({ ...params, page: n })} aria-current={n === page ? "page" : undefined} aria-label={`Page ${n}`} className={`grid size-10 place-items-center rounded-full border font-medium transition ${n === page ? "border-primary bg-primary text-primary-foreground shadow-sm" : "bg-background hover:border-primary hover:text-primary"}`}>{n}</Link>
+                  </span>
+                ))}
+              </div>
+              {page < pages && <Link href={shopHref({ ...params, page: page + 1 })} rel="next" className="inline-flex h-10 items-center gap-1 rounded-full border bg-background px-4 font-medium transition hover:border-primary hover:text-primary">Next <ChevronRight className="size-4" aria-hidden="true" /></Link>}
+              <span className="sr-only" aria-live="polite">Page {page} of {pages}. Showing {first} to {last} of {total} products.</span>
             </nav>
           )}
         </div>

@@ -1,43 +1,39 @@
 "use client"
 import Link from "next/link"
-import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { SectionHeader } from "@/components/store/section-header"
-import { ARTICLE_CATEGORIES, type Article, type ArticleCategory } from "@/features/articles/types"
+import { type Article, type ArticleCategory } from "@/features/articles/types"
 import { ArticleCard } from "./article-card"
+import { EditorialStories } from "./editorial-stories"
+import { ArticleCategorySidebar } from "./article-category-sidebar"
 
 /** Full listing with category filters. Receives the published articles from the server. */
-export function ArticleList({ articles: all }: { articles: Article[] }) {
-  const [category, setCategory] = useState<"all" | ArticleCategory>("all")
+export function ArticleList({ articles: all, category = "all" }: { articles: Article[]; category?: "all" | ArticleCategory }) {
   const list = all.filter((a) => category === "all" || a.category === category)
-  const [first, ...rest] = list
   return (
-    <div className="grid gap-6">
-      <div role="group" aria-label="Filter by type" className="flex flex-wrap gap-2 text-sm">
-        {(["all", ...ARTICLE_CATEGORIES] as const).map((c) => (
-          <button key={c} type="button" aria-pressed={category === c} onClick={() => setCategory(c)}
-            className={`rounded-full border px-4 py-1.5 font-medium transition-colors ${category === c ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
-            {c === "all" ? "All" : c}<span className="ml-1.5 text-xs opacity-70">{c === "all" ? all.length : all.filter((a) => a.category === c).length}</span>
-          </button>
-        ))}
+    <div className="grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_13rem]">
+      <div className="min-w-0 space-y-7">
+        {list.length === 0 ? <p className="rounded-xl border bg-card p-10 text-center text-muted-foreground">No articles in this category yet.</p> : (
+          <>
+            <EditorialStories articles={list.slice(0, 5)} />
+            {list.length > 5 && <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{list.slice(5).map((a) => <li key={a.id}><ArticleCard article={a} /></li>)}</ul>}
+          </>
+        )}
       </div>
-      {list.length === 0 ? <p className="rounded-xl border bg-card p-10 text-center text-muted-foreground">No articles in this category yet.</p> : (
-        <>
-          <ArticleCard article={first} featured />
-          {rest.length > 0 && <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{rest.map((a) => <li key={a.id}><ArticleCard article={a} /></li>)}</ul>}
-        </>
-      )}
+      <ArticleCategorySidebar articles={all} selected={category} />
     </div>
   )
 }
 
 /** Compact strip for the homepage. */
-export function LatestGuides({ initial, limit = 3 }: { /** The published articles, newest first. */ initial: Article[]; limit?: number }) {
+export function LatestGuides({ initial, limit = 5 }: { /** The published articles, newest first. */ initial: Article[]; limit?: number }) {
   const list = initial.slice(0, limit)
+  if (!list.length) return null
   return (
-    <section aria-labelledby="guides-heading">
-      <SectionHeader id="guides-heading" title="Buying guides & reviews" href="/news" linkLabel="All articles" />
-      <ul className="grid gap-4 md:grid-cols-3">{list.map((a) => <li key={a.id}><ArticleCard article={a} /></li>)}</ul>
+    <section aria-labelledby="guides-heading" className="border-t-2 border-foreground pt-5">
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">The ShopKart Journal</p>
+      <SectionHeader id="guides-heading" title="Buying guides & reviews" href="/news" linkLabel="Explore the journal" />
+      <div className="mt-5 grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_13rem]"><EditorialStories articles={list} /><ArticleCategorySidebar articles={initial} /></div>
     </section>
   )
 }

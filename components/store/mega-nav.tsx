@@ -73,7 +73,7 @@ export function MegaNav({ menu }: { menu: MenuData }) {
         }
       }}>
       <div className="store-container grid grid-cols-[14rem_minmax(0,1fr)] items-center gap-4">
-        <Link href="/categories" onMouseEnter={scheduleClose} className="my-2 flex h-11 items-center justify-between rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+        <Link href="/categories" onMouseEnter={scheduleClose} className="my-1 flex h-9 items-center justify-between rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
           <span className="flex items-center gap-3"><LayoutGrid className="size-5" aria-hidden="true" /> All Categories</span>
           <ChevronDown className="size-4" aria-hidden="true" />
         </Link>

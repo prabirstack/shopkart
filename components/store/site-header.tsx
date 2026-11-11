@@ -25,7 +25,7 @@ export async function SiteHeader() {
     <header className="bg-card shadow-sm">
       <UtilityBar />
       <div className="border-b">
-        <div className="store-container grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 py-3 lg:gap-x-8">
+        <div className="store-container grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 py-2 lg:gap-x-8">
           <div className="flex items-center gap-2">
             <div className="lg:hidden"><MobileNavigation categories={categories.filter((c) => c.count > 0).map(({ slug, name }) => ({ slug, name }))} menu={menu} /></div>
             <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight">

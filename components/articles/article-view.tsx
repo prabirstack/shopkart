@@ -26,7 +26,7 @@ export function ArticleView({ article, products, related }: { article: Article; 
           {article.updatedAt !== article.publishedAt && <span>Updated {formatArticleDate(article.updatedAt)}</span>}
         </p>
       </header>
-      <ArticleCover category={article.category} className="h-48 rounded-2xl sm:h-64" />
+      <ArticleCover slug={article.slug} category={article.category} className="aspect-video w-full max-w-4xl rounded-2xl" sizes="(min-width: 960px) 896px, 100vw" preload />
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
         <article className="min-w-0 max-w-3xl">
           <RenderDoc doc={article.doc} />

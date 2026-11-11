@@ -1,0 +1,57 @@
+[
+  {
+    "slug": "tech",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Very wide 3:1 premium technology campaign. Deep burgundy to near-black studio. On right half only: sculptural black headphones as hero, slim open laptop with abstract purple screen, small smartwatch, on a glossy red low podium with an elegant illuminated red arc behind. Left 45% empty dark burgundy for white headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "home",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Very wide 3:1 premium interiors campaign. Moody warm walnut and terracotta living room. On right half only cream boucle armchair, muted rust cushion, travertine side table and elegant leafy plant, warm sunbeam. Left 45% empty deep chocolate wall for white headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "style",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Very wide 3:1 premium fashion campaign. On right half only a stylish adult woman wearing a beige trench coat over black outfit, waist-up editorial portrait, sunglasses, natural confident pose. Rich plum studio with subtle warm spotlight. Left 45% empty dark plum for white headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "promo-fashion",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Landscape 16:9 fashion promotional banner. On right 45% only a stylish adult woman in beige trench coat and black sunglasses, waist-up, warm peach studio, sophisticated editorial fashion photography. Left 55% empty pale peach for dark headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "promo-home",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Wide 3:1 interiors banner. On right 40% cream armchair with teal cushion and a small green plant, warm ivory minimalist room. Left 60% empty warm ivory wall for dark headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "promo-electronics",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Wide 3:1 gaming promotional banner. On right 40% a beautifully lit black wireless game controller on a low slate podium, subtle blue and red rim lighting, deep midnight navy studio. Left 60% empty midnight navy for white headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "promo-weekend",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Landscape 16:9 shopping sale banner. On right 45% elegant red and orange paper shopping bags, one small blank red gift tag, warm golden apricot studio and sculptural platform, soft luxurious shadows. Left 55% empty pale golden apricot for dark headline. No percent symbols. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "collection-work",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Wide 3:1 workspace banner. On right 45% slim open laptop with subtle neutral screen, small white coffee cup and leafy desk plant, clean pale cream oak desk. Left 55% empty pale cream for dark headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "collection-fitness",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Wide 3:1 fitness shopping banner. On right 45% neatly rolled lavender yoga mat and pair of black dumbbells, pale blush studio and soft shadows. Left 55% empty pale blush for dark headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "collection-kitchen",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Wide 3:1 kitchen shopping banner. On right 45% modern black air fryer with blank display and ceramic bowl of colorful roasted vegetables on pale peach counter. Left 55% empty pale peach for dark headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "collection-travel",
+    "prompt": "Use case: ads-marketing. Asset: finished photographic ecommerce banner background for ShopKart. Wide 3:1 travel shopping banner. On right 45% upright teal hard-shell suitcase and natural straw sunhat against light powder-blue studio. Left 55% empty pale powder blue for dark headline. Polished high-end commercial photography, realistic materials, coherent lighting, carefully art-directed uncluttered composition. Keep entire product grouping inside the right-hand zone, with generous safe margins at top and bottom for responsive cropping. Full bleed continuous background, no collage, no inset frames, no white product-photo rectangle. Absolutely no text, letters, logos, prices, badges, watermarks, or border. This is artwork only; website renders text separately.",
+    "mode": "built-in imagegen"
+  }
+]

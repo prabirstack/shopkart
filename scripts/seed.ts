@@ -18,6 +18,8 @@ import { seedArticles } from "./data/articles"
 import { catalog, categories as demoCategories } from "./data/catalog"
 import { addresses as demoAddresses } from "./data/account"
 import { customers, initialBanners, initialCoupons, initialMovements, initialOrders, initialProducts, initialReturns, initialSettings } from "./data/admin"
+import type { OrderStatus } from "../features/admin/types"
+import { generateHistory } from "./data/history"
 import { reviewsFor } from "./data/reviews"
 import imageManifest from "../features/catalog/image-manifest.json"
 import { gstFromInclusive } from "../lib/money"
@@ -123,6 +125,37 @@ async function main() {
       await tx.insert(s.orderEvents).values(o.timeline.map((t) => ({ orderId: order.id, status: t.status, actorLabel: t.by, note: t.note ?? null, createdAt: new Date(t.at) })))
       const captured = !["pending", "cancelled"].includes(o.status)
       await tx.insert(s.payments).values({ orderId: order.id, providerOrderId: `order_demo_${o.id.slice(3)}`, providerPaymentId: captured ? o.paymentId : null, amountPaise: order.totalPaise, status: o.status === "refunded" ? "refunded" : captured ? "captured" : "created", method: o.paymentMethod, signatureVerifiedAt: captured ? new Date(o.placed) : null })
+    }
+    // A deterministic 90-day history, so the admin charts and reports have a realistic shape to show.
+    const history = generateHistory(new Date(), catalog.map((p) => ({ id: p.id, pricePaise: p.pricePaise, gstPercent: p.gstPercent, title: p.title })), customerRows.length)
+    const flowOrder = ["pending", "paid", "packed", "shipped", "delivered"] as const
+    const priceOf = new Map(catalog.map((p) => [p.id, p]))
+    for (let i = 0; i < history.length; i += 50) {
+      const chunk = history.slice(i, i + 50)
+      const built = chunk.map((h) => {
+        const lines = h.lines.map((l) => ({ ...l, p: priceOf.get(l.productId)! }))
+        const subtotal = lines.reduce((t, l) => t + l.p.pricePaise * l.quantity, 0)
+        const shipping = subtotal >= 69900 ? 0 : 4900
+        const gst = lines.reduce((t, l) => t + gstFromInclusive(l.p.pricePaise * l.quantity, l.p.gstPercent), 0)
+        const c = customers[h.customerIndex]
+        return { h, lines, row: { number: h.number, userId: customerRows[h.customerIndex].id, status: h.status, subtotalPaise: subtotal, discountPaise: 0, shippingPaise: shipping, gstIncludedPaise: gst, totalPaise: subtotal + shipping, customerName: c.name, customerEmail: c.email, customerPhone: c.phone, shipTo: { name: c.name, phone: c.phone, line1: `${10 + (i % 80)} MG Road`, city: c.city, state: STATE_BY_CITY[c.city] ?? "Karnataka", pincode: "560001" }, placedAt: h.placedAt, createdAt: h.placedAt } }
+      })
+      const inserted = await tx.insert(s.orders).values(built.map((b) => b.row)).returning()
+      const byNumber = new Map(inserted.map((o) => [o.number, o]))
+      await tx.insert(s.orderItems).values(built.flatMap((b) => b.lines.map((l) => ({ orderId: byNumber.get(b.h.number)!.id, productId: productByDemoId.get(l.productId)!.id, title: l.p.title, sku: productByDemoId.get(l.productId)!.sku, quantity: l.quantity, unitPricePaise: l.p.pricePaise, gstPercent: l.p.gstPercent }))))
+      await tx.insert(s.orderEvents).values(built.flatMap((b) => {
+        const id = byNumber.get(b.h.number)!.id, at = (hrs: number) => new Date(b.h.placedAt.getTime() + hrs * 3_600_000)
+        const target = b.h.status === "cancelled" ? 0 : b.h.status === "refunded" ? 4 : flowOrder.indexOf(b.h.status as (typeof flowOrder)[number])
+        const evs: { orderId: string; status: OrderStatus; actorLabel: string; note: string | null; createdAt: Date }[] = [{ orderId: id, status: "pending", actorLabel: "Customer", note: "Order placed", createdAt: at(0) }]
+        for (let k = 1; k <= target; k++) evs.push({ orderId: id, status: flowOrder[k], actorLabel: k === 1 ? "Razorpay" : "Staff", note: null, createdAt: at(k * 1.5) })
+        if (b.h.status === "cancelled") evs.push({ orderId: id, status: "cancelled", actorLabel: "Customer", note: "Cancelled before packing", createdAt: at(1) })
+        if (b.h.status === "refunded") evs.push({ orderId: id, status: "refunded", actorLabel: "Finance", note: "Refund issued to original payment method", createdAt: at(96) })
+        return evs
+      }))
+      await tx.insert(s.payments).values(built.map((b) => {
+        const captured = !["pending", "cancelled"].includes(b.h.status)
+        return { orderId: byNumber.get(b.h.number)!.id, providerOrderId: `order_demo_${b.h.number.slice(3)}`, providerPaymentId: captured ? `pay_demo_${b.h.number.slice(3)}` : null, amountPaise: b.row.totalPaise, status: b.h.status === "refunded" ? "refunded" as const : captured ? "captured" as const : "created" as const, method: b.h.method, signatureVerifiedAt: captured ? b.h.placedAt : null }
+      }))
     }
     const orderByNumber = new Map((await tx.select().from(s.orders)).map((o) => [o.number, o]))
     // Returns: refund amounts come from the same rules the live server uses (lib/returns.ts), so demo numbers match real ones.

@@ -72,6 +72,15 @@ reordered) in the admin. Category and campaign images still come only from the m
 
 ## How the storefront picks a photo
 
+### Reference products for empty categories
+
+`node scripts/add-category-products.mjs` adds the sports, books and automotive entries listed in
+`scripts/data/category-products.json`. Run `pnpm images` first. The import is additive and safe to rerun:
+existing products and inventory are left unchanged. New entries are published with zero stock, real WebP
+photos and reference prices (not a live Amazon price feed). Price source links are recorded in the data
+file and audit log. After a destructive development reseed, rerun this import to restore these entries.
+Allow the storefront catalog cache to refresh, or restart the development server after a CLI import.
+
 Product photos: the product's own `images` (from the database, loaded with the product) > the manifest files for its slug >
 the icon placeholder (`features/catalog/images.ts`, used by `ProductArt`, the card, the gallery, cart, checkout and
 compare). Alt text is the description staff wrote, or the product title.

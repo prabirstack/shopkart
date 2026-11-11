@@ -10,16 +10,16 @@ import { SiteHeader } from "@/components/store/site-header"
 
 export default function StoreLayout({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className="store-shell flex min-h-dvh flex-col">
       <CartHydrator />
       <WishlistSync />
       <SiteHeader />
-      {children}
+      <main className="flex-1">{children}</main>
       <SiteFooter />
       <CompareBar />
       <BackToTop />
       <Analytics />
       <ConsentBanner />
-    </>
+    </div>
   )
 }

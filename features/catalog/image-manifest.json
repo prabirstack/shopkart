@@ -1,5 +1,125 @@
 {
-  "products": {},
-  "categories": {},
-  "campaigns": {}
+  "products": {
+    "air-fryer-5-5l": [
+      "/images/products/air-fryer-5-5l.webp",
+      "/images/products/air-fryer-5-5l-2.webp",
+      "/images/products/air-fryer-5-5l-3.webp"
+    ],
+    "amazon-basics-car-vacuum": [
+      "/images/products/amazon-basics-car-vacuum.webp",
+      "/images/products/amazon-basics-car-vacuum-2.webp",
+      "/images/products/amazon-basics-car-vacuum-3.webp"
+    ],
+    "atomic-habits": [
+      "/images/products/atomic-habits.webp",
+      "/images/products/atomic-habits-2.webp"
+    ],
+    "building-blocks-set": [
+      "/images/products/building-blocks-set.webp",
+      "/images/products/building-blocks-set-2.webp",
+      "/images/products/building-blocks-set-3.webp"
+    ],
+    "electric-rice-cooker": [
+      "/images/products/electric-rice-cooker.webp",
+      "/images/products/electric-rice-cooker-2.webp",
+      "/images/products/electric-rice-cooker-3.webp"
+    ],
+    "face-serum": [
+      "/images/products/face-serum.webp",
+      "/images/products/face-serum-2.webp",
+      "/images/products/face-serum-3.webp"
+    ],
+    "fitness-band": [
+      "/images/products/fitness-band.webp",
+      "/images/products/fitness-band-2.webp"
+    ],
+    "gaming-controller": [
+      "/images/products/gaming-controller.webp",
+      "/images/products/gaming-controller-2.webp",
+      "/images/products/gaming-controller-3.webp"
+    ],
+    "laptop-backpack": [
+      "/images/products/laptop-backpack.webp",
+      "/images/products/laptop-backpack-2.webp",
+      "/images/products/laptop-backpack-3.webp"
+    ],
+    "mens-casual-sneakers": [
+      "/images/products/mens-casual-sneakers.webp",
+      "/images/products/mens-casual-sneakers-2.webp",
+      "/images/products/mens-casual-sneakers-3.webp"
+    ],
+    "mixer-grinder-750w": [
+      "/images/products/mixer-grinder-750w.webp",
+      "/images/products/mixer-grinder-750w-2.webp",
+      "/images/products/mixer-grinder-750w-3.webp"
+    ],
+    "modern-armchair": [
+      "/images/products/modern-armchair.webp",
+      "/images/products/modern-armchair-2.webp",
+      "/images/products/modern-armchair-3.webp"
+    ],
+    "nivia-garnet-football": [
+      "/images/products/nivia-garnet-football.webp",
+      "/images/products/nivia-garnet-football-2.webp",
+      "/images/products/nivia-garnet-football-3.webp"
+    ],
+    "smartphone-128gb": [
+      "/images/products/smartphone-128gb.webp",
+      "/images/products/smartphone-128gb-2.webp",
+      "/images/products/smartphone-128gb-3.webp"
+    ],
+    "smartwatch-series-7": [
+      "/images/products/smartwatch-series-7.webp",
+      "/images/products/smartwatch-series-7-2.webp",
+      "/images/products/smartwatch-series-7-3.webp"
+    ],
+    "ultrabook-14": [
+      "/images/products/ultrabook-14.webp",
+      "/images/products/ultrabook-14-2.webp",
+      "/images/products/ultrabook-14-3.webp"
+    ],
+    "wireless-earbuds-anc": [
+      "/images/products/wireless-earbuds-anc.webp",
+      "/images/products/wireless-earbuds-anc-2.webp",
+      "/images/products/wireless-earbuds-anc-3.webp"
+    ],
+    "wireless-headphones": [
+      "/images/products/wireless-headphones.webp",
+      "/images/products/wireless-headphones-2.webp",
+      "/images/products/wireless-headphones-3.webp"
+    ],
+    "yoga-mat": [
+      "/images/products/yoga-mat.webp",
+      "/images/products/yoga-mat-2.webp",
+      "/images/products/yoga-mat-3.webp"
+    ]
+  },
+  "categories": {
+    "automotive": "/images/categories/automotive.828b7706.webp",
+    "beauty": "/images/categories/beauty.adf289bb.webp",
+    "books": "/images/categories/books.3f09b74b.webp",
+    "electronics": "/images/categories/electronics.6cfde290.webp",
+    "fashion": "/images/categories/fashion.ba831f9d.webp",
+    "fitness": "/images/categories/fitness.d766caff.webp",
+    "gaming": "/images/categories/gaming.071d5e81.webp",
+    "home-living": "/images/categories/home-living.c16b7134.webp",
+    "kitchen-dining": "/images/categories/kitchen-dining.7e2fc62b.webp",
+    "laptops": "/images/categories/laptops.3a6ef8a5.webp",
+    "mobiles": "/images/categories/mobiles.74396c0e.webp",
+    "sports": "/images/categories/sports.7b3456a8.webp",
+    "toys": "/images/categories/toys.802d3b66.webp"
+  },
+  "campaigns": {
+    "collection-fitness": "/images/campaigns/collection-fitness.b6086ebe.webp",
+    "collection-kitchen": "/images/campaigns/collection-kitchen.f3812d31.webp",
+    "collection-travel": "/images/campaigns/collection-travel.fe1a637e.webp",
+    "collection-work": "/images/campaigns/collection-work.191324fe.webp",
+    "home": "/images/campaigns/home.74b5140a.webp",
+    "promo-electronics": "/images/campaigns/promo-electronics.e2992af6.webp",
+    "promo-fashion": "/images/campaigns/promo-fashion.df20826a.webp",
+    "promo-home": "/images/campaigns/promo-home.4d13a5ae.webp",
+    "promo-weekend": "/images/campaigns/promo-weekend.8ce066b8.webp",
+    "style": "/images/campaigns/style.fca8e2a0.webp",
+    "tech": "/images/campaigns/tech.d30adc1f.webp"
+  }
 }

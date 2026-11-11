@@ -1,0 +1,52 @@
+{
+  "note": "Product mappings reference sourced listing photos. Refreshed campaign and nine category artworks are generated illustrations; prompts are stored beside their WebP files.",
+  "products": {
+    "wireless-earbuds-anc": "samsung-galaxy-buds-core",
+    "smartwatch-series-7": "apple-watch-series-11",
+    "mens-casual-sneakers": "campus-rustle-sneakers",
+    "air-fryer-5-5l": "philips-air-fryer-na120",
+    "smartphone-128gb": "samsung-galaxy-s25",
+    "wireless-headphones": "boat-nirvana-751-headphones",
+    "electric-rice-cooker": "instant-pot-duo",
+    "gaming-controller": "sony-dualsense-black",
+    "ultrabook-14": "lenovo-yoga-slim-7",
+    "face-serum": "minimalist-hyaluronic-serum",
+    "mixer-grinder-750w": "philips-hl7756-mixer",
+    "building-blocks-set": "lego-classic-bricks",
+    "fitness-band": "fitbit-air-tracker",
+    "yoga-mat": "boldfit-yoga-mat",
+    "modern-armchair": "accent-armchair-yellow",
+    "laptop-backpack": "skybags-rizz-teal-backpack",
+    "nivia-garnet-football": "nivia-garnet-football",
+    "atomic-habits": "atomic-habits",
+    "amazon-basics-car-vacuum": "amazon-basics-car-vacuum"
+  },
+  "categories": {
+    "electronics": "media/categories/electronics.webp",
+    "mobiles": "media/categories/mobiles.webp",
+    "laptops": "media/categories/laptops.webp",
+    "fashion": "media/categories/fashion.webp",
+    "kitchen-dining": "media/categories/kitchen-dining.webp",
+    "beauty": "media/categories/beauty.webp",
+    "fitness": "media/categories/fitness.webp",
+    "gaming": "media/categories/gaming.webp",
+    "home-living": "media/categories/home-living.webp",
+    "sports": "media/categories/sports.webp",
+    "toys": "media/categories/toys.webp",
+    "books": "media/categories/books.webp",
+    "automotive": "media/categories/automotive.webp"
+  },
+  "campaigns": {
+    "tech": "media/campaigns/tech.webp",
+    "home": "media/campaigns/home.webp",
+    "style": "media/campaigns/style.webp",
+    "promo-fashion": "media/campaigns/promo-fashion.webp",
+    "promo-home": "media/campaigns/promo-home.webp",
+    "promo-electronics": "media/campaigns/promo-electronics.webp",
+    "promo-weekend": "media/campaigns/promo-weekend.webp",
+    "collection-work": "media/campaigns/collection-work.webp",
+    "collection-fitness": "media/campaigns/collection-fitness.webp",
+    "collection-kitchen": "media/campaigns/collection-kitchen.webp",
+    "collection-travel": "media/campaigns/collection-travel.webp"
+  }
+}

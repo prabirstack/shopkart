@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "choose-wireless-earbuds",
+    "prompt": "Use case: ads-marketing. Create a single landscape 16:9 editorial featured image for ShopKart's shopping magazine. A buying guide about choosing wireless earbuds. Three distinct unbranded pairs of wireless earbuds with open charging cases, one white, one charcoal black, one muted sage, arranged neatly on a warm ivory desk with a tiny selection of silicone ear tips. Overhead three-quarter editorial still life. Soft sage and cream backdrop, gentle daylight. Composition must remain legible as a small website thumbnail: one clear focal grouping, keep all essential objects within central 75 percent with ample breathing room, no cropped objects. Polished photorealistic commercial photography, tasteful ecommerce editorial art direction. No text, typography, prices, labels, letters, brand logos, watermarks, UI, badges or borders.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "air-fryer-buying-guide",
+    "prompt": "Use case: ads-marketing. Create a single landscape 16:9 editorial featured image for ShopKart's shopping magazine. An air fryer buying guide. Two elegant unbranded matte-black air fryers, a compact one and a larger family-size one, on a warm cream kitchen counter. The larger basket is pulled out revealing golden roast potato wedges, with a small bowl of vegetables nearby. Refined sage cabinetry softly out of focus. Warm daylight, convincing food textures. Composition must remain legible as a small website thumbnail: one clear focal grouping, keep all essential objects within central 75 percent with ample breathing room, no cropped objects. Polished photorealistic commercial photography, tasteful ecommerce editorial art direction. No text, typography, prices, labels, letters, brand logos, watermarks, UI, badges or borders.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "wireless-earbuds-anc-review",
+    "prompt": "Use case: ads-marketing. Create a single landscape 16:9 editorial featured image for ShopKart's shopping magazine. A review of black wireless earbuds with active noise cancellation. Hero close-up of two premium rounded black earbuds and their open oval charging case on a dark burgundy satin-finish pedestal. Subtle concentric red light arcs in the background suggest quiet sound isolation. Precise product materials, dramatic but elegant studio lighting, deep ruby and charcoal palette. Composition must remain legible as a small website thumbnail: one clear focal grouping, keep all essential objects within central 75 percent with ample breathing room, no cropped objects. Polished photorealistic commercial photography, tasteful ecommerce editorial art direction. No text, typography, prices, labels, letters, brand logos, watermarks, UI, badges or borders.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "earbuds-vs-headphones",
+    "prompt": "Use case: ads-marketing. Create a single landscape 16:9 editorial featured image for ShopKart's shopping magazine. An editorial comparison of earbuds versus headphones. A white pair of compact earbuds inside an open white case on the left, and large matte-black over-ear headphones on the right, balanced at equal visual prominence. Seamless studio surface gently divided into warm off-white and muted blue-grey halves, natural soft shadows, premium realistic product photography. Composition must remain legible as a small website thumbnail: one clear focal grouping, keep all essential objects within central 75 percent with ample breathing room, no cropped objects. Polished photorealistic commercial photography, tasteful ecommerce editorial art direction. No text, typography, prices, labels, letters, brand logos, watermarks, UI, badges or borders.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "smartwatch-vs-fitness-band",
+    "prompt": "Use case: ads-marketing. Create a single landscape 16:9 editorial featured image for ShopKart's shopping magazine. An editorial comparison of a smartwatch versus fitness band. A black smartwatch with rounded rectangular glass display and charcoal strap on the left, a noticeably slim black fitness band with narrow pill-shaped display on the right. Both upright at three-quarter angles on small pale stone plinths. Neutral cream background with a soft peach-to-sage light gradient, elegant studio shadows. Displays show simple abstract colorful activity rings with no lettering. Composition must remain legible as a small website thumbnail: one clear focal grouping, keep all essential objects within central 75 percent with ample breathing room, no cropped objects. Polished photorealistic commercial photography, tasteful ecommerce editorial art direction. No text, typography, prices, labels, letters, brand logos, watermarks, UI, badges or borders.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "gift-ideas-under-2000",
+    "prompt": "Use case: ads-marketing. Create a single landscape 16:9 editorial featured image for ShopKart's shopping magazine. An editorial affordable gift guide for an Indian ecommerce shop. Tastefully arranged compact wireless earbuds case, ceramic coffee mug, a small blank-cover notebook and a rolled teal yoga mat around two simple kraft gift boxes tied with red ribbon. Warm blush and ivory backdrop, soft celebratory sunlight, stylish accessible everyday gifts. No expensive luxury items. Composition must remain legible as a small website thumbnail: one clear focal grouping, keep all essential objects within central 75 percent with ample breathing room, no cropped objects. Polished photorealistic commercial photography, tasteful ecommerce editorial art direction. No text, typography, prices, labels, letters, brand logos, watermarks, UI, badges or borders.",
+    "mode": "built-in imagegen"
+  }
+]

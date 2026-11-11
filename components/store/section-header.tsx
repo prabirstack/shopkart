@@ -15,7 +15,7 @@ export function SectionHeader({
   return (
     <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 id={id} className="section-title flex items-center gap-2"><span aria-hidden="true" className="h-6 w-1 shrink-0 rounded-full bg-primary" />{title}</h2>
+        <h2 id={id} className="section-title flex items-center gap-2">{title}</h2>
         {children}
       </div>
       {href && (

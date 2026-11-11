@@ -4,9 +4,9 @@ import { ArrowLeft, ShoppingBag } from "lucide-react"
 import { SITE_NAME } from "@/lib/site"
 
 const facts = [
-  ["Roles", "Owner, catalog, warehouse, support and finance each see only their own sections."],
-  ["Invoices", "GST-inclusive prices and a tax invoice on every paid order."],
-  ["Audit trail", "Stock, price and order changes are recorded with who made them."],
+  ["Favorites", "Save the products you love and come back whenever you're ready."],
+  ["Orders", "Track deliveries, view invoices and manage your purchases."],
+  ["Your account", "Keep your addresses and preferences together in one secure place."],
 ] as const
 
 /**
@@ -15,7 +15,7 @@ const facts = [
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="grid min-h-screen bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+    <div className="auth-shell grid min-h-screen bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-neutral-950 p-10 text-neutral-300 lg:flex">
         {/* Diagonal hairlines at 45 degrees, fading out toward the bottom. Pure CSS lines: no blur, no gradient fills. */}
         <span aria-hidden="true" className="pointer-events-none absolute inset-0 [background-image:repeating-linear-gradient(45deg,rgb(255_255_255/0.07)_0,rgb(255_255_255/0.07)_1px,transparent_1px,transparent_18px)] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
@@ -24,18 +24,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <span className="text-lg font-semibold tracking-tight">{SITE_NAME}</span>
         </Link>
         <div className="relative max-w-md">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-neutral-500">Store console</p>
-          <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white">Everything about the shop, in one place.</h2>
+          <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">Welcome to ShopKart</p>
+          <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white">Your next great find starts here.</h2>
           <dl className="mt-10 divide-y divide-white/10 border-y border-white/10">
             {facts.map(([term, text]) => (
               <div key={term} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-4 py-4 text-sm">
-                <dt className="font-mono text-xs uppercase tracking-wider text-neutral-500">{term}</dt>
+                <dt className="text-xs uppercase tracking-wider text-neutral-500">{term}</dt>
                 <dd className="leading-relaxed text-neutral-400">{text}</dd>
               </div>
             ))}
           </dl>
         </div>
-        <p className="relative font-mono text-xs text-neutral-600">© 2026 {SITE_NAME}</p>
+        <p className="relative text-xs text-neutral-600">© 2026 {SITE_NAME}</p>
       </aside>
 
       <div className="flex min-h-screen flex-col">

@@ -1,0 +1,41 @@
+[
+  {
+    "slug": "nivia-garnet-football",
+    "category": "sports",
+    "brand": "Nivia",
+    "title": "Nivia Garnet Football — Size 5",
+    "sku": "REF-NIVIA-GARNET-5",
+    "description": "White size-5 football with a foamed PVC surface and 32 machine-stitched panels. Suitable for soft and wet grounds.",
+    "pricePaise": 66400,
+    "gstPercent": 18,
+    "sourceSlug": "nivia-garnet-football",
+    "referenceUrl": "https://www.amazon.in/dp/B0D5GRN1XR",
+    "priceReferenceUrl": "https://pricehistory.app/p/nivia-garnet-pvc-foamed-32-panel-machined-zCDNPDyp"
+  },
+  {
+    "slug": "atomic-habits",
+    "category": "books",
+    "brand": "Penguin Random House",
+    "title": "Atomic Habits — James Clear",
+    "sku": "REF-BOOK-1847941834",
+    "description": "James Clear's practical guide to building good habits through small, consistent changes. English paperback edition.",
+    "pricePaise": 48200,
+    "gstPercent": 0,
+    "sourceSlug": "atomic-habits",
+    "referenceUrl": "https://www.amazon.in/dp/1847941834",
+    "priceReferenceUrl": "https://pricehistory.app/p/atomic-habits-life-changing-million-copy-bestseller-1pvat3Q2"
+  },
+  {
+    "slug": "amazon-basics-car-vacuum",
+    "category": "automotive",
+    "brand": "Amazon Basics",
+    "title": "Amazon Basics Portable Car Vacuum Cleaner",
+    "sku": "REF-AUTO-VC080113",
+    "description": "Compact car vacuum cleaner with 6600 Pa suction, a 4.6-metre cord and a reusable HEPA filter. Includes attachments for cleaning corners and upholstery.",
+    "pricePaise": 83600,
+    "gstPercent": 18,
+    "sourceSlug": "amazon-basics-car-vacuum",
+    "referenceUrl": "https://www.amazon.in/dp/B0BX3D855Y",
+    "priceReferenceUrl": "https://pricehistory.app/p/amazonbasics-portable-car-vacuum-cleaner-6600pa-powerful-HDqKvaQ2"
+  }
+]

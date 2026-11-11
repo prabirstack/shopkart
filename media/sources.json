@@ -1,0 +1,528 @@
+{
+  "products": [
+    {
+      "slug": "samsung-galaxy-buds-core",
+      "asin": "B0FDGVNSLH",
+      "listing": "https://www.amazon.in/dp/B0FDGVNSLH",
+      "title": "Samsung Galaxy Buds Core (Black) Galaxy AI Enabled in-Ear TWS with ANC | Enriched Bass | 6 Mic Setup | IP54 | 35hrs Battery | Touch Controls",
+      "photos": [
+        {
+          "file": "products/samsung-galaxy-buds-core/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61WRrNa6BIL._SL1500_.jpg"
+        },
+        {
+          "file": "products/samsung-galaxy-buds-core/2.webp",
+          "source": "https://m.media-amazon.com/images/I/61NnPCGffML._SL1500_.jpg"
+        },
+        {
+          "file": "products/samsung-galaxy-buds-core/3.webp",
+          "source": "https://m.media-amazon.com/images/I/61UhkOB8jXL._SL1080_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "philips-air-fryer-na120",
+      "asin": "B0D14BB5XY",
+      "listing": "https://www.amazon.in/dp/B0D14BB5XY",
+      "title": "PHILIPS Air Fryer NA120/00, 4.2 Litre, Large, 100% Food Safe",
+      "photos": [
+        {
+          "file": "products/philips-air-fryer-na120/1.webp",
+          "source": "https://m.media-amazon.com/images/I/51CM1SXLDIL._SL1000_.jpg"
+        },
+        {
+          "file": "products/philips-air-fryer-na120/2.webp",
+          "source": "https://m.media-amazon.com/images/I/41SIUVOvusL._SL1000_.jpg"
+        },
+        {
+          "file": "products/philips-air-fryer-na120/3.webp",
+          "source": "https://m.media-amazon.com/images/I/71pv5mYgFGL._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "samsung-galaxy-s25",
+      "asin": "B0H3FLD9NM",
+      "listing": "https://www.amazon.in/dp/B0H3FLD9NM",
+      "title": "Samsung Galaxy S25 5G (Navy, 12GB RAM, 128GB Storage) | Snapdragon 8 Elite for Galaxy Processor | 50MP Triple Camera | 6.2-inch Dynamic AMOLED 2X Display | 4000mAh Battery | 5G Smartphone",
+      "photos": [
+        {
+          "file": "products/samsung-galaxy-s25/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61tnVIUI1zL._SL1280_.jpg"
+        },
+        {
+          "file": "products/samsung-galaxy-s25/2.webp",
+          "source": "https://m.media-amazon.com/images/I/71Wp32WOHrL._SL1280_.jpg"
+        },
+        {
+          "file": "products/samsung-galaxy-s25/3.webp",
+          "source": "https://m.media-amazon.com/images/I/61qZqlDC-ML._SL1280_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "boat-nirvana-751-headphones",
+      "asin": "B09MTQ23X4",
+      "listing": "https://www.amazon.in/dp/B09MTQ23X4",
+      "title": "boAt Nirvana 751 ANC, 65Hrs Battery, Hybrid Active Noise Cancellation(~33dB), Fast Charge, Ambient Mode,Integrated Controls,Carry Pouch, Bluetooth Headphones, Wireless Headphone with Mic (Bold Blue)",
+      "photos": [
+        {
+          "file": "products/boat-nirvana-751-headphones/1.webp",
+          "source": "https://m.media-amazon.com/images/I/71XP2ScwtFL._SL1500_.jpg"
+        },
+        {
+          "file": "products/boat-nirvana-751-headphones/2.webp",
+          "source": "https://m.media-amazon.com/images/I/71x1O2Y+pDL._SL1500_.jpg"
+        },
+        {
+          "file": "products/boat-nirvana-751-headphones/3.webp",
+          "source": "https://m.media-amazon.com/images/I/718-V56pUjL._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "campus-rustle-sneakers",
+      "asin": "B0GTZKP9MC",
+      "listing": "https://www.amazon.in/dp/B0GTZKP9MC",
+      "title": "Campus Men's Rustle Sneakers",
+      "photos": [
+        {
+          "file": "products/campus-rustle-sneakers/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61eDeL1HIeL._SL1500_.jpg"
+        },
+        {
+          "file": "products/campus-rustle-sneakers/2.webp",
+          "source": "https://m.media-amazon.com/images/I/71gp7iYEjqL._SL1500_.jpg"
+        },
+        {
+          "file": "products/campus-rustle-sneakers/3.webp",
+          "source": "https://m.media-amazon.com/images/I/71n4yZmf1TL._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "apple-watch-series-11",
+      "asin": "B0FQFPQPZ9",
+      "listing": "https://www.amazon.in/dp/B0FQFPQPZ9",
+      "title": "Apple Watch Series 11 GPS + Cellular 42mm Rose Gold Aluminium Case with Light Blush Sport Band - M/L",
+      "photos": [
+        {
+          "file": "products/apple-watch-series-11/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61mhYsNLsTL._SL1500_.jpg"
+        },
+        {
+          "file": "products/apple-watch-series-11/2.webp",
+          "source": "https://m.media-amazon.com/images/I/71oyrWr0ELL._SL1500_.jpg"
+        },
+        {
+          "file": "products/apple-watch-series-11/3.webp",
+          "source": "https://m.media-amazon.com/images/I/71e-af6XdtL._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "instant-pot-duo",
+      "asin": "B00FLYWNYQ",
+      "listing": "https://www.amazon.in/dp/B00FLYWNYQ",
+      "title": "Instant Pot Duo 6QT(5.7L) 7-in-1 Electric Pressure Cooker, Multi Pot, SS304 Stainless Steel Inner Pot, Slow Cook, Rice Cooker, Steamer, Saut\u00e9, Yogurt Maker & Keep Warm, 13 customizable programs, 230V",
+      "photos": [
+        {
+          "file": "products/instant-pot-duo/1.webp",
+          "source": "https://m.media-amazon.com/images/I/71Z401LjFFL._SL1500_.jpg"
+        },
+        {
+          "file": "products/instant-pot-duo/2.webp",
+          "source": "https://m.media-amazon.com/images/I/91SIqkMLvEL._SL1500_.jpg"
+        },
+        {
+          "file": "products/instant-pot-duo/3.webp",
+          "source": "https://m.media-amazon.com/images/I/81s0Ow2f6sL._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "lenovo-yoga-slim-7",
+      "asin": "B0HN7PWKQL",
+      "listing": "https://www.amazon.in/dp/B0HN7PWKQL",
+      "title": "Lenovo Yoga Slim 7 AMD Ryzen AI 7 345 (16GB RAM/512GB SSD/14 (35.5cm)/WUXGA OLED/Copilot+ PC/Windows 11/Microsoft 365 Basic + Office Home 2024 AI Now/Teal/1Yr ADP Free/1.19Kg),83JY00B1IN",
+      "photos": [
+        {
+          "file": "products/lenovo-yoga-slim-7/1.webp",
+          "source": "https://m.media-amazon.com/images/I/714Pj7Ax34L._SL1254_.jpg"
+        },
+        {
+          "file": "products/lenovo-yoga-slim-7/2.webp",
+          "source": "https://m.media-amazon.com/images/I/71zu0HchobL._SL1254_.jpg"
+        },
+        {
+          "file": "products/lenovo-yoga-slim-7/3.webp",
+          "source": "https://m.media-amazon.com/images/I/71REVhqDQ7L._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "sony-dualsense-black",
+      "asin": "B09842ZHNM",
+      "listing": "https://www.amazon.in/dp/B09842ZHNM",
+      "title": "Sony DualSense Wireless Controller Black (PlayStation 5)",
+      "photos": [
+        {
+          "file": "products/sony-dualsense-black/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61cOKvrU7NL._SL1500_.jpg"
+        },
+        {
+          "file": "products/sony-dualsense-black/2.webp",
+          "source": "https://m.media-amazon.com/images/I/6130a-VSg3L._SL1500_.jpg"
+        },
+        {
+          "file": "products/sony-dualsense-black/3.webp",
+          "source": "https://m.media-amazon.com/images/I/61P2KVX-bWL._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "minimalist-hyaluronic-serum",
+      "asin": "B08FB972DT",
+      "listing": "https://www.amazon.in/dp/B08FB972DT",
+      "title": "Minimalist 2% Hyaluronic Acid + PGA Serum for Intense Hydration, Glowing Skin & Fine Lines | Daily Hydrating Face Serum For Women & Men with Dry, Normal & Oily Skin | 30 ml",
+      "photos": [
+        {
+          "file": "products/minimalist-hyaluronic-serum/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61GqceM7xuL._SL1500_.jpg"
+        },
+        {
+          "file": "products/minimalist-hyaluronic-serum/2.webp",
+          "source": "https://m.media-amazon.com/images/I/61dQ0-b11GL._SL1500_.jpg"
+        },
+        {
+          "file": "products/minimalist-hyaluronic-serum/3.webp",
+          "source": "https://m.media-amazon.com/images/I/71Q032yTo+L._SL1500_.jpg"
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "philips-hl7756-mixer",
+      "asin": "B01GZSQJPA",
+      "listing": "https://www.amazon.in/dp/B01GZSQJPA",
+      "title": "Philips HL7756 Mixer Grinder 750W, with 3 Stainless Steel Jars",
+      "catalogSlug": "mixer-grinder-750w",
+      "photos": [
+        {
+          "file": "products/philips-hl7756-mixer/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61YC2I7HqGL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/philips-hl7756-mixer/2.webp",
+          "source": "https://m.media-amazon.com/images/I/41k8zUkN7sL._SL1000_.jpg",
+          "width": 1000,
+          "height": 1000
+        },
+        {
+          "file": "products/philips-hl7756-mixer/3.webp",
+          "source": "https://m.media-amazon.com/images/I/61td60QCcyL._SL1000_.jpg",
+          "width": 1000,
+          "height": 1000
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "lego-classic-bricks",
+      "asin": "B00NHQFA5E",
+      "listing": "https://www.amazon.in/dp/B00NHQFA5E",
+      "title": "Lego Classic Creative Bricks",
+      "catalogSlug": "building-blocks-set",
+      "photos": [
+        {
+          "file": "products/lego-classic-bricks/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61n3W1NCkCL._SL1200_.jpg",
+          "width": 1200,
+          "height": 1036
+        },
+        {
+          "file": "products/lego-classic-bricks/2.webp",
+          "source": "https://m.media-amazon.com/images/I/51j1D-oHnRL._SL1000_.jpg",
+          "width": 1000,
+          "height": 633
+        },
+        {
+          "file": "products/lego-classic-bricks/3.webp",
+          "source": "https://m.media-amazon.com/images/I/61FOxXVkWCL._SL1000_.jpg",
+          "width": 1000,
+          "height": 1000
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "fitbit-air-tracker",
+      "asin": "B0GHSNQKXX",
+      "listing": "https://www.amazon.in/dp/B0GHSNQKXX",
+      "title": "Fitbit Google Air - Screenless Activity Tracker with Fitness, Heart Rate, and Sleep Tracking - Personalized AI-Powered Coaching - Up to 7 Days\u2019 Battery Life - Works with iOS and Android - Obsidian",
+      "catalogSlug": "fitness-band",
+      "photos": [
+        {
+          "file": "products/fitbit-air-tracker/1.webp",
+          "source": "https://m.media-amazon.com/images/I/71y55WkJsnL._SL1380_.jpg",
+          "width": 1075,
+          "height": 1380
+        },
+        {
+          "file": "products/fitbit-air-tracker/2.webp",
+          "source": "https://m.media-amazon.com/images/I/719R2ovqN4L._SL1380_.jpg",
+          "width": 1075,
+          "height": 1380
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "atomic-habits",
+      "asin": "1847941834",
+      "listing": "https://www.amazon.in/dp/1847941834",
+      "title": "Atomic Habits: Tiny Changes, Remarkable Results",
+      "catalogSlug": null,
+      "photos": [
+        {
+          "file": "products/atomic-habits/1.webp",
+          "source": "https://m.media-amazon.com/images/I/817HaeblezL._SL1500_.jpg",
+          "width": 974,
+          "height": 1500
+        },
+        {
+          "file": "products/atomic-habits/2.webp",
+          "source": "https://m.media-amazon.com/images/I/81DCnP7ntKL._SL1500_.jpg",
+          "width": 982,
+          "height": 1500
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "amazon-basics-car-vacuum",
+      "asin": "B0BX3D855Y",
+      "listing": "https://www.amazon.in/dp/B0BX3D855Y",
+      "title": "amazon basics Portable Car Vacuum Cleaner with 6600Pa Powerful Suction, 4.6 M Cord, Reusable Hepa Filter for Deep Cleaning, Black",
+      "catalogSlug": null,
+      "photos": [
+        {
+          "file": "products/amazon-basics-car-vacuum/1.webp",
+          "source": "https://m.media-amazon.com/images/I/71Wj6mmQ8cL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/amazon-basics-car-vacuum/2.webp",
+          "source": "https://m.media-amazon.com/images/I/71LPTEYKS6L._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/amazon-basics-car-vacuum/3.webp",
+          "source": "https://m.media-amazon.com/images/I/71A9DQIXHCL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "boldfit-yoga-mat",
+      "asin": "B0DX1GPD5M",
+      "listing": "https://www.amazon.in/dp/B0DX1GPD5M",
+      "title": "Boldfit Yoga Mats For Women Men Exercise Mat For Home Gym Anti Slip 6mm Workout Yoga Mat Gym Mats - Beetle Grey, Ethylene Vinyl Acetate",
+      "catalogSlug": "yoga-mat",
+      "photos": [
+        {
+          "file": "products/boldfit-yoga-mat/1.webp",
+          "source": "https://m.media-amazon.com/images/I/71n4gO0X3WL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/boldfit-yoga-mat/2.webp",
+          "source": "https://m.media-amazon.com/images/I/81sccbIBMgL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/boldfit-yoga-mat/3.webp",
+          "source": "https://m.media-amazon.com/images/I/61hxvfL+g3L._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "accent-armchair-yellow",
+      "asin": "B0G3XF3H4Z",
+      "listing": "https://www.amazon.in/dp/B0G3XF3H4Z",
+      "title": "Velvet Chair with Floral Pillow for Home | Modern Accent Armchair in Soft Velvet Fabric with Golden Legs | Set of 2 Premium Accent Chair for Living Room Bedroom (Barfi Yellow)",
+      "catalogSlug": "modern-armchair",
+      "photos": [
+        {
+          "file": "products/accent-armchair-yellow/1.webp",
+          "source": "https://m.media-amazon.com/images/I/71hPNb0bLEL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1000
+        },
+        {
+          "file": "products/accent-armchair-yellow/2.webp",
+          "source": "https://m.media-amazon.com/images/I/61k-bi9J0eL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/accent-armchair-yellow/3.webp",
+          "source": "https://m.media-amazon.com/images/I/710tIDX2XnL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "skybags-rizz-teal-backpack",
+      "asin": "B0CT5KT8SZ",
+      "listing": "https://www.amazon.in/dp/B0CT5KT8SZ",
+      "title": "Skybags RIZZ 01 1 Compartment LAPTOP BACKPACK TEAL",
+      "catalogSlug": "laptop-backpack",
+      "photos": [
+        {
+          "file": "products/skybags-rizz-teal-backpack/1.webp",
+          "source": "https://m.media-amazon.com/images/I/61xGDv3QDUL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/skybags-rizz-teal-backpack/2.webp",
+          "source": "https://m.media-amazon.com/images/I/71yd8a8yCTL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/skybags-rizz-teal-backpack/3.webp",
+          "source": "https://m.media-amazon.com/images/I/61iI1tNCq-L._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    },
+    {
+      "slug": "nivia-garnet-football",
+      "asin": "B0D5GRN1XR",
+      "listing": "https://www.amazon.in/dp/B0D5GRN1XR",
+      "title": "Nivia Garnet/PVC Foamed/32 Panel/Machined Stitched Football/Size - 5 (White)",
+      "catalogSlug": null,
+      "photos": [
+        {
+          "file": "products/nivia-garnet-football/1.webp",
+          "source": "https://m.media-amazon.com/images/I/91uPu4oZTiL._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/nivia-garnet-football/2.webp",
+          "source": "https://m.media-amazon.com/images/I/81tDfmi-96L._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        },
+        {
+          "file": "products/nivia-garnet-football/3.webp",
+          "source": "https://m.media-amazon.com/images/I/916pgJApoML._SL1500_.jpg",
+          "width": 1500,
+          "height": 1500
+        }
+      ],
+      "rights": "Not established by download; source attribution is not a licence."
+    }
+  ],
+  "additional": [
+    {
+      "file": "hero-banners/samsung-galaxy-buds-core.webp",
+      "source": "https://m.media-amazon.com/images/S/aplus-media-library-service-media/b61cabba-ca7e-4ccc-925d-476ed7d8afc1.__CR0,0,1464,600_PT0_SX1464_V1___.jpg",
+      "listing": "https://www.amazon.in/dp/B0FDGVNSLH",
+      "title": "samsung-galaxy-buds-core"
+    },
+    {
+      "file": "hero-banners/philips-air-fryer-na120.webp",
+      "source": "https://m.media-amazon.com/images/S/aplus-media-library-service-media/258f47d3-6ad9-431e-9855-299108c07e1b.__CR0,0,1464,600_PT0_SX1464_V1___.png",
+      "listing": "https://www.amazon.in/dp/B0D14BB5XY",
+      "title": "philips-air-fryer-na120"
+    },
+    {
+      "file": "hero-banners/boat-nirvana-751-headphones.webp",
+      "source": "https://m.media-amazon.com/images/S/aplus-media-library-service-media/c3fd350a-5a20-4c91-90e8-6f8564f01a80.__CR0,0,1464,600_PT0_SX1464_V1___.jpg",
+      "listing": "https://www.amazon.in/dp/B09MTQ23X4",
+      "title": "boat-nirvana-751-headphones"
+    },
+    {
+      "file": "hero-banners/campus-rustle-sneakers.webp",
+      "source": "https://m.media-amazon.com/images/S/aplus-media-library-service-media/1c099961-49da-410c-a924-80731a32e29f.__CR0,0,1464,600_PT0_SX1464_V1___.jpg",
+      "listing": "https://www.amazon.in/dp/B0GTZKP9MC",
+      "title": "campus-rustle-sneakers"
+    },
+    {
+      "file": "hero-banners/instant-pot-duo.webp",
+      "source": "https://m.media-amazon.com/images/S/aplus-media/sota/ae1d32e1-ad36-4a42-bcfe-947005086d61._SR970,300_.png",
+      "listing": "https://www.amazon.in/dp/B00FLYWNYQ",
+      "title": "instant-pot-duo"
+    },
+    {
+      "file": "hero-banners/sony-dualsense-black.webp",
+      "source": "https://m.media-amazon.com/images/S/aplus-media-library-service-media/90a6784a-4b5e-4a2b-8a4e-46e489d335c3.__CR0,0,1464,600_PT0_SX1464_V1___.jpg",
+      "listing": "https://www.amazon.in/dp/B09842ZHNM",
+      "title": "sony-dualsense-black"
+    },
+    {
+      "file": "hero-banners/minimalist-hyaluronic-serum.webp",
+      "source": "https://m.media-amazon.com/images/S/aplus-media-library-service-media/3678cfd1-f0c4-416f-9f79-a566b3003ad5.__CR0,0,1464,625_PT0_SX1464_V1___.jpg",
+      "listing": "https://www.amazon.in/dp/B08FB972DT",
+      "title": "minimalist-hyaluronic-serum"
+    },
+    {
+      "file": "products/homepage/product-2.webp",
+      "source": "https://m.media-amazon.com/images/I/510GaEMaUML._AC_AIweblab1374086,T2_SF217.5,435_QL80_.jpg?aicid=homepage-faceout",
+      "listing": "https://www.amazon.in/",
+      "title": "DELSEY PARIS Tiphanie 55 cms Small Cabin Polycarbonate Hard Sided 8 Wheels Spinner Suitcase/Trolley Bag for Travel with TSA Lock- Graphite"
+    },
+    {
+      "file": "products/homepage/product-4.webp",
+      "source": "https://m.media-amazon.com/images/I/71GExPlgJwL._AC_AIweblab1374086,T2_SF217.5,237_QL80_.jpg?aicid=homepage-faceout",
+      "listing": "https://www.amazon.in/",
+      "title": "Skechers Women Summits Sneakers"
+    },
+    {
+      "file": "products/homepage/product-5.webp",
+      "source": "https://m.media-amazon.com/images/I/41NtbP4mYoL._AC_AIweblab1374086,T2_SF217.5,237_QL80_.jpg?aicid=homepage-faceout",
+      "listing": "https://www.amazon.in/",
+      "title": "PUMA | Smashic Comfort Casual Sneakers Black-Matte Silver"
+    },
+    {
+      "file": "products/homepage/product-6.webp",
+      "source": "https://m.media-amazon.com/images/I/61irmRn+6LL._AC_AIweblab1374086,T2_SF217.5,237_QL80_.jpg?aicid=homepage-faceout",
+      "listing": "https://www.amazon.in/",
+      "title": "Jockey Cotton Blend Crew Neck T-Shirt For Women AW88_White_XL, Relaxed Fit"
+    },
+    {
+      "file": "products/homepage/product-7.webp",
+      "source": "https://m.media-amazon.com/images/I/517gqlQ5kJL._AC_AIweblab1374086,T2_SF217.5,237_QL80_.jpg?aicid=homepage-faceout",
+      "listing": "https://www.amazon.in/",
+      "title": "Leriya Fashion Mens Poly Cotton T-Shirt Regular Fit Casual (LF-MT-1015_Black_XXL)"
+    }
+  ]
+}

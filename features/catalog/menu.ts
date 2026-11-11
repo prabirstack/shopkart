@@ -12,6 +12,7 @@ export type MenuBrand = { name: string; count: number }
 export const MENU_LIMIT = 12
 
 export type MenuData = {
+  categories: MenuCategory[]
   newCategories: MenuCategory[]
   bestCategories: MenuCategory[]
   justIn: Product[]
@@ -29,9 +30,10 @@ const countBy = (categories: StoreCategory[], list: Product[]): MenuCategory[] =
 export function buildMenu(categories: StoreCategory[], brands: { name: string; count: number }[], newArrivals: Product[], bestsellers: Product[]): MenuData {
   const live = brands.filter((b) => b.count > 0)
   return {
+    categories: categories.map((c) => ({ slug: c.slug, name: c.name, count: c.count })),
     newCategories: countBy(categories, newArrivals),
     bestCategories: countBy(categories, bestsellers),
-    justIn: newArrivals.slice(0, 3),
+    justIn: newArrivals.slice(0, 9),
     topRated: [...bestsellers].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || b.ratingCount - a.ratingCount).slice(0, 3),
     brands: live.map((b) => ({ name: b.name, count: b.count })),
     totals: { newArrivals: newArrivals.length, bestsellers: bestsellers.length, brands: live.length },

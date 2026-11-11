@@ -39,7 +39,7 @@ import { POST as createProduct } from "../../app/api/v1/admin/products/route"
 import { PATCH as patchArticle, DELETE as deleteArticleRoute } from "../../app/api/v1/admin/articles/[id]/route"
 import { db } from "../../lib/db"
 import * as s from "../../lib/db/schema"
-import { EMPTY_REPORT, loadAdminDashboard, loadAdminReports } from "../../lib/db/queries/admin-reports"
+import { EMPTY_REPORT, loadAdminDashboard, loadAdminReports, loadDashboardData } from "../../lib/db/queries/admin-reports"
 import { loadAdminCounts } from "../../lib/db/queries"
 import { ctx } from "./helpers"
 import { makeUser } from "../helpers"
@@ -124,12 +124,12 @@ describe("admin refunds, notes and settings", () => {
 
 describe("admin dashboard data is scoped to what a role may see", () => {
   beforeEach(resetDb)
-  const none = { reports: false, orders: false, inventory: false, catalog: false, coupons: false }
+  const none = { reports: false, orders: false, inventory: false, catalog: false, coupons: false, returns: false, reviews: false, inbox: false }
 
   it("returns nothing, and queries nothing, for a role without the permissions", async () => {
     await makeOrder("paid")
     const d = await loadAdminDashboard(none)
-    expect(d).toEqual({ statusCounts: null, pendingPayment: null, recentOrders: null, topCategories: null, low: null, activity: [] })
+    expect(d).toEqual({ statusCounts: null, pendingPayment: null, toPack: null, recentOrders: null, low: null, lowCount: null, openReturns: null, newMessages: null, pendingReviews: null, activity: [] })
     expect(EMPTY_REPORT.series).toEqual([]); expect(await loadAdminCounts({ orders: false, stock: false, returns: false, reviews: false, inbox: false })).toMatchObject({ orders: 0, stock: 0, returns: 0, reviews: 0, lowItems: [] })
   })
 
@@ -148,5 +148,37 @@ describe("admin dashboard data is scoped to what a role may see", () => {
     expect(inv.low?.[0]).toMatchObject({ title: "Almost Gone", left: 2 }); expect(inv.recentOrders).toBeNull()
     const ord = await loadAdminDashboard({ ...none, orders: true })
     expect(ord.recentOrders).toHaveLength(1); expect(ord.low).toBeNull()
+  })
+  it("never puts revenue, orders or customer data in the payload of a role that may not read them", async () => {
+    const cat = await makeCatalog(); await makeProduct(cat, { title: "Almost Gone", stock: 1 }); await makeOrder("paid", 123400, cat); await makeOrder("pending", 99900, cat)
+    // Catalog editor: no reports, no orders. Only stock, reviews and the like.
+    const editor = await loadDashboardData("catalog_editor")
+    expect(editor.report).toEqual(EMPTY_REPORT)
+    expect(editor.extras).toMatchObject({ statusCounts: null, recentOrders: null, pendingPayment: null, toPack: null, openReturns: null, newMessages: null })
+    const editorJson = JSON.stringify(editor)
+    for (const secret of ["Test User", "t@x.com", "9800000001", "123400", "99900", "totalPaise", "customerName"]) expect(editorJson).not.toContain(secret)
+    expect(editor.extras.low?.[0]).toMatchObject({ title: "Almost Gone" })
+    // Warehouse and support may see orders, but never revenue, category or product sales, or the hourly pattern.
+    for (const role of ["warehouse", "support"] as const) {
+      const d = await loadDashboardData(role)
+      expect(d.report, role).toEqual(EMPTY_REPORT)
+      expect(d.extras.recentOrders, role).toHaveLength(2)
+      expect(d.extras.toPack, role).toBe(1); expect(d.extras.pendingPayment, role).toBe(1)
+    }
+    expect((await loadDashboardData("warehouse")).extras.openReturns).toBeNull() // warehouse has no returns permission
+    // Finance may read reports, so sales series, category and product breakdowns are present.
+    const fin = await loadDashboardData("finance")
+    expect(fin.report.series.reduce((t, d) => t + d.revenue, 0)).toBe(123400)
+    expect(fin.report.categoryDaily.reduce((t, r) => t + r.revenue, 0)).toBe(123400); expect(fin.report.productDaily).toHaveLength(1)
+    expect(fin.report.hourly.reduce((t, h) => t + h.n, 0)).toBe(1)
+    expect(fin.extras.low).toBeNull() // finance has no inventory permission
+  })
+
+  it("splits sales by category and product per day so the screen can follow the chosen range", async () => {
+    const cat = await makeCatalog(); await makeOrder("paid", 100000, cat); await makeOrder("delivered", 50000, cat); await makeOrder("pending", 77700, cat)
+    const r = await loadAdminReports(7)
+    expect(r.categoryDaily.reduce((t, c) => t + c.revenue, 0)).toBe(150000)
+    expect(r.productDaily.reduce((t, c) => t + c.units, 0)).toBe(2)
+    expect(r.categoryDaily.every((c) => /^\d{4}-\d{2}-\d{2}$/.test(c.date))).toBe(true)
   })
 })

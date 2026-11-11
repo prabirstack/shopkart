@@ -1,4 +1,6 @@
+import { Suspense } from "react"
 import { Authorized } from "@/components/admin/authorized"
+import { DashboardSkeleton } from "@/components/admin/dashboard-skeleton"
 import { ReportsView } from "@/components/admin/reports-view"
 import { loadAdminReports } from "@/lib/db/queries/admin-reports"
 
@@ -7,9 +9,9 @@ import { loadAdminReports } from "@/lib/db/queries/admin-reports"
 export const instant = false
 
 async function Data() {
-  return <ReportsView report={await loadAdminReports()} />
+  return <ReportsView report={await loadAdminReports(180)} />
 }
 
 export default function Page() {
-  return <Authorized section="/admin/reports"><Data /></Authorized>
+  return <Suspense fallback={<DashboardSkeleton />}><Authorized section="/admin/reports"><Data /></Authorized></Suspense>
 }

@@ -1,6 +1,8 @@
 import Link from "next/link"
+import Image from "next/image"
 import { BookOpen, Newspaper, Scale, Star, type LucideIcon } from "lucide-react"
 import { readMinutes } from "@/features/articles/render"
+import { articleImage } from "@/features/articles/images"
 import type { Article, ArticleCategory } from "@/features/articles/types"
 
 export const categoryStyle: Record<ArticleCategory, { icon: LucideIcon; cover: string; badge: string }> = {
@@ -13,8 +15,14 @@ export const categoryStyle: Record<ArticleCategory, { icon: LucideIcon; cover: s
 const date = (iso: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`))
 export const formatArticleDate = date
 
-export function ArticleCover({ category, className = "" }: { category: ArticleCategory; className?: string }) {
+export function ArticleCover({ slug, category, className = "", sizes = "(min-width: 768px) 33vw, 100vw", preload = false }: { slug: string; category: ArticleCategory; className?: string; sizes?: string; preload?: boolean }) {
   const { icon: Icon, cover } = categoryStyle[category]
+  const src = articleImage(slug)
+  if (src) return (
+    <span aria-hidden="true" className={`relative block shrink-0 overflow-hidden bg-muted ${className}`}>
+      <Image src={src} alt="" fill sizes={sizes} preload={preload} className="object-cover transition-transform duration-500 group-hover/art:scale-105" />
+    </span>
+  )
   return (
     <span aria-hidden="true" className={`relative grid place-items-center overflow-hidden bg-gradient-to-br text-white ${cover} ${className}`}>
       <span className="absolute -right-8 -top-8 size-40 rounded-full bg-white/10" />
@@ -28,7 +36,7 @@ export function ArticleCard({ article, featured = false }: { article: Article; f
   const mins = readMinutes(article.doc)
   return (
     <Link href={`/news/${article.slug}`} className={`group/art flex h-full overflow-hidden rounded-2xl border bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-visible:ring-[3px] focus-visible:ring-ring/50 ${featured ? "flex-col md:flex-row" : "flex-col"}`}>
-      <ArticleCover category={article.category} className={featured ? "h-48 md:h-auto md:w-[45%]" : "h-40"} />
+      <ArticleCover slug={article.slug} category={article.category} preload={featured} sizes={featured ? "(min-width: 768px) 45vw, 100vw" : undefined} className={featured ? "h-48 md:h-auto md:w-[45%]" : "aspect-video"} />
       <span className="flex flex-1 flex-col gap-2 p-5">
         <span className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryStyle[article.category].badge}`}>{article.category}</span>
         <span className={`font-bold leading-snug transition-colors group-hover/art:text-primary ${featured ? "text-2xl" : "text-lg"}`}>{article.title}</span>

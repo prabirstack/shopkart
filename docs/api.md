@@ -57,6 +57,8 @@ Seeded dev staff accounts: `owner@`, `catalog-editor@`, `warehouse@`, `support@`
 `reviews` + `reviews/:id` (reviews:moderate), `articles` (content:write), `coupons` (coupons:write), `banners` (banners:write),
 `customers` (customers:read), `returns` (returns:manage), `settings` (settings:write).
 
+**Admin dashboard and reports pages** read the database directly (no endpoint) through `loadDashboardData(role)` in `lib/db/queries/admin-reports.ts`. Each part is queried only when the role's permission allows it: sales series, per-day category and product sales and the weekday/hour pattern need `reports:read`; order status counts, recent orders and order activity need `orders:read`; low stock and stock activity need `inventory:read`; open returns, new inbox messages and pending reviews need `returns:manage`, `inbox:manage` and `reviews:moderate`. Parts a role may not see are `null` or empty in the page payload. Charts are Recharts client components in `components/admin/charts/`.
+
 ## Storefront data and caching
 
 The storefront reads the same database as the admin. Server pages use the cached loaders in `features/catalog/data.ts` and

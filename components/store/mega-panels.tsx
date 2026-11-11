@@ -1,11 +1,13 @@
 "use client"
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowRight, Sparkles, Star, Store, ThumbsUp } from "lucide-react"
 import { Price } from "@/components/price"
 import { ProductArt } from "./product-art"
 import { categoryMeta } from "@/features/catalog/category-meta"
 import { brandIndex, type MenuCategory, type MenuData } from "@/features/catalog/menu"
 import { discountPercent, type Product } from "@/features/catalog/types"
+import { brandLogos } from "@/features/catalog/brand-logos"
 
 export type MenuId = "new" | "best" | "brands"
 
@@ -17,15 +19,15 @@ function CategoryList({ items, label }: { items: MenuCategory[]; label: string }
   return (
     <nav aria-label={label}>
       <Heading>{label}</Heading>
-      <ul className="grid gap-0.5">
+      <ul className={`grid min-w-0 gap-x-5 gap-y-1 ${items.length > 9 ? "grid-cols-2" : "grid-cols-1"}`}>
         {items.map(({ slug, name, count }) => {
           const { icon: Icon, tint, iconColor } = categoryMeta(slug)
           return (
           <li key={slug}>
-            <Link href={`/products?category=${slug}`} className="group flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">
+            <Link href={`/products?category=${slug}`} title={name} className="group flex min-w-0 items-center gap-2 rounded-lg px-1.5 py-1.5 text-sm hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">
               <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${tint}`}><Icon className={`size-4 ${iconColor}`} aria-hidden="true" /></span>
-              <span className="flex-1 font-medium group-hover:text-primary">{name}</span>
-              <span className="price rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground group-hover:bg-background">{count}</span>
+              <span className="min-w-0 flex-1 truncate font-medium group-hover:text-primary">{name}</span>
+              <span className="price grid size-6 shrink-0 place-items-center rounded-full bg-muted text-xs text-muted-foreground group-hover:bg-background">{count}</span>
             </Link>
           </li>
           )
@@ -35,8 +37,14 @@ function CategoryList({ items, label }: { items: MenuCategory[]; label: string }
   )
 }
 
-function MiniProduct({ p, rank }: { p: Product; rank?: number }) {
+function MiniProduct({ p, rank, compact = false }: { p: Product; rank?: number; compact?: boolean }) {
   const off = discountPercent(p)
+  if (compact) return (
+    <Link href={`/products/${p.slug}`} className="group flex h-[5.6rem] min-w-0 items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50">
+      <span className="relative block size-16 shrink-0 overflow-hidden rounded-lg bg-slate-50"><ProductArt slug={p.slug} images={p.images} title="" category={p.category} sizes="64px" /></span>
+      <span className="grid min-w-0 gap-1"><span className="truncate text-[10px] text-muted-foreground">{p.brand}</span><span className="line-clamp-2 text-xs font-medium leading-snug group-hover:text-primary">{p.title}</span><Price cents={p.pricePaise} compareAtCents={p.comparePaise} showDiscountLabel={false} priceClassName="text-primary text-xs" className="[&_del]:text-[10px]" /></span>
+    </Link>
+  )
   return (
     <Link href={`/products/${p.slug}`} className="group grid gap-3 rounded-xl border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg focus-visible:ring-[3px] focus-visible:ring-ring/50">
       <span className="relative block aspect-square overflow-hidden rounded-lg bg-gradient-to-br from-neutral-50 to-neutral-200/80">
@@ -76,19 +84,19 @@ function Footer({ href, label, note }: { href: string; label: string; note: stri
 }
 
 export function MegaPanel({ id, menu }: { id: MenuId; menu: MenuData }) {
-  const { newCategories, bestCategories, justIn, topRated, brands, totals } = menu
-  const grid = "grid gap-x-8 gap-y-5 lg:grid-cols-[13rem_minmax(0,1fr)_16rem] xl:grid-cols-[15rem_minmax(0,1fr)_18rem]"
+  const { categories, justIn, topRated, brands, totals } = menu
+  const grid = "grid gap-x-6 gap-y-5 lg:grid-cols-[19rem_minmax(0,1fr)_16rem] xl:grid-cols-[22rem_minmax(0,1fr)_18rem]"
   if (id === "new") return (
     <div className={grid}>
-      <CategoryList items={newCategories} label="New in categories" />
-      <section aria-label="Just in"><Heading>Just in</Heading><ul className="grid grid-cols-3 gap-3">{justIn.map((p) => <li key={p.id}><MiniProduct p={p} /></li>)}</ul></section>
-      <Promo tone="bg-gradient-to-br from-neutral-900 via-red-950 to-primary" icon={Sparkles} eyebrow="Fresh this week" title="New arrivals, every week" text="Be first to the latest gadgets, home and style picks." href="/new-arrivals" cta="Shop new arrivals" />
+      <CategoryList items={categories} label="New in categories" />
+      <section aria-label="Just in"><Heading>Just in</Heading><ul className="grid grid-cols-2 gap-2 xl:grid-cols-3">{justIn.map((p) => <li key={p.id} className="min-w-0"><MiniProduct p={p} compact /></li>)}</ul></section>
+      <div className="self-start"><Promo tone="bg-gradient-to-br from-neutral-900 via-red-950 to-primary" icon={Sparkles} eyebrow="Fresh this week" title="New arrivals, every week" text="Be first to the latest gadgets, home and style picks." href="/new-arrivals" cta="Shop new arrivals" /></div>
       <Footer href="/new-arrivals" label={`View all ${totals.newArrivals} new arrivals`} note="Updated weekly. Free delivery on orders above ₹699." />
     </div>
   )
   if (id === "best") return (
     <div className={grid}>
-      <CategoryList items={bestCategories} label="Bestsellers by category" />
+      <CategoryList items={categories} label="Bestsellers by category" />
       <section aria-label="Customer favourites"><Heading>Customer favourites</Heading><ul className="grid grid-cols-3 gap-3">{topRated.map((p, i) => <li key={p.id}><MiniProduct p={p} rank={i + 1} /></li>)}</ul></section>
       <Promo tone="bg-gradient-to-br from-amber-500 via-orange-600 to-red-700" icon={ThumbsUp} eyebrow="Loved by shoppers" title="Rated 4.5★ and above" text="The products people rate highest and keep re-ordering." href="/products?rating=4.5&sort=rating" cta="Shop top rated" />
       <Footer href="/bestsellers" label={`View all ${totals.bestsellers} bestsellers`} note="Ranked by rating, then by number of reviews." />
@@ -102,7 +110,7 @@ export function MegaPanel({ id, menu }: { id: MenuId; menu: MenuData }) {
           {brands.slice(0, 12).map((b) => (
             <li key={b.name}>
               <Link href={`/products?brand=${encodeURIComponent(b.name)}`} className="group grid h-[4.5rem] place-content-center rounded-xl border bg-card px-3 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50">
-                <span className="text-sm font-bold tracking-wide group-hover:text-primary">{b.name}</span>
+                {brandLogos[b.name] ? <span className="relative mx-auto mb-1 block h-7 w-28"><Image src={`/images/brands/${brandLogos[b.name]}.webp`} alt={b.name} fill sizes="112px" className="object-contain" /></span> : <span className="text-sm font-bold tracking-wide group-hover:text-primary">{b.name}</span>}
                 <span className="text-xs text-muted-foreground">{b.count} {b.count === 1 ? "product" : "products"}</span>
               </Link>
             </li>

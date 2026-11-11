@@ -1,0 +1,67 @@
+[
+  {
+    "slug": "mobiles",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: a sleek upright smartphone, front three-quarter view, vivid blue abstract screen. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "laptops",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: a slim open silver laptop, front three-quarter view, violet abstract screen. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "fashion",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: a tasteful grey zip-up hoodie on an invisible mannequin, sleeves neatly hanging. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "home-living",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: a miniature-looking teal upholstered armchair with one mustard cushion. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "kitchen-dining",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: a glossy burnt-orange enameled cooking casserole with matching lid and two handles. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "beauty",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: an elegant blush-pink pump bottle, small cream jar and slim serum bottle, no labels. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "sports",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: one classic black and white soccer football. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "toys",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: a charming seated caramel-brown plush teddy bear. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "books",
+    "prompt": "Use case: product-mockup. Create a square premium ecommerce category illustration: a neat stack of three hardcover books with teal, coral and cream blank covers. Photorealistic studio product rendering, attractive realistic materials, soft even lighting, centered entire object fills 80 percent of frame, consistent straight-on slightly elevated camera, strong clear silhouette readable at 64 pixels. Isolated cutout with genuinely transparent background. No ground plane, no scene, no humans, no text, no labels, no brands, no watermark, no border. Only the described object(s), keep all edges inside frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "electronics",
+    "prompt": "Use case: product-mockup. Square premium ecommerce category cutout of black over-ear wireless headphones. Photorealistic studio rendering, isolated on genuinely transparent background, soft even lighting, centered whole object filling 80 percent of frame, readable silhouette at 64 pixels. No text, logos, watermarks, people, scene or ground plane. Keep every edge inside the frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "fitness",
+    "prompt": "Use case: product-mockup. Square premium ecommerce category cutout of two black hexagonal dumbbells. Photorealistic studio rendering, isolated on genuinely transparent background, soft even lighting, centered whole object filling 80 percent of frame, readable silhouette at 64 pixels. No text, logos, watermarks, people, scene or ground plane. Keep every edge inside the frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "automotive",
+    "prompt": "Use case: product-mockup. Square premium ecommerce category cutout of a glossy red compact sports car, front three-quarter view. Photorealistic studio rendering, isolated on genuinely transparent background, soft even lighting, centered whole object filling 80 percent of frame, readable silhouette at 64 pixels. No text, logos, watermarks, people, scene or ground plane. Keep every edge inside the frame.",
+    "mode": "built-in imagegen"
+  },
+  {
+    "slug": "gaming",
+    "prompt": "Use case: product-mockup. Square premium ecommerce category cutout of one black wireless game controller with two thumbsticks. Photorealistic studio rendering, isolated on genuinely transparent background, soft even lighting, centered whole object filling 80 percent of frame, readable silhouette at 64 pixels. No text, logos, watermarks, people, scene or ground plane. Keep every edge inside the frame.",
+    "mode": "built-in imagegen"
+  }
+]
